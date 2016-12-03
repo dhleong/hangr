@@ -1,13 +1,12 @@
-var electron = require('electron'),
-    fs = require('fs-extra'),
-    path = require('path'),
-    packageJson = require(__dirname + '/package.json');
+'use strict';
 
-var ipc = electron.ipcMain;
-var app = electron.app;
-var dialog = electron.dialog;
-var BrowserWindow = electron.BrowserWindow;
-var Menu = electron.Menu;
+const electron = require('electron'),
+      fs = require('fs-extra'),
+      {app, dialog, Menu} = electron,
+      packageJson = require(__dirname + '/package.json'),
+
+      DockedWindow = require('./docked-window');
+
 
 // // Report crashes to atom-shell.
 // require('crash-reporter').start();
@@ -19,11 +18,8 @@ if (fs.existsSync(devConfigFile)) {
 }
 
 
-const isDev = (packageJson.version.indexOf("DEV") !== -1);
-const onMac = (process.platform === 'darwin');
+// const isDev = (packageJson.version.indexOf("DEV") !== -1);
 const acceleratorKey = "CommandOrControl";
-const isInternal = (devConfig.hasOwnProperty('internal') && devConfig['internal'] === true);
-
 
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -85,16 +81,6 @@ var debugMenu = {
 var menuTemplate = [fileMenu, debugMenu, helpMenu];
 
 
-// NOTE: not all of the browserWindow options listed on the docs page work
-// on all operating systems
-const browserWindowOptions = {
-  height: 850,
-  title: 'hangr',
-  width: 1400,
-  icon: __dirname + '/img/logo_96x96.png'
-};
-
-
 //------------------------------------------------------------------------------
 // Register IPC Calls from the Renderers
 //------------------------------------------------------------------------------
@@ -104,28 +90,16 @@ const browserWindowOptions = {
 // Ready
 //------------------------------------------------------------------------------
 
+app.on('window-all-closed', () => {
+    app.quit();
+});
 
-// This method will be called when atom-shell has done everything
-// initialization and ready for creating browser windows.
-app.on('ready', function() {
-  // Create the browser window.
-  mainWindow = new BrowserWindow(browserWindowOptions);
-
-  // and load the index.html of the app.
-  mainWindow.loadURL('file://' + __dirname + '/index.html');
+app.on('ready', () => {
+  mainWindow = new DockedWindow('/');
 
   var menu = Menu.buildFromTemplate(menuTemplate);
 
   Menu.setApplicationMenu(menu);
-
-  // Emitted when the window is closed.
-  mainWindow.on('closed', function() {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    mainWindow = null;
-    app.quit();
-  });
 
   if (devConfig.hasOwnProperty('dev-tools') && devConfig['dev-tools'] === true) {
     mainWindow.openDevTools();
