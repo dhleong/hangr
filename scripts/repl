@@ -1,0 +1,27 @@
+#!/usr/bin/env expect -f
+
+spawn lein repl
+expect "user=>"
+
+# spawn node
+# expect ">"
+
+send "(use 'figwheel-sidecar.repl-api)\r"
+send "(def figwheel-config\n"
+send "  \{:figwheel-options \{:css-dirs \[\"app/css\"\]\}\n"
+send "   :build-ids \[\"dev\"\]\n"
+send "   :all-builds\n"
+send "     \[\{:id \"dev\"\n"
+send "       :figwheel \{:on-jsload \"hangr.core/mount-root\"\}\n"
+send "       :source-paths \[\"src/cljs\" \"env/dev/cljs\"\]\n"
+send "       :compiler \{:main \"hangr.dev\"\n"
+send "                  :asset-path \"js/p/out\"\n"
+send "                  :output-to \"app/js/p/app.js\"\n"
+send "                  :output-dir \"app/js/p/out\" \}\}]\})\n"
+send "(start-figwheel! figwheel-config)\n"
+send "(cljs-repl)\n"
+
+# hand control back to the user
+interact
+
+exit
