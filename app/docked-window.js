@@ -121,6 +121,11 @@ class DockedWindow {
         return WindowDimens.w;
     }
 
+    send(/* event, ... args */) {
+        var contents = this.win.webContents;
+        contents.send.apply(contents, Array.from(arguments));
+    }
+
     setPosition(x, y, animate) {
         this.win.setPosition(x, y, animate);
     }

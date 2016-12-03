@@ -5,11 +5,11 @@ const electron = require('electron'),
       {app, dialog, Menu} = electron,
       packageJson = require(__dirname + '/package.json'),
 
-      DockedWindow = require('./docked-window');
+      DockedWindow = require('./docked-window'),
+      ConnectionManager = require('./connection'),
+    
+      connMan = new ConnectionManager();
 
-
-// // Report crashes to atom-shell.
-// require('crash-reporter').start();
 
 const devConfigFile = __dirname + '/config.json';
 var devConfig = {};
@@ -35,47 +35,54 @@ fs.ensureDirSync(app.getPath('userData'));
 // Main
 //------------------------------------------------------------------------------
 
-const versionString = "Version   " + packageJson.version + "\nDate       " + packageJson["build-date"] + "\nCommit  " + packageJson["build-commit"];
-
+const versionString =
+    `Version   ${packageJson.version}\n` +
+    `Date      ${packageJson['build-date']}\n` +
+    `Commit    ${packageJson['build-commit']}`;
 
 function showVersion() {
-  dialog.showMessageBox({type: "info", title: "Version", buttons: ["OK"], message: versionString});
+    dialog.showMessageBox({
+        type: "info",
+        title: "Version",
+        buttons: ["OK"],
+        message: versionString
+    });
 }
 
 var fileMenu = {
-  label: 'File',
-  submenu: [
-  {
-    label: 'Quit',
-    accelerator: acceleratorKey + '+Q',
-    click: function ()
-    {
-      app.quit();
-    }
-  }]
+    label: 'File',
+    submenu: [
+        {
+            label: 'Quit',
+            accelerator: acceleratorKey + '+Q',
+            click: function() {
+                app.quit();
+            }
+        }
+    ]
 };
 
 var helpMenu = {
-  label: 'Help',
-  submenu: [
-  {
-    label: 'Version',
-    click: showVersion
-  }]
+    label: 'Help',
+    submenu: [
+        {
+            label: 'Version',
+            click: showVersion
+        }
+    ]
 };
 
 var debugMenu = {
-  label: 'Debug',
-  submenu: [
-  {
-    label: 'Toggle DevTools',
-    accelerator: acceleratorKey + '+Shift+I',
-    click: function ()
-    {
-      mainWindow.toggleDevTools();
-    }
-  }
-  ]
+    label: 'Debug',
+    submenu: [
+        {
+            label: 'Toggle DevTools',
+            accelerator: acceleratorKey + '+Shift+I',
+            click: function() {
+                mainWindow.toggleDevTools();
+            }
+        }
+    ]
 };
 
 var menuTemplate = [fileMenu, debugMenu, helpMenu];
@@ -91,18 +98,29 @@ var menuTemplate = [fileMenu, debugMenu, helpMenu];
 //------------------------------------------------------------------------------
 
 app.on('window-all-closed', () => {
+    // TODO actually, probably not
     app.quit();
 });
 
 app.on('ready', () => {
-  mainWindow = new DockedWindow();
+    mainWindow = new DockedWindow();
 
-  var menu = Menu.buildFromTemplate(menuTemplate);
+    Menu.setApplicationMenu(
+        Menu.buildFromTemplate(menuTemplate));
 
-  Menu.setApplicationMenu(menu);
+    if (devConfig.hasOwnProperty('dev-tools') && devConfig['dev-tools'] === true) {
+        mainWindow.openDevTools();
+    }
 
-  if (devConfig.hasOwnProperty('dev-tools') && devConfig['dev-tools'] === true) {
-    mainWindow.openDevTools();
-  }
+    // forward events to the client
+    ['reconnecting', 'connected'].forEach(event => {
+        connMan.on(event, function() {
+            var args = Array.from(arguments);
+            args.unshift(event);
+            mainWindow.send.apply(mainWindow, args);
+        });
+    });
 
+    // begin connecting immediately
+    connMan.open();
 });

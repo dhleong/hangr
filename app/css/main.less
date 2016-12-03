@@ -37,3 +37,35 @@ body {
     
     margin: 8px;
 }
+
+#loading {
+    text-align: center;
+}
+
+/* loading spinner */
+@loader-color: #333;
+@loader-size: 5em;
+@loader-width: 0.55em;
+.loader {
+    @faded-color: rgba(red(@loader-color), green(@loader-color), blue(@loader-color), 0.2);
+    margin: 25px auto;
+    font-size: 10px;
+    position: relative;
+    text-indent: -9999em;
+    border-top: @loader-width solid @faded-color;
+    border-right: @loader-width solid @faded-color;
+    border-bottom: @loader-width solid @faded-color;
+    border-left: @loader-width solid @loader-color;
+    transform: translateZ(0);
+    animation: load8 1.1s infinite linear;
+}
+.loader,
+.loader:after {
+    border-radius: 50%;
+    width: @loader-size;
+    height: @loader-size;
+}
+@keyframes load8 {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

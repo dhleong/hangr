@@ -3,4 +3,5 @@
   hangr.db)
 
 (def default-value
-  {:page [:friends]})
+  {:loading? true
+   :page [:connecting]})

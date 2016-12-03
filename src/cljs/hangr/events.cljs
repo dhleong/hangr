@@ -26,3 +26,8 @@
   [trim-v]
   (fn [db page]
     (assoc db :page page)))
+
+(reg-event-db
+  :connected
+  (fn [db _]
+    (assoc db :loading? false)))

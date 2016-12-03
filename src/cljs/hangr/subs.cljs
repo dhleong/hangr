@@ -6,4 +6,7 @@
 (reg-sub
   :page
   (fn [db _]
-    (:page db)))
+    (if (:loading? db)
+      ;; still loading; override the page
+      [:connecting]
+      (:page db))))

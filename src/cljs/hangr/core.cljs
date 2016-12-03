@@ -9,6 +9,7 @@
             [hangr.events]
             [hangr.subs]
             [hangr.views]
+            [hangr.connection :as connection]
             [devtools.core :as devtools])
   (:import [goog History]
            [goog.history EventType]))
@@ -28,9 +29,12 @@
                    (fn [event] (secretary/dispatch! (.-token event))))
     (.setEnabled true)))
 
+;; -- Mount and init ----------------------------------------------------------
+
 (defn mount-root
   []
   (dispatch-sync [:initialize-db])
+  (connection/init!)
   (reagent/render [hangr.views/main] (.getElementById js/document "app")))
 
 (defn init!

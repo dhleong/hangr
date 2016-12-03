@@ -4,6 +4,14 @@
   (:require [reagent.core  :as reagent]
             [re-frame.core :refer [subscribe dispatch]]))
 
+;; -- Loading Spinner ---------------------------------------------------------
+
+(defn spinner
+  [reason]
+  [:div#loading
+   [:div.loader]
+   reason])
+
 ;; -- Conversation Page -------------------------------------------------------
 
 (defn conversation
@@ -40,6 +48,7 @@
             "Hangr")]
          [:div#app-container
           (case page
+            :connecting [spinner "Connecting..."]
             :friends [friends-list]
             :conv [conversation (first args)]
             [four-oh-four])]]))))
