@@ -4,4 +4,6 @@
 
 (def default-value
   {:loading? true
-   :page [:connecting]})
+   :page [:connecting]
+   :people {}
+   :convs {}})

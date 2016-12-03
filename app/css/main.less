@@ -21,21 +21,29 @@ body {
 
 /* singleton elements */
 
+@title-height: 20px;
 #title {
     .roboto-condensed();
     .unselectable();
 
-    height: 1em;
+    height: @title-height;
     text-align: right;
     background: #f0f0f0;
     padding: 10px 12px;
+    margin: 0;
 
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
 }
 
 #app-container {
     .roboto();
     
     margin: 8px;
+    margin-top: (@title-height + 20px);
+    padding-top: 8px;
 }
 
 #loading {

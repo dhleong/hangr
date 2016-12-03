@@ -31,6 +31,8 @@
 
   :figwheel {:css-dirs ["app/css"]}
 
+  :test-paths ["test/cljs"]
+
   :less {:source-paths ["app/css"]
          :target-path  "app/css"}
 
@@ -44,6 +46,7 @@
                    :source-paths ["env/dev/cljs"]
 
                    :dependencies [[binaryage/devtools "0.8.2"]
+                                  [re-frisk "0.3.1"]
                                   [figwheel-sidecar "0.5.8"]
                                   [com.cemerick/piggieback "0.2.1"]]
 

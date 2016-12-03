@@ -19,7 +19,10 @@
 (reg-event-db
   :initialize-db
   (fn [db _]
-    default-value))
+    (assoc default-value
+           :page
+           (:page (or db
+                      default-value)))))
 
 (reg-event-db
   :navigate
@@ -31,3 +34,16 @@
   :connected
   (fn [db _]
     (assoc db :loading? false)))
+
+;;
+;; Update a conversation. This may trigger
+;;  a fetch of people information
+(reg-event-fx
+  :update-conv
+  [trim-v]
+  (fn [{:keys [db]} [conv]]
+    ;; (println "Update conv" conv)
+    ;; (when-not (-> db :people ))
+    {:db (assoc-in db 
+                   [:convs (:id conv)]
+                   conv)}))

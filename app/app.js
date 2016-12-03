@@ -2,10 +2,10 @@
 
 const electron = require('electron'),
       fs = require('fs-extra'),
-      {app, dialog, Menu} = electron,
+      {app, dialog, ipcMain, Menu} = electron,
       packageJson = require(__dirname + '/package.json'),
 
-      DockedWindow = require('./docked-window'),
+      {dockManager, DockedWindow} = require('./docked-window'),
       ConnectionManager = require('./connection'),
     
       connMan = new ConnectionManager();
@@ -92,6 +92,18 @@ var menuTemplate = [fileMenu, debugMenu, helpMenu];
 // Register IPC Calls from the Renderers
 //------------------------------------------------------------------------------
 
+ipcMain.on('request-status', () => {
+    console.log("GOT request-status");
+    if (connMan.connected) {
+        dockManager.dispatch('connected');
+
+        if (connMan.lastConversations) {
+            mainWindow.send('recent-conversations', connMan.lastConversations);
+        }
+    } else {
+        dockManager.dispatch('reconnecting');
+    }
+});
 
 //------------------------------------------------------------------------------
 // Ready
@@ -103,6 +115,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('ready', () => {
+    // TODO the mainWindow is special and should only hide, not close
     mainWindow = new DockedWindow();
 
     Menu.setApplicationMenu(
@@ -113,12 +126,12 @@ app.on('ready', () => {
     }
 
     // forward events to the client
-    ['reconnecting', 'connected'].forEach(event => {
-        connMan.on(event, function() {
-            var args = Array.from(arguments);
-            args.unshift(event);
-            mainWindow.send.apply(mainWindow, args);
-        });
+    ConnectionManager.GLOBAL_EVENTS.forEach(event => {
+        connMan.forwardEvent(event, dockManager.dispatch.bind(dockManager));
+    });
+
+    ConnectionManager.FRIENDS_EVENTS.forEach(event => {
+        connMan.forwardEvent(event, mainWindow.send.bind(mainWindow));
     });
 
     // begin connecting immediately

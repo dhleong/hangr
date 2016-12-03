@@ -5,6 +5,7 @@
   (:require [goog.events :as events]
             [reagent.core :as reagent]
             [re-frame.core :refer [dispatch dispatch-sync]]
+            [re-frisk.core :refer [enable-re-frisk!]]
             [secretary.core :as secretary]
             [hangr.events]
             [hangr.subs]
@@ -34,6 +35,8 @@
 (defn mount-root
   []
   (dispatch-sync [:initialize-db])
+  #_(when js/goog.DEBUG 
+    (enable-re-frisk!))
   (connection/init!)
   (reagent/render [hangr.views/main] (.getElementById js/document "app")))
 

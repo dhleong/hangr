@@ -24,9 +24,24 @@
 
 ;; -- Friends List ------------------------------------------------------------
 
+(defn friends-list-item
+  [conv]
+  [:li.conversation
+   (str (map 
+          :fallback_name
+          (-> conv :conversation :participant_data)))])
+
 (defn friends-list
   []
-  [:div "Frieeeends!"])
+  (let [convs (subscribe [:convs])]
+    (fn []
+      [:ul#conversations
+       (let [convs @convs]
+         (println "CONVS" (count convs))
+         (if (seq convs)
+           (for [c convs] 
+             ^{:key (:id c)} [friends-list-item c])
+           "Loading, or no conversations"))])))
 
 ;; -- No-such-page handler ----------------------------------------------------
 

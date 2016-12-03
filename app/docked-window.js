@@ -58,6 +58,13 @@ class DockManager {
         });
     }
 
+    dispatch(/* event, ...args */) {
+        var args = Array.from(arguments);
+        this._windows.forEach(window => {
+            window.send.apply(window, args);
+        });
+    }
+
     position(window, animate) {
         var screenHeight = screenSize().height;
         var x = this._anchor.position(window._index);
@@ -104,6 +111,7 @@ class DockedWindow {
         // and load the index.html of the app.
         win.loadURL('file://' + __dirname + '/index.html#' + url);
 
+        // delegate some event stuff
         this.on = win.on.bind(win);
         this.once = win.once.bind(win);
         this.removeListener = win.removeListener.bind(win);
@@ -121,6 +129,7 @@ class DockedWindow {
         return WindowDimens.w;
     }
 
+    /** Shortcut to send an IPC event to the browser */
     send(/* event, ... args */) {
         var contents = this.win.webContents;
         contents.send.apply(contents, Array.from(arguments));
@@ -139,4 +148,7 @@ class DockedWindow {
     }
 }
 
-module.exports = DockedWindow;
+module.exports = {
+    DockedWindow,
+    dockManager: Manager,
+};

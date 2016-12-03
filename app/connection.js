@@ -65,6 +65,8 @@ class ConnectionManager extends EventEmitter {
     
     constructor() {
         super();
+
+        this.connected = false;
     }
 
     /** Be connected */
@@ -82,7 +84,23 @@ class ConnectionManager extends EventEmitter {
         this._reconnect();
     }
 
+    /**
+     * Attach an event listener for the given
+     *  eventName that calls cb as (event, ...args)
+     *  for each such event emitted
+     */
+    forwardEvent(eventName, cb) {
+        this.on(eventName, function() {
+            var args = Array.from(arguments);
+            console.log("Forward", eventName, args);
+            args.unshift(eventName);
+            cb.apply(cb, args);
+        });
+    }
+
     _reconnect() {
+        this.connected = false;
+        this.lastConversations = null;
         this.client.connect(CREDS).done(
             this._connected.bind(this), 
             this._error.bind(this)
@@ -91,14 +109,28 @@ class ConnectionManager extends EventEmitter {
 
     _connected() {
         console.log("conn: Connected!");
-
+        this.connected = true;
         this._backoff = INITIAL_BACKOFF;
         this.emit('connected');
+
+        this.client.syncrecentconversations().then((chats) => {
+            this.lastConversations = chats.conversation_state;
+            this.emit('recent-conversations', this.lastConversations);
+        }, e => console.warn("error: syncrecentconversations", e));
     }
 
     _error() {
         console.warn("conn: ERROR!", arguments);
     }
 }
+ConnectionManager.GLOBAL_EVENTS = [
+    // events every window wants
+    'connected', 
+    'reconnecting',
+];
+ConnectionManager.FRIENDS_EVENTS = [
+    // events the friends window wants
+    'recent-conversations',
+];
 
 module.exports = ConnectionManager;
