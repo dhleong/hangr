@@ -1,0 +1,39 @@
+/* Mixins */
+
+.roboto() {
+    font-family: 'Roboto', sans-serif;
+}
+
+.roboto-condensed() {
+    font-family: 'Roboto Condensed', sans-serif;
+}
+
+.unselectable() {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* global config */
+
+body {
+    margin: 0;
+}
+
+/* singleton elements */
+
+#title {
+    .roboto-condensed();
+    .unselectable();
+
+    height: 1em;
+    text-align: right;
+    background: #f0f0f0;
+    padding: 10px 12px;
+
+}
+
+#app-container {
+    .roboto();
+    
+    margin: 8px;
+}

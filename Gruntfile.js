@@ -49,7 +49,15 @@ grunt.initConfig({
   'download-electron': {
     version: electron_version,
     outputDir: 'electron'
-  }
+  },
+
+  less: {
+    development: {
+      files: {
+        'app/css/main.css': 'app/css/main.less',
+      }
+    }
+  },
 
 });
 
@@ -57,7 +65,7 @@ grunt.initConfig({
 // Third-party tasks
 //------------------------------------------------------------------------------
 
-
+grunt.loadNpmTasks('grunt-contrib-less');
 grunt.loadNpmTasks('grunt-download-electron');
 if (os === "mac") {
   grunt.loadNpmTasks('grunt-appdmg');
@@ -69,9 +77,9 @@ grunt.loadNpmTasks('winresourcer');
 //------------------------------------------------------------------------------
 
 grunt.registerTask('setup', [
+  'less',
   'download-electron',
   'ensure-config-exists',
-  'run-app-bower'
 ]);
 
 grunt.registerTask('ensure-config-exists', function() {

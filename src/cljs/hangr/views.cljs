@@ -10,6 +10,10 @@
   [id]
   [:div "Hello, " id])
 
+(defn conversation-title
+  [id]
+  [:span id])
+
 ;; -- Friends List ------------------------------------------------------------
 
 (defn friends-list
@@ -20,9 +24,7 @@
 
 (defn four-oh-four
   []
-  [:div 
-   {:class "error"}
-   "Woops! That doesn't exist"])
+  [:div.error "Woops! That doesn't exist"])
 
 ;; -- Main Switch -------------------------------------------------------------
 
@@ -31,7 +33,13 @@
   (let [page (subscribe [:page])]
     (fn []
       (let [[page args] @page]
-        (case page
-          :friends [friends-list]
-          :conv [conversation (first args)]
-          [four-oh-four])))))
+        [:div
+         [:div#title 
+          (case page
+            :conv [conversation-title (first args)]
+            "Hangr")]
+         [:div#app-container
+          (case page
+            :friends [friends-list]
+            :conv [conversation (first args)]
+            [four-oh-four])]]))))

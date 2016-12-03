@@ -95,7 +95,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('ready', () => {
-  mainWindow = new DockedWindow('/');
+  mainWindow = new DockedWindow();
 
   var menu = Menu.buildFromTemplate(menuTemplate);
 

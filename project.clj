@@ -31,8 +31,8 @@
 
   :figwheel {:css-dirs ["app/css"]}
 
-  :less {:source-paths ["less"]
-         :target-path  "resources/public/css"}
+  :less {:source-paths ["app/css"]
+         :target-path  "app/css"}
 
   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 

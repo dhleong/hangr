@@ -79,7 +79,7 @@ class DockManager {
 const Manager = new DockManager();
 
 class DockedWindow {
-    constructor(url) {
+    constructor(url = '/') {
         this.url = url;
 
         // Create the browser window.
@@ -102,7 +102,7 @@ class DockedWindow {
         });
 
         // and load the index.html of the app.
-        win.loadURL('file://' + __dirname + '/index.html');
+        win.loadURL('file://' + __dirname + '/index.html#' + url);
 
         this.on = win.on.bind(win);
         this.once = win.once.bind(win);
@@ -123,6 +123,14 @@ class DockedWindow {
 
     setPosition(x, y, animate) {
         this.win.setPosition(x, y, animate);
+    }
+
+    openDevTools() {
+        this.win.openDevTools();
+    }
+
+    toggleDevTools() {
+        this.win.toggleDevTools();
     }
 }
 
