@@ -92,7 +92,6 @@ class ConnectionManager extends EventEmitter {
     forwardEvent(eventName, cb) {
         this.on(eventName, function() {
             var args = Array.from(arguments);
-            console.log("Forward", eventName, args);
             args.unshift(eventName);
             cb.apply(cb, args);
         });

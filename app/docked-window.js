@@ -65,6 +65,13 @@ class DockManager {
         });
     }
 
+    findActive() {
+        var focused = BrowserWindow.getFocusedWindow();
+        return this._windows.find(win => {
+            return win.win === focused;
+        });
+    }
+
     findWithUrl(url) {
         return this._windows.find(win => {
             return win.url === url;

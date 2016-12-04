@@ -19,7 +19,7 @@
 (defn friends-list-item
   [conv]
   (let [self (subscribe [:self])]
-    (fn []
+    (fn [conv]
       [:li.conversation
        {:on-click 
         #(dispatch [:select-conv (:id conv)])}

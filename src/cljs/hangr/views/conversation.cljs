@@ -40,35 +40,46 @@
    {:class (if (:incoming? event)
              "incoming"
              "outgoing")}
-   (let [content (-> event :chat_message :message_content)] 
+   (let [content (-> event :chat_message :message_content)
+         event-id (:id event)] 
      (concat
        (for [[i attachment] (map-indexed list (:attachment content))]
-         ^{:key (str (:id event) "a" i)} 
-         ;; TODO separate fn
-         (let [embed-item (:embed_item attachment)]
-           (cond
-             (:plus_photo embed-item) [attachment-image embed-item]
-             :else [:span (str "UNKNOWN ATTACHMENT:" embed-item)])))
+         (with-meta
+           (let [embed-item (:embed_item attachment)]
+             (cond
+               (:plus_photo embed-item) [attachment-image embed-item]
+               :else [:span (str "UNKNOWN ATTACHMENT:" embed-item)]))
+           ;; we can't use the reader macro since it's coming
+           ;;  from a (case)
+           {:key (str event-id "a" i)} ))
        (for [[i segment] (map-indexed list (:segment content))]
-         ^{:key (str (:id event) "s" i)} 
-         (case (:type segment)
-           "TEXT" [segment-text segment]
-           "LINK" [segment-link segment]
-           [:span (str "UNKNOWN SEGMENT:" segment)]))))])
+         (with-meta
+           (case (:type segment)
+             "TEXT" [segment-text segment]
+             "LINK" [segment-link segment]
+             [:span (str "UNKNOWN SEGMENT:" segment)])
+           ;; see above
+           {:key (str event-id "s" i)}))))])
 
 (defn conversation
   [id]
   (let [conv (subscribe [:conv id])]
-    (fn []
-      (let [conv @conv
-            member-map
-            (->> conv
-                 :members
-                 (map (fn [m] [(:id m) m]))
-                 (into {}))]
-        [:ul#conversation 
-         (for [event (:events conv)]
-           ^{:key (:id event)} [conversation-item event])]))))
+    (reagent/create-class
+      {:component-did-mount
+       (fn [this]
+         ;; TODO scroll to the bottom (or should that be an fx?)
+         (println "DID-MOUNT: this=" this))
+       :reagent-render 
+       (fn renderer[]
+         (let [conv @conv
+               member-map
+               (->> conv
+                    :members
+                    (map (fn [m] [(:id m) m]))
+                    (into {}))]
+           [:ul#conversation 
+            (for [event (:events conv)]
+              ^{:key (:id event)} [conversation-item event])]))})))
 
 (defn conversation-title
   [id-or-conv]

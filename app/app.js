@@ -79,7 +79,9 @@ var debugMenu = {
             label: 'Toggle DevTools',
             accelerator: acceleratorKey + '+Shift+I',
             click: function() {
-                mainWindow.toggleDevTools();
+                var active = dockManager.findActive();
+                if (active) active.toggleDevTools();
+                else mainWindow.toggleDevTools();
             }
         }
     ]
