@@ -3,7 +3,8 @@
   hangr.views
   (:require [clojure.string :as string]
             [reagent.core  :as reagent]
-            [re-frame.core :refer [subscribe dispatch]]))
+            [re-frame.core :refer [subscribe dispatch]]
+            [hangr.views.conversation :refer [conversation conversation-title]]))
 
 ;; -- Loading Spinner ---------------------------------------------------------
 
@@ -12,63 +13,6 @@
   [:div#loading
    [:div.loader]
    reason])
-
-;; -- Conversation Page -------------------------------------------------------
-
-; This will probably deserve its own ns...
-(defn conversation-item
-  [event]
-  [:li.event
-   {:class (if (:incoming? event)
-             "incoming"
-             "outgoing")}
-   (let [content (-> event :chat_message :message_content)] 
-     (concat
-       (for [[i attachment] (map-indexed list (:attachment content))]
-         ^{:key (str (:id event) "a" i)} 
-         ;; TODO separate fn
-         [:span (str attachment)])
-       (for [[i segment] (map-indexed list (:segment content))]
-         ^{:key (str (:id event) "s" i)} 
-         ;; TODO separate fn
-         [:span (str segment)])))])
-
-(defn conversation
-  [id]
-  (let [conv (subscribe [:conv id])]
-    (fn []
-      (let [conv @conv
-            member-map
-            (->> conv
-                 :members
-                 (map (fn [m] [(:id m) m]))
-                 (into {}))]
-        [:ul#conversation 
-         (for [event (:events conv)]
-           ^{:key (:id event)} [conversation-item event])]))))
-
-(defn conversation-title
-  [id-or-conv]
-  (let [conv (if (string? id-or-conv)
-               (subscribe [:conv id-or-conv])
-               (atom id-or-conv))
-        self (subscribe [:self])]
-    (fn []
-      (let [conv @conv]
-        [:span 
-         (or
-           ; prefer the chosen name, if there is one
-           (:name conv)
-           ; otherwise, join all the other members
-           (clojure.string/join 
-             ", "
-             (->> conv 
-                  :members
-                  ; remove ourself...
-                  (remove #(= (:id @self)
-                              (:id %)))
-                  ; get the name
-                  (map :name))))]))))
 
 ;; -- Friends List ------------------------------------------------------------
 

@@ -108,6 +108,14 @@ ul#conversation {
             margin-right: (@message-margin / 4);
             text-align: right;
         }
+
+        .segment {
+            /* handle long urls */
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+            hyphens: auto;
+        }
     }
 }
 

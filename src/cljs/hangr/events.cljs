@@ -62,3 +62,9 @@
   [trim-v]
   (fn [_ [conv-id]]
     {:ipc [:select-conv (clj->js conv-id)]}))
+
+(reg-event-fx
+  :open-external
+  [trim-v]
+  (fn [_ [url]]
+    {:open-external url}))

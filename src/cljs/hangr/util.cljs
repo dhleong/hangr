@@ -1,6 +1,7 @@
 (ns ^{:author "Daniel Leong"
       :doc "util"}
-  hangr.util)
+  hangr.util
+  (:require [re-frame.core :refer [dispatch]]))
 
 (defn js->real-clj
   "Convenience"
@@ -25,3 +26,10 @@
         (zipmap [:chat_id :gaia_id]
                 vals))))
 
+(defn click-dispatch
+  "Returns an on-click handler that dispatches the given event
+  and prevents the default on-click events"
+  [event]
+  (fn [e]
+    (.preventDefault e)
+    (dispatch event)))
