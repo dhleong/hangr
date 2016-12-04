@@ -41,7 +41,6 @@ body {
 #app-container {
     .roboto();
     
-    margin: 8px;
     margin-top: (@title-height + 20px);
     padding-top: 8px;
 }
@@ -50,7 +49,72 @@ body {
     text-align: center;
 }
 
-/* loading spinner */
+/*
+ * Friends list
+ */
+
+ul#conversations {
+
+    margin: 0;
+    padding: 0;
+
+    .conversation {
+        .unselectable();
+        cursor: pointer;
+
+        list-style: none;
+        margin: 0;
+        padding: 0.5em 8px;
+
+        .name {
+            font-size: 12pt; 
+        }
+
+        &:hover {
+            background-color: #ddd;
+        }
+    }
+
+}
+
+/*
+ * Conversation/chat list
+ */
+ul#conversation {
+    margin: 0;
+    padding: 0;
+
+    .event {
+        @message-margin: 1em;
+
+        border-radius: 8px;
+
+        margin-bottom: 8px;
+        padding: 8px;
+
+        list-style: none;
+        overflow: hidden;
+
+        &.incoming {
+            background-color: #f0f0f0;
+            margin-right: @message-margin;
+            margin-left: (@message-margin / 4);
+            text-align: left;
+        }
+
+        &.outgoing {
+            background-color: #ddd;
+            margin-left: @message-margin;
+            margin-right: (@message-margin / 4);
+            text-align: right;
+        }
+    }
+}
+
+
+/*
+ * Loading spinner 
+ */
 @loader-color: #333;
 @loader-size: 5em;
 @loader-width: 0.55em;

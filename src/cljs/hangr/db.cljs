@@ -6,4 +6,5 @@
   {:loading? true
    :page [:connecting]
    :people {}
+   :self nil
    :convs {}})

@@ -2,10 +2,11 @@
       :doc "Hangouts connection handling"}
   hangr.connection
   (:require [re-frame.core :refer [dispatch]]
-            [hangr.util :refer [js->real-clj]]))
+            [hangr.util :refer [js->real-clj id->key]]))
 
 (defonce electron (js/require "electron"))
 (defonce ipc (.-ipcRenderer electron))
+
 
 (defn conv->clj
   "Clean up a js conv object to something sane"
@@ -14,22 +15,66 @@
       js->real-clj
       (as-> c 
         (assoc c 
+               ;; let the right id in
                :id 
-               (or (:conversation_id c)
-                   (-> c :conversation :conversation_id :id))))
-      ;; TODO etc.
-      ))
+               (or (-> c :conversation_id :id)
+                   (-> c :conversation :conversation_id :id))
+               ;; create a nice list of members (participants)
+               :members
+               (->> c
+                    :conversation
+                    :current_participant
+                    (map 
+                      (fn [raw-id]
+                        {:id (id->key raw-id)
+                         ;; extract a fallback name (if possible)
+                         ;;  by finding the first (only) participant
+                         ;;  data with a matching id
+                         :name 
+                         (->> c
+                              :conversation
+                              :participant_data
+                              (filter #(= raw-id
+                                          (:id %)))
+                              first
+                              :fallback_name)})))
+               ;; clean up `:event` and put it in :events
+               :events
+               (->> (:event c)
+                    (remove #(clojure.string/starts-with?
+                               (:event_id %)
+                               "observed_"))
+                    (map #(assoc % 
+                                 :id (:event_id %)
+                                 :sender (id->key (:sender_id %)))))))
+      ;; remove some unnecessary keys
+      (dissoc :event)))
+
+(defn self->clj
+  "Clean up our 'self' info"
+  [js-self]
+  (-> js-self
+      js->real-clj
+      (as-> s
+        (assoc s
+               :id (-> s :self_entity :id id->key)))))
 
 (def ipc-listeners
   {:connected
    (fn on-connected[]
      (println "Connected!")
      (dispatch [:connected]))
+
    :recent-conversations
    (fn [_ convs]
      (.log js/console "Got conversations" convs)
      (doseq [conv (map conv->clj convs)]
-       (dispatch [:update-conv conv])))})
+       (dispatch [:update-conv conv])))
+   
+   :self-info
+   (fn [_ info]
+     (.log js/console "Got self info" info)
+     (dispatch [:set-self (self->clj info)]))})
 
 ;; NB: since this isn't really an SPA, we handle
 ;;  the hangouts connection in the parent process

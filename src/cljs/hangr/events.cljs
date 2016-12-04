@@ -2,13 +2,14 @@
       :doc "events"}
   hangr.events
   (:require
-    [hangr.db :refer [default-value]]
     [re-frame.core :refer [reg-event-db reg-event-fx inject-cofx path trim-v
                            after debug]]
-    [cljs.spec :as s]))
+    [cljs.spec :as s]
+    [hangr.db :refer [default-value]]
+    [hangr.util :refer [key->id id->key]]))
 
 
-;; -- Interceptors --------------------------------------------------------------
+;; -- Interceptors ------------------------------------------------------------
 ;;
 
 ;; -- Helpers -----------------------------------------------------------------
@@ -47,3 +48,17 @@
     {:db (assoc-in db 
                    [:convs (:id conv)]
                    conv)}))
+
+(reg-event-db
+  :set-self
+  [trim-v]
+  (fn [db [info]] 
+    (assoc db :self info)))
+
+;; -- Events ------------------------------------------------------------------
+
+(reg-event-fx
+  :select-conv
+  [trim-v]
+  (fn [_ [conv-id]]
+    {:ipc [:select-conv (clj->js conv-id)]}))

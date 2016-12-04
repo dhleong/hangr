@@ -65,6 +65,12 @@ class DockManager {
         });
     }
 
+    findWithUrl(url) {
+        return this._windows.find(win => {
+            return win.url === url;
+        });
+    }
+
     position(window, animate) {
         var screenHeight = screenSize().height;
         var x = this._anchor.position(window._index);
@@ -133,6 +139,10 @@ class DockedWindow {
     send(/* event, ... args */) {
         var contents = this.win.webContents;
         contents.send.apply(contents, Array.from(arguments));
+    }
+
+    getURL() {
+        return this.win.getURL();
     }
 
     setPosition(x, y, animate) {

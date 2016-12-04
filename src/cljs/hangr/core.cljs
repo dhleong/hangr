@@ -8,6 +8,7 @@
             [re-frisk.core :refer [enable-re-frisk!]]
             [secretary.core :as secretary]
             [hangr.events]
+            [hangr.fx]
             [hangr.subs]
             [hangr.views]
             [hangr.connection :as connection]

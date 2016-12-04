@@ -101,6 +101,7 @@ class ConnectionManager extends EventEmitter {
     _reconnect() {
         this.connected = false;
         this.lastConversations = null;
+        this.lastSelfInfo = null;
         this.client.connect(CREDS).done(
             this._connected.bind(this), 
             this._error.bind(this)
@@ -113,7 +114,12 @@ class ConnectionManager extends EventEmitter {
         this._backoff = INITIAL_BACKOFF;
         this.emit('connected');
 
-        this.client.syncrecentconversations().then((chats) => {
+        this.client.getselfinfo().then(selfInfo => {
+            this.lastSelfInfo = selfInfo;
+            this.emit('self-info', this.lastSelfInfo);
+        }, e => console.warn("error: getselfinfo", e));
+        
+        this.client.syncrecentconversations().then(chats => {
             this.lastConversations = chats.conversation_state;
             this.emit('recent-conversations', this.lastConversations);
         }, e => console.warn("error: syncrecentconversations", e));
@@ -127,10 +133,11 @@ ConnectionManager.GLOBAL_EVENTS = [
     // events every window wants
     'connected', 
     'reconnecting',
+    'self-info',
+    'recent-conversations',
 ];
 ConnectionManager.FRIENDS_EVENTS = [
-    // events the friends window wants
-    'recent-conversations',
+    // events only the friends window wants
 ];
 
 module.exports = ConnectionManager;

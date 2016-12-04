@@ -87,22 +87,47 @@ var debugMenu = {
 
 var menuTemplate = [fileMenu, debugMenu, helpMenu];
 
+//------------------------------------------------------------------------------
+// Util
+//------------------------------------------------------------------------------
+
+function urlForConvId(convId) {
+    return `/c/${convId}`;
+}
+
 
 //------------------------------------------------------------------------------
 // Register IPC Calls from the Renderers
 //------------------------------------------------------------------------------
 
-ipcMain.on('request-status', () => {
-    console.log("GOT request-status");
+ipcMain.on('request-status', (e) => {
+    // TODO automate this stuff:
     if (connMan.connected) {
         dockManager.dispatch('connected');
+        if (connMan.lastSelfInfo) {
+            e.sender.send('self-info', connMan.lastSelfInfo);
+        }
 
         if (connMan.lastConversations) {
-            mainWindow.send('recent-conversations', connMan.lastConversations);
+            e.sender.send('recent-conversations', connMan.lastConversations);
         }
     } else {
-        dockManager.dispatch('reconnecting');
+        e.sender.send('reconnecting');
     }
+});
+
+ipcMain.on('select-conv', (e, convId) => {
+    var url = urlForConvId(convId);
+    console.log("Request: select", url);
+    var existing = dockManager.findWithUrl(url);
+    if (existing) {
+        // TODO focus/restore
+        return;
+    }
+
+    // TODO Using a constructor as if it were a function
+    //  leaves a bad smell...
+    new DockedWindow(url);
 });
 
 //------------------------------------------------------------------------------
