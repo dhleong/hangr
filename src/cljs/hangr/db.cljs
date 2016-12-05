@@ -7,4 +7,4 @@
    :page [:connecting]
    :people {}
    :self nil
-   :convs {}})
+   :convs nil})

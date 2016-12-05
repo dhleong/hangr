@@ -13,15 +13,19 @@
 
 (reg-sub
   :self
-  (fn [db _]
-    (:self db)))
+  :self) ;; NOTE: keywords are functions! In this shortcut, they act on db
+
+(reg-sub
+  :all-convs
+  :convs)
 
 (reg-sub
   :convs
-  (fn [db _]
-    (when-let [self (:self db)]
-      (->> db 
-           :convs 
+  :<- [:self]
+  :<- [:all-convs]
+  (fn [[self convs] _]
+    (when (and self convs)
+      (->> convs
            vals
            ;; filter out conversations we're not part of
            (filter
@@ -38,10 +42,11 @@
 
 (reg-sub
   :conv
-  (fn [db [_ id]]
-    (when-let [self (:self db)] 
-      (-> db
-          :convs
+  :<- [:self]
+  :<- [:all-convs]
+  (fn [[self convs] [_ id]]
+    (when (and self convs)
+      (-> convs
           (get id)
           ;; insert :incoming? key as appropriate
           (update-in

@@ -30,12 +30,19 @@
   []
   (let [convs (subscribe [:convs])]
     (fn []
-      [:ul#conversations
-       (let [convs @convs]
-         (if (seq convs)
+      (let [convs @convs]
+        (cond
+          ;; we have conversations
+          (seq convs)
+          [:ul#conversations
            (for [c convs] 
-             ^{:key (:id c)} [friends-list-item c])
-           "Loading, or no conversations"))])))
+             ^{:key (:id c)} [friends-list-item c])]
+          ;; conversations not loaded yet
+          (nil? convs)
+          [spinner "Loading"]
+          ;; empty list
+          :else
+          [:div "No conversations"])))))
 
 ;; -- No-such-page handler ----------------------------------------------------
 
