@@ -77,7 +77,11 @@
                                  {:class (if (:incoming? event)
                                            "incoming"
                                            "outgoing")}
-                                 [conversation-item event]])]]))))
+                                 [conversation-item event]])]
+         [:div#composer
+          [:div.input
+           {:content-editable true
+            :placeholder "Message"}]]]))))
 
 (defn conversation-title
   [id-or-conv]

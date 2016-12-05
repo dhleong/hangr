@@ -1,4 +1,4 @@
-/* Mixins */
+// mixins
 
 .roboto() {
     font-family: 'Roboto', sans-serif;
@@ -13,22 +13,25 @@
     user-select: none;
 }
 
-/* global config */
+// global config
 
 body {
     margin: 0;
 }
 
-/* singleton elements */
+// singleton elements
 
 @title-height: 20px;
 #title {
     .roboto-condensed();
     .unselectable();
 
+    @bg: #f0f0f0;
+
     height: @title-height;
     text-align: right;
-    background: #f0f0f0;
+    background: @bg;
+    border-bottom: 1px solid darken(@bg, 10%);
     padding: 10px 12px;
     margin: 0;
 
@@ -49,9 +52,9 @@ body {
     text-align: center;
 }
 
-/*
- * Friends list
- */
+//
+// Friends list
+//
 
 ul#conversations {
 
@@ -77,18 +80,22 @@ ul#conversations {
 
 }
 
-/*
- * Conversation/chat list
- */
+//
+// Conversation/chat list
+//
 #conversation {
+    @composer-inner-height: 1em;
+    @composer-padding: .5em;
+    @composer-height: (@composer-inner-height + 2 * @composer-padding);
+    @message-margin: 1em;
+    @message-separation: .5em;
+
     ul#events {
-        margin: 0;
+        margin: 0 0 (@composer-height + @message-separation) 0;
         padding: 0;
 
         .event {
-            @message-margin: 1em;
-
-            margin-bottom: 8px;
+            margin-bottom: @message-separation;
 
             list-style: none;
             overflow: hidden;
@@ -119,7 +126,7 @@ ul#conversations {
                 padding: 8px;
 
                 .segment {
-                    /* handle long urls */
+                    // handle long urls
                     overflow-wrap: break-word;
                     word-wrap: break-word;
                     word-break: break-word;
@@ -138,12 +145,39 @@ ul#conversations {
             }
         }
     }
+
+    #composer {
+        @input-color: #111;
+        @bg: #f0f0f0;
+
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: @bg;
+        border-top: 1px solid darken(@bg, 10%);
+
+        .input {
+            display:inline-block;
+            min-height: @composer-inner-height;
+            padding: @composer-padding;
+            width: 100%;
+
+            color: @input-color;
+
+            // support the placeholder element
+            &:empty:not(:focus):before {
+                content: attr(placeholder);
+                color: lighten(@input-color, 50%);
+            }
+        }
+    }
 }
 
 
-/*
- * Loading spinner 
- */
+//
+// Loading spinner 
+// 
 @loader-color: #333;
 @loader-size: 5em;
 @loader-width: 0.55em;
