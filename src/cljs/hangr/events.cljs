@@ -47,7 +47,10 @@
     ;; (when-not (-> db :people ))
     {:db (assoc-in db 
                    [:convs (:id conv)]
-                   conv)}))
+                   conv)
+     ;; scroll to bottom if a conversation
+     :scroll-to-bottom (= :conv
+                          (first (:page db)))}))
 
 (reg-event-db
   :set-self
@@ -68,3 +71,8 @@
   [trim-v]
   (fn [_ [url]]
     {:open-external url}))
+
+(reg-event-fx
+  :scroll-to-bottom
+  (fn [_ _]
+    {:scroll-to-bottom :do!}))

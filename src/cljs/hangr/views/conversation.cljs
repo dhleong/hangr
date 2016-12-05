@@ -64,22 +64,16 @@
 (defn conversation
   [id]
   (let [conv (subscribe [:conv id])]
-    (reagent/create-class
-      {:component-did-mount
-       (fn [this]
-         ;; TODO scroll to the bottom (or should that be an fx?)
-         (println "DID-MOUNT: this=" this))
-       :reagent-render 
-       (fn renderer[]
-         (let [conv @conv
-               member-map
-               (->> conv
-                    :members
-                    (map (fn [m] [(:id m) m]))
-                    (into {}))]
-           [:ul#conversation 
-            (for [event (:events conv)]
-              ^{:key (:id event)} [conversation-item event])]))})))
+    (fn []
+      (let [conv @conv
+            member-map
+            (->> conv
+                 :members
+                 (map (fn [m] [(:id m) m]))
+                 (into {}))]
+        [:ul#conversation 
+         (for [event (:events conv)]
+           ^{:key (:id event)} [conversation-item event])]))))
 
 (defn conversation-title
   [id-or-conv]

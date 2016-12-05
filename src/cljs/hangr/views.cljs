@@ -32,7 +32,6 @@
     (fn []
       [:ul#conversations
        (let [convs @convs]
-         (println "CONVS" (count convs))
          (if (seq convs)
            (for [c convs] 
              ^{:key (:id c)} [friends-list-item c])
