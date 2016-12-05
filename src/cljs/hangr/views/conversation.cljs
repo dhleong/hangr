@@ -32,7 +32,7 @@
       :on-click (click-dispatch [:open-external url])}
      (:text segment)]))
 
-;; -- Main Interface ----------------------------------------------------------
+;; -- Conversation Item Facade ------------------------------------------------
 
 (defn conversation-item
   [event]
@@ -60,6 +60,8 @@
              [:span (str "UNKNOWN SEGMENT:" segment)])
            ;; see above
            {:key (str event-id "s" i)}))))])
+
+;; -- Main Interface ----------------------------------------------------------
 
 (defn conversation
   [id]

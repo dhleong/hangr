@@ -31,17 +31,12 @@
   (let [convs (subscribe [:convs])]
     (fn []
       (let [convs @convs]
-        (cond
+        (if (seq convs)
           ;; we have conversations
-          (seq convs)
           [:ul#conversations
            (for [c convs] 
              ^{:key (:id c)} [friends-list-item c])]
-          ;; conversations not loaded yet
-          (nil? convs)
-          [spinner "Loading"]
-          ;; empty list
-          :else
+          ;; nothing : ()
           [:div "No conversations"])))))
 
 ;; -- No-such-page handler ----------------------------------------------------
@@ -64,7 +59,8 @@
             "Hangr")]
          [:div#app-container
           (case page
-            :connecting [spinner "Connecting..."]
+            :connecting [spinner "Connecting"]
+            :loading [spinner "Loading"]
             :friends [friends-list]
             :conv [conversation arg]
             [four-oh-four])]]))))

@@ -3,7 +3,7 @@
   hangr.db)
 
 (def default-value
-  {:loading? true
+  {:connecting? true
    :page [:connecting]
    :people {}
    :self nil

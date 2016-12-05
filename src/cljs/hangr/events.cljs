@@ -34,7 +34,7 @@
 (reg-event-db
   :connected
   (fn [db _]
-    (assoc db :loading? false)))
+    (assoc db :connecting? false)))
 
 ;;
 ;; Update a conversation. This may trigger

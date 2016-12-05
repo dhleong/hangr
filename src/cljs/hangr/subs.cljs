@@ -3,26 +3,46 @@
   hangr.subs
   (:require [re-frame.core :refer [reg-sub trim-v subscribe]]))
 
+;; -- Simple subscriptions ----------------------------------------------------
+;; NOTE: keywords are functions! In this shortcut, they act on db
+;;  to just return a specific key
+
+(reg-sub :connecting?  :connecting?)
+(reg-sub :self :self) 
+
+;; -- Internal subscriptions --------------------------------------------------
+;; Note the use of namespaced keywords to get the raw field. Actual
+;;  subscriptions should use the non-namespaced version to get the
+;;  appropriate "view"
+
+(reg-sub ::convs :convs)
+(reg-sub ::page :page)
+
+;; -- Public subscriptions ----------------------------------------------------
+
 (reg-sub
   :page
-  (fn [db _]
-    (if (:loading? db)
-      ;; still loading; override the page
+  :<- [:connecting?]
+  :<- [:self]
+  :<- [::convs]
+  :<- [::page]
+  (fn [[connecting? self convs page] _]
+    (cond
+      ; still connecting; override the page
+      ; HACK: only show "connecting" for the friends list
+      (and (= :friends (:page page)) connecting?) 
       [:connecting]
-      (:page db))))
-
-(reg-sub
-  :self
-  :self) ;; NOTE: keywords are functions! In this shortcut, they act on db
-
-(reg-sub
-  :all-convs
-  :convs)
+      ; still loading core data; override the page
+      (or (nil? self) (nil? convs))
+      [:loading]
+      ; ready to go!
+      :else 
+      page)))
 
 (reg-sub
   :convs
   :<- [:self]
-  :<- [:all-convs]
+  :<- [::convs]
   (fn [[self convs] _]
     (when (and self convs)
       (->> convs
@@ -43,7 +63,7 @@
 (reg-sub
   :conv
   :<- [:self]
-  :<- [:all-convs]
+  :<- [::convs]
   (fn [[self convs] [_ id]]
     (when (and self convs)
       (-> convs
