@@ -80,41 +80,53 @@ ul#conversations {
 /*
  * Conversation/chat list
  */
-ul#conversation {
-    margin: 0;
-    padding: 0;
+#conversation {
+    ul#events {
+        margin: 0;
+        padding: 0;
 
-    .event {
-        @message-margin: 1em;
+        .event {
+            @message-margin: 1em;
 
-        border-radius: 8px;
+            margin-bottom: 8px;
 
-        margin-bottom: 8px;
-        padding: 8px;
+            list-style: none;
+            overflow: hidden;
+            display: block;
 
-        list-style: none;
-        overflow: hidden;
+            &.incoming {
+                .event-item {
+                    background-color: #f0f0f0;
+                }
+                margin-right: @message-margin;
+                margin-left: (@message-margin / 4);
+                text-align: left;
+            }
 
-        &.incoming {
-            background-color: #f0f0f0;
-            margin-right: @message-margin;
-            margin-left: (@message-margin / 4);
-            text-align: left;
-        }
+            &.outgoing {
+                .event-item {
+                    background-color: #ddd;
+                }
+                margin-left: @message-margin;
+                margin-right: (@message-margin / 4);
+                text-align: right;
+            }
 
-        &.outgoing {
-            background-color: #ddd;
-            margin-left: @message-margin;
-            margin-right: (@message-margin / 4);
-            text-align: right;
-        }
+            .event-item {
+                display: inline-block;
 
-        .segment {
-            /* handle long urls */
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-            word-break: break-word;
-            hyphens: auto;
+                border-radius: 8px;
+                padding: 8px;
+
+                .segment {
+                    /* handle long urls */
+                    overflow-wrap: break-word;
+                    word-wrap: break-word;
+                    word-break: break-word;
+                    hyphens: auto;
+                    font-size: 11pt;
+                }
+            }
         }
     }
 }

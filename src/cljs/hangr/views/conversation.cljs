@@ -36,10 +36,7 @@
 
 (defn conversation-item
   [event]
-  [:li.event
-   {:class (if (:incoming? event)
-             "incoming"
-             "outgoing")}
+  [:div.event-item
    (let [content (-> event :chat_message :message_content)
          event-id (:id event)] 
      (concat
@@ -73,9 +70,14 @@
                  :members
                  (map (fn [m] [(:id m) m]))
                  (into {}))]
-        [:ul#conversation 
-         (for [event (:events conv)]
-           ^{:key (:id event)} [conversation-item event])]))))
+        [:div#conversation
+         [:ul#events
+          (for [event (:events conv)]
+            ^{:key (:id event)} [:li.event
+                                 {:class (if (:incoming? event)
+                                           "incoming"
+                                           "outgoing")}
+                                 [conversation-item event]])]]))))
 
 (defn conversation-title
   [id-or-conv]
