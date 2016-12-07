@@ -97,6 +97,35 @@ class ConnectionManager extends EventEmitter {
         });
     }
 
+    send(convId, rawMsg) {
+        // TODO images?
+        // TODO message type? (eg /me)
+        var builder = new Client.MessageBuilder();
+        rawMsg.forEach(part => {
+            var type = part[0];
+            var val = part[1];
+            switch (type) {
+            case "linebreak":
+                builder.linebreak();
+                break;
+            case "link":
+                builder.link(part[2] || val, val);
+                break;
+            case "text":
+                builder.text(val);
+                break;
+            }
+        });
+
+        var segments = builder.toSegments();
+        this.client.sendchatmessage(convId, segments)
+        .done(result => {
+            console.log(`SENT(${JSON.stringify(result)}):`, segments);
+        }, e => {
+            console.warn(`ERROR SENDING (${JSON.stringify(segments)}):`, e);
+        });
+    }
+
     _reconnect() {
         this.connected = false;
         this.lastConversations = null;

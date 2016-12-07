@@ -11,8 +11,15 @@
 
 (reg-fx
   :ipc
-  (fn [[event arg]]
-    (.send ipc-renderer (name event) arg)))
+  (fn [[event & args]]
+    (.log js/console "IPC" (into-array
+                             (cons (name event) 
+                                   (map clj->js args))))
+    (.apply (.-send ipc-renderer)
+           ipc-renderer
+           (into-array
+             (cons (name event) 
+                   (map clj->js args))))))
 
 (reg-fx
   :open-external
@@ -23,7 +30,6 @@
   :scroll-to-bottom
   (fn [do-scroll?]
     (when do-scroll?
-      (println "do-scroll=" do-scroll?)
       (.play
         (Scroll. 
           js/document.body

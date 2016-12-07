@@ -6,7 +6,8 @@
                            after debug]]
     [cljs.spec :as s]
     [hangr.db :refer [default-value]]
-    [hangr.util :refer [key->id id->key]]))
+    [hangr.util :refer [key->id id->key]]
+    [hangr.util.msg :refer [html->msg]]))
 
 
 ;; -- Interceptors ------------------------------------------------------------
@@ -64,7 +65,13 @@
   :select-conv
   [trim-v]
   (fn [_ [conv-id]]
-    {:ipc [:select-conv (clj->js conv-id)]}))
+    {:ipc [:select-conv conv-id]}))
+
+(reg-event-fx
+  :send-html
+  [trim-v]
+  (fn [_ [conv-id msg-html]]
+    {:ipc [:send conv-id (html->msg msg-html)]}))
 
 (reg-event-fx
   :open-external

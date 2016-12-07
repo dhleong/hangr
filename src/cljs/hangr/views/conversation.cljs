@@ -81,7 +81,18 @@
          [:div#composer
           [:div.input
            {:content-editable true
-            :placeholder "Message"}]]]))))
+            :placeholder "Message"
+            :on-key-press
+            (fn [e]
+              (when (and (= "Enter" (.-key e))
+                         (not (.-shiftKey e)))
+                (.preventDefault e)
+                (let [el (.-target e)
+                      raw-message (.-innerHTML el)]
+                  ; clear the input box
+                  (set! (.-innerHTML el) "")
+                  ; dispatch the event
+                  (dispatch [:send-html (:id conv) raw-message]))))}]]]))))
 
 (defn conversation-title
   [id-or-conv]

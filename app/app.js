@@ -132,6 +132,11 @@ ipcMain.on('select-conv', (e, convId) => {
     new DockedWindow(url);
 });
 
+ipcMain.on('send', (e, convId, msg) => {
+    console.log(`Request: send(${convId}, ${JSON.stringify(msg)})`);
+    connMan.send(convId, msg);
+});
+
 //------------------------------------------------------------------------------
 // Ready
 //------------------------------------------------------------------------------

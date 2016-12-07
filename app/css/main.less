@@ -170,6 +170,11 @@ ul#conversations {
                 content: attr(placeholder);
                 color: lighten(@input-color, 50%);
             }
+
+            // remove the ugly outline on osx
+            &:focus {
+                outline: none;
+            }
         }
     }
 }
