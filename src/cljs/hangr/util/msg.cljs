@@ -40,9 +40,10 @@
 (defn client-generated-id
   []
   ;; this is what hangupsjs does if you don't supply one:
-  (.round js/Math
-          (* (.random js/Math)
-             (.pow js/Math 2, 32))))
+  (str
+    (.round js/Math
+            (* (.random js/Math)
+               (.pow js/Math 2, 32)))))
 
 (defn html->msg
   [html]

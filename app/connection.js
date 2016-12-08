@@ -98,8 +98,11 @@ class ConnectionManager extends EventEmitter {
     }
 
     send(convId, rawMsg) {
-        // TODO images?
-        // TODO message type? (eg /me)
+        var imageId; // TODO images?
+        var otrStatus = Client.OffTheRecordStatus.ON_THE_RECORD;
+        var clientGeneratedId = rawMsg.shift();
+        var deliveryMedium; // TODO use the same as the original conversation?
+        var messageActionType; // TODO action type?
         var builder = new Client.MessageBuilder();
         rawMsg.forEach(part => {
             var type = part[0];
@@ -118,9 +121,13 @@ class ConnectionManager extends EventEmitter {
         });
 
         var segments = builder.toSegments();
-        this.client.sendchatmessage(convId, segments)
+        this.client.sendchatmessage(convId, segments, 
+            imageId, otrStatus, clientGeneratedId, deliveryMedium, messageActionType)
         .done(result => {
-            console.log(`SENT(${JSON.stringify(result)}):`, segments);
+            console.log(`SENT(${JSON.stringify(result, null, ' ')}):`, segments);
+            this.emit('sent', 
+                result.created_event.conversation_id.id,
+                result.created_event);
         }, e => {
             console.warn(`ERROR SENDING (${JSON.stringify(segments)}):`, e);
         });
@@ -163,6 +170,13 @@ ConnectionManager.GLOBAL_EVENTS = [
     'reconnecting',
     'self-info',
     'recent-conversations',
+];
+ConnectionManager.CHAT_EVENTS = [
+    // events only the friends window wants
+    // and a specific chat want. the first
+    // argument of the event MUST be the chat id,
+    // and the rest will be passed along
+    'sent',
 ];
 ConnectionManager.FRIENDS_EVENTS = [
     // events only the friends window wants

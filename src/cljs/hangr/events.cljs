@@ -34,7 +34,6 @@
                 (let [original-db (get-coeffect context :db)
                       event (get-coeffect context :event)
                       path (get-path event)]
-                  (println "ASSOC-COEFFECT" path (get-in original-db path))
                   (-> context
                       (update db-store-key conj original-db)
                       (assoc conv-path-key path)
@@ -50,10 +49,8 @@
                      db (get-effect context :db ::not-found)]
                  (if (= db ::not-found)
                    context'
-                   (do
-                     (println "ASSOC-IN" path db)
-                     (->> (assoc-in original-db path db)
-                          (assoc-effect context' :db)))))))))
+                   (->> (assoc-in original-db path db)
+                        (assoc-effect context' :db))))))))
 
 ;; -- Helpers -----------------------------------------------------------------
 
@@ -95,6 +92,28 @@
      :scroll-to-bottom (= :conv
                           (first (:page db)))}))
 
+;;
+;; Update a pending sent message with the fully
+;;  inflated version
+(reg-event-fx
+  :update-sent
+  [(conv-path :events) trim-v]
+  (fn [{:keys [db]} [conv-id sent-msg-event]]
+    {:db (let [target-cgid (-> sent-msg-event :self_event_state :client_generated_id)]
+           (vec
+             (map
+               (fn [event]
+                 (if (= (:client-generated-id event)
+                        target-cgid)
+                   ;; swap in the updated message
+                   sent-msg-event
+                   ;; return the original
+                   event))
+               db)))
+     ;; scroll to bottom if a conversation
+     :scroll-to-bottom (= :conv
+                          (first (:page db)))}))
+
 (reg-event-db
   :set-self
   [trim-v]
@@ -118,6 +137,8 @@
       {:db (concat db [(msg->event msg)])
        :ipc [:send conv-id msg]
        :scroll-to-bottom true})))
+
+;; -- Actions -----------------------------------------------------------------
 
 (reg-event-fx
   :open-external

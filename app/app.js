@@ -162,6 +162,18 @@ app.on('ready', () => {
         connMan.forwardEvent(event, dockManager.dispatch.bind(dockManager));
     });
 
+    ConnectionManager.CHAT_EVENTS.forEach(event => {
+        connMan.forwardEvent(event, function(e, convId, ...args) {
+            console.log("Forward", event, ...args);
+            mainWindow.send(event, ...args);
+            var convWin = dockManager.findWithUrl(urlForConvId(convId));
+            if (convWin) {
+                console.log("Forward->conv", event, ...args);
+                convWin.send(event, ...args);
+            }
+        });
+    });
+
     ConnectionManager.FRIENDS_EVENTS.forEach(event => {
         connMan.forwardEvent(event, mainWindow.send.bind(mainWindow));
     });
