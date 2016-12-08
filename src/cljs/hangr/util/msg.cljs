@@ -37,6 +37,13 @@
            [[:text text]])
          result)))))
 
+(defn client-generated-id
+  []
+  ;; this is what hangupsjs does if you don't supply one:
+  (.round js/Math
+          (* (.random js/Math)
+             (.pow js/Math 2, 32))))
+
 (defn html->msg
   [html]
   (let [lines (split html #"(?:\<br[ /]*>)+")]
@@ -49,4 +56,26 @@
              (concat
                (split-links line)
                [[:newline]])))
-         drop-last)))
+         drop-last
+         ;; insert a client-generated-id as the first thing
+         (cons (client-generated-id)))))
+
+(defn msg->event
+  [msg]
+  {:id (first msg)
+   :client-generated-id (first msg)
+   :chat_message
+   {:message_content
+    {:segment
+     (map
+       (fn [[type & args]]
+         (case type
+           :text {:type "TEXT"
+                  :text (first args)}
+           :link {:type "LINK"
+                  :text (or (second args)
+                            (first args))
+                  :link_data
+                  {:link_target (first args)}}
+           :newline {:type "NEWLINE"}))
+       (rest msg))}}})

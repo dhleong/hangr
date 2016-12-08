@@ -54,6 +54,7 @@
            (case (:type segment)
              "TEXT" [segment-text segment]
              "LINK" [segment-link segment]
+             "NEWLINE" [:p]
              [:span (str "UNKNOWN SEGMENT:" segment)])
            ;; see above
            {:key (str event-id "s" i)}))))])
@@ -73,11 +74,18 @@
         [:div#conversation
          [:ul#events
           (for [event (:events conv)]
-            ^{:key (:id event)} [:li.event
-                                 {:class (if (:incoming? event)
-                                           "incoming"
-                                           "outgoing")}
-                                 [conversation-item event]])]
+            (let [class-name 
+                  (->>
+                    [(if (:incoming? event)
+                       "incoming"
+                       "outgoing")
+                     (when (:client-generated-id event)
+                       "pending")]
+                    (filter identity)
+                    (string/join " "))]
+              ^{:key (:id event)} [:li.event
+                                   {:class class-name}
+                                   [conversation-item event]]))]
          [:div#composer
           [:div.input
            {:content-editable true

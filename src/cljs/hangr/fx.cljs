@@ -33,6 +33,6 @@
       (.play
         (Scroll. 
           js/document.body
-          #js [0, 0]
+          #js [0, (.-scrollTop js/document.body)]
           #js [0, 99999] ;; cheat?
           20)))))

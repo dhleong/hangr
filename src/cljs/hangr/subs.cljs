@@ -75,5 +75,7 @@
               map 
               #(assoc %
                       :incoming?
-                      (not= (:sender %)
-                            (:id self)))))))))
+                      (and
+                        (not= (:sender %)
+                              (:id self))
+                        (not (:client-generated-id %))))))))))
