@@ -63,4 +63,6 @@
             :loading [spinner "Loading"]
             :friends [friends-list]
             :conv [conversation arg]
-            [four-oh-four])]]))))
+            (do
+              (.warn js/console "Unknown page" (str page))
+              [four-oh-four]))]]))))

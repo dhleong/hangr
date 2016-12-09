@@ -52,6 +52,19 @@
                    (->> (assoc-in original-db path db)
                         (assoc-effect context' :db))))))))
 
+(def conv?-scroll
+  "Triggers a scroll to the bottom if viewing a covnersation"
+  (->interceptor
+    :id :conv-scroll
+    :after (fn conv-scroll-after
+             [context]
+             (let [db (get-coeffect context :db)] 
+               (println "PAGE=" (:page db))
+               (-> context
+                   (assoc-effect :scroll-to-bottom
+                                 (= :conv
+                                    (first (:page db)))))))))
+
 ;; -- Helpers -----------------------------------------------------------------
 
 
@@ -77,66 +90,53 @@
     (assoc db :connecting? false)))
 
 ;;
+;; Receive a new chat message. This may trigger
+;;  a fetch of people information
+(reg-event-db
+  :receive-msg
+  [conv?-scroll (conv-path :events) trim-v]
+  (fn [events [conv-id msg]]
+    (concat 
+      events
+      [msg])))
+
+;;
 ;; Update a conversation. This may trigger
 ;;  a fetch of people information
 (reg-event-fx
   :update-conv
-  [trim-v]
+  [conv?-scroll trim-v]
   (fn [{:keys [db]} [conv]]
     ;; (println "Update conv" conv)
     ;; (when-not (-> db :people ))
     {:db (assoc-in db 
                    [:convs (:id conv)]
-                   conv)
-     ;; scroll to bottom if a conversation
-     :scroll-to-bottom (= :conv
-                          (first (:page db)))}))
+                   conv)}))
 
 ;;
 ;; Update a pending sent message with the fully
 ;;  inflated version
-(reg-event-fx
+(reg-event-db
   :update-sent
-  [(conv-path :events) trim-v]
-  (fn [{:keys [db]} [conv-id sent-msg-event]]
-    {:db (let [target-cgid (-> sent-msg-event :self_event_state :client_generated_id)]
-           (vec
-             (map
-               (fn [event]
-                 (if (= (:client-generated-id event)
-                        target-cgid)
-                   ;; swap in the updated message
-                   sent-msg-event
-                   ;; return the original
-                   event))
-               db)))
-     ;; scroll to bottom if a conversation
-     :scroll-to-bottom (= :conv
-                          (first (:page db)))}))
+  [conv?-scroll (conv-path :events) trim-v]
+  (fn [events [conv-id sent-msg-event]]
+    (let [target-cgid (-> sent-msg-event :self_event_state :client_generated_id)]
+      (->> events
+           (map 
+             (fn [event]
+               (if (= (:client-generated-id event)
+                      target-cgid)
+                 ;; swap in the updated message
+                 sent-msg-event
+                 ;; return the original
+                 event)))
+           vec))))
 
 (reg-event-db
   :set-self
   [trim-v]
   (fn [db [info]] 
     (assoc db :self info)))
-
-;; -- Events ------------------------------------------------------------------
-
-(reg-event-fx
-  :select-conv
-  [trim-v]
-  (fn [_ [conv-id]]
-    {:ipc [:select-conv conv-id]}))
-
-(reg-event-fx
-  :send-html
-  [(conv-path :events) trim-v]
-  (fn [{:keys [db]} [conv-id msg-html]]
-    (let [msg (html->msg msg-html)]
-      #_(println db, (msg->event msg))
-      {:db (concat db [(msg->event msg)])
-       :ipc [:send conv-id msg]
-       :scroll-to-bottom true})))
 
 ;; -- Actions -----------------------------------------------------------------
 
@@ -150,3 +150,18 @@
   :scroll-to-bottom
   (fn [_ _]
     {:scroll-to-bottom :do!}))
+
+(reg-event-fx
+  :select-conv
+  [trim-v]
+  (fn [_ [conv-id]]
+    {:ipc [:select-conv conv-id]}))
+
+(reg-event-fx
+  :send-html
+  [conv?-scroll (conv-path :events) trim-v]
+  (fn [{:keys [db]} [conv-id msg-html]]
+    (let [msg (html->msg msg-html)]
+      {:db (concat db [(msg->event msg)])
+       :ipc [:send conv-id msg]})))
+

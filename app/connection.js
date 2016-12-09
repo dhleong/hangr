@@ -67,6 +67,7 @@ class ConnectionManager extends EventEmitter {
         super();
 
         this.connected = false;
+        this._pendingSents = {};
     }
 
     /** Be connected */
@@ -78,6 +79,18 @@ class ConnectionManager extends EventEmitter {
             setTimeout(this._reconnect.bind(this), this._backoff);
             this.emit('reconnecting in', this._backoff);
             this._backoff *= 2;
+        });
+
+        client.on('chat_message', msg => {
+            var clientGeneratedId = msg.self_event_state.client_generated_id;
+            if (this._pendingSents[clientGeneratedId]) {
+                // we just sent this; don't bother notifying
+                delete this._pendingSents[clientGeneratedId]; // cleanup
+                return;
+            }
+            
+            console.log(`*** << ${JSON.stringify(msg, null, ' ')}`);
+            this.emit('received', msg.conversation_id.id, msg);
         });
 
         // go!
@@ -120,6 +133,7 @@ class ConnectionManager extends EventEmitter {
             }
         });
 
+        this._pendingSents[clientGeneratedId] = true;
         var segments = builder.toSegments();
         this.client.sendchatmessage(convId, segments, 
             imageId, otrStatus, clientGeneratedId, deliveryMedium, messageActionType)
@@ -177,9 +191,7 @@ ConnectionManager.CHAT_EVENTS = [
     // argument of the event MUST be the chat id,
     // and the rest will be passed along
     'sent',
-];
-ConnectionManager.FRIENDS_EVENTS = [
-    // events only the friends window wants
+    'received',
 ];
 
 module.exports = ConnectionManager;

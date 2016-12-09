@@ -86,9 +86,15 @@
    
    :sent
    (fn [_ sent-msg-event]
-     (.log js/console "Sent " sent-msg-event)
+     (.log js/console "Sent" sent-msg-event)
      (let [ev (event->clj sent-msg-event)]
-       (dispatch [:update-sent (-> ev :conversation_id :id) ev])))})
+       (dispatch [:update-sent (-> ev :conversation_id :id) ev])))
+   
+   :received
+   (fn [_ received-msg-event]
+     (.log js/console "Received" received-msg-event)
+     (let [ev (event->clj received-msg-event)]
+       (dispatch [:receive-msg (-> ev :conversation_id :id) ev])))})
 
 ;; NB: since this isn't really an SPA, we handle
 ;;  the hangouts connection in the parent process

@@ -170,10 +170,6 @@ app.on('ready', () => {
         });
     });
 
-    ConnectionManager.FRIENDS_EVENTS.forEach(event => {
-        connMan.forwardEvent(event, mainWindow.send.bind(mainWindow));
-    });
-
     // begin connecting immediately
     connMan.open();
 });
