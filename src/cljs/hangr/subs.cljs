@@ -30,7 +30,7 @@
     (cond
       ; still connecting; override the page
       ; HACK: only show "connecting" for the friends list
-      (and (= :friends (:page page)) connecting?) 
+      (and (= :friends (first page)) connecting?) 
       [:connecting]
       ; still loading core data; override the page
       (or (nil? self) (nil? convs))
