@@ -134,6 +134,10 @@ class DockedWindow {
         Manager.adopt(this);
     }
 
+    close() {
+        this.win.close();
+    }
+
     get height() {
         return this.win.getSize()[1];
     }

@@ -53,6 +53,16 @@ var fileMenu = {
     label: 'File',
     submenu: [
         {
+            label: 'Close Window',
+            accelerator: acceleratorKey + '+W',
+            click: function() {
+                var active = dockManager.findActive();
+                if (active) {
+                    active.close();
+                }
+            }
+        },
+        {
             label: 'Quit',
             accelerator: acceleratorKey + '+Q',
             click: function() {
