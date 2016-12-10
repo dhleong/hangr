@@ -83,6 +83,11 @@
    (fn [_ info]
      (.log js/console "Got self info" info)
      (dispatch [:set-self (self->clj info)]))
+
+   :send
+   (fn [_ conv-id sending-msg-event]
+     (.log js/console "Sending..." sending-msg-event)
+     (dispatch [:sending-msg conv-id (js->real-clj sending-msg-event)]))
    
    :sent
    (fn [_ sent-msg-event]

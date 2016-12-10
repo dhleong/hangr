@@ -181,8 +181,13 @@
        :ipc [:send conv-id msg]})))
 
 (reg-event-db
+  :sending-msg
+  [(conv-path :events) trim-v]
+  (fn [events [conv-id msg]]
+    (concat events [(msg->event msg)])))
+
+(reg-event-db
   :set-focused
   [trim-v]
   (fn [db [focused?]]
-    (println "Focused <-" focused?)
-    (assoc db :focused?  focused?)))
+    (assoc db :focused? focused?)))

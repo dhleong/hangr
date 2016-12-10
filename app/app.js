@@ -134,6 +134,10 @@ ipcMain.on('select-conv', (e, convId) => {
 
 ipcMain.on('send', (e, convId, msg) => {
     console.log(`Request: send(${convId}, ${JSON.stringify(msg)})`);
+    // forward to the mainWindow so it can update friends list
+    mainWindow.send('send', convId, msg);
+
+    // do this last, because it modifies msg
     connMan.send(convId, msg);
 });
 

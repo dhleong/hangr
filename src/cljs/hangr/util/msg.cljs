@@ -70,7 +70,7 @@
     {:segment
      (map
        (fn [[type & args]]
-         (case type
+         (case (keyword type)
            :text {:type "TEXT"
                   :text (first args)}
            :link {:type "LINK"
@@ -79,4 +79,5 @@
                   :link_data
                   {:link_target (first args)}}
            :newline {:type "NEWLINE"}))
-       (rest msg))}}})
+       (rest msg))}}
+   :timestamp (* (.now js/Date) 1000)})

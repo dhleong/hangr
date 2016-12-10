@@ -4,6 +4,7 @@
   (:require [clojure.string :as string]
             [reagent.core  :as reagent]
             [re-frame.core :refer [subscribe dispatch]]
+            [hangr.util.notification :refer [msg->notif]]
             [hangr.views.conversation :refer [conversation conversation-title]]))
 
 ;; -- Loading Spinner ---------------------------------------------------------
@@ -24,7 +25,13 @@
        {:on-click 
         #(dispatch [:select-conv (:id conv)])}
        [:div.name
-        [conversation-title conv]]])))
+        [conversation-title conv]]
+       [:div.preview
+        ;; FIXME: use a more appropriate function
+        ;; TODO: support images
+        (msg->notif (->> conv
+                         :events
+                         last))]])))
 
 (defn friends-list
   []

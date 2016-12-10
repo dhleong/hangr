@@ -56,7 +56,7 @@
            ;; sort with most recent first
            (sort-by 
              (fn [conv]
-               (-> conv :events last :timestamp))
+               (long (-> conv :events last :timestamp)))
              ;; compare in reverse order (higher timestamps first)
              #(compare %2 %1))))))
 

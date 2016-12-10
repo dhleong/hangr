@@ -139,12 +139,24 @@ class ConnectionManager extends EventEmitter {
             imageId, otrStatus, clientGeneratedId, deliveryMedium, messageActionType)
         .done(result => {
             console.log(`SENT(${JSON.stringify(result, null, ' ')}):`, segments);
-            this.emit('sent', 
-                result.created_event.conversation_id.id,
-                result.created_event);
+            this._appendToConversation(convId, result.created_event);
+            this.emit('sent', convId, result.created_event);
         }, e => {
             console.warn(`ERROR SENDING (${JSON.stringify(segments)}):`, e);
         });
+    }
+
+    _appendToConversation(convId, event) {
+        if (!this.lastConversations) return;
+        var conv = this.lastConversations.find(conv => 
+                (conv.conversation_id && conv.conversation_id.id === convId) || 
+                (conv.conversation && conv.conversation.conversation_id.id === convId));
+        if (!conv) {
+            console.warn("Couldn't find conversation", convId);
+            return;
+        }
+
+        conv.event.push(event);
     }
 
     _reconnect() {
