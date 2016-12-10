@@ -90,6 +90,7 @@ class ConnectionManager extends EventEmitter {
             }
             
             console.log(`*** << ${JSON.stringify(msg, null, ' ')}`);
+            this._appendToConversation(msg.conversation_id.id, msg);
             this.emit('received', msg.conversation_id.id, msg);
         });
 
