@@ -1,9 +1,10 @@
 (ns ^{:author "Daniel Leong"
       :doc "Effects"}
   hangr.fx
-  (:require [re-frame.core :refer [reg-fx]]
+  (:require [re-frame.core :refer [reg-fx dispatch]]
             [goog.dom :refer [getElement]]
-            [goog.fx.dom :refer [Scroll]]))
+            [goog.fx.dom :refer [Scroll]]
+            [hangr.util.notification :refer [notify! conv-msg->title msg->notif]]))
 
 (defonce electron (js/require "electron"))
 (defonce ipc-renderer (.-ipcRenderer electron))
@@ -25,6 +26,17 @@
   :open-external
   (fn [url]
     (.openExternal shell url)))
+
+(reg-fx
+  :notify-chat!
+  (fn [[conv msg]]
+    (when msg
+      (notify!
+        {:title (conv-msg->title conv msg)
+         :message (msg->notif msg)
+         :reply? "Reply"}
+        (fn [reply]
+          (dispatch [:send-html (:id conv) reply]))))))
 
 (reg-fx
   :scroll-to-bottom

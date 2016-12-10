@@ -35,10 +35,18 @@
 
 (defn mount-root
   []
+  ; core DB init
   (dispatch-sync [:initialize-db])
   #_(when js/goog.DEBUG 
     (enable-re-frisk!))
+  ; track window focused-ness
+  (set! (.-onfocus js/window) 
+        #(dispatch [:set-focused true]))
+  (set! (.-onblur js/window) 
+        #(dispatch [:set-focused false]))
+  ; init the connection
   (connection/init!)
+  ; start rendering
   (reagent/render [hangr.views/main] (.getElementById js/document "app")))
 
 (defn init!

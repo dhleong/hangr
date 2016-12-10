@@ -5,6 +5,7 @@
   "dependencies": {
     "fs-extra": "0.26.5",
     "hangupsjs": "^1.3.3",
+    "node-notifier": "mikaelbr/node-notifier#36a43bb",
     "promise": "^7.1.1",
     "url-regex": "^4.0.0"
   },

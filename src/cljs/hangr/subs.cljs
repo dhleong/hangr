@@ -27,7 +27,6 @@
   :<- [::convs]
   :<- [::page]
   (fn [[connecting? self convs page] _]
-    (println "!!!!PAGE=" page)
     (cond
       ; still connecting; override the page
       ; HACK: only show "connecting" for the friends list

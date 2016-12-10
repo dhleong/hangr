@@ -7,4 +7,5 @@
    :page [:connecting]
    :people {}
    :self nil
-   :convs nil})
+   :convs nil
+   :focused? false})

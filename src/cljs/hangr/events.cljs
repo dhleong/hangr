@@ -59,11 +59,21 @@
     :after (fn conv-scroll-after
              [context]
              (let [db (get-coeffect context :db)] 
-               (println "PAGE=" (:page db))
                (-> context
                    (assoc-effect :scroll-to-bottom
                                  (= :conv
                                     (first (:page db)))))))))
+
+(def inject-self
+  "Inject the :self var into the context"
+  (->interceptor
+    :id :inject-self
+    :before (fn inject-self
+              [context]
+              (let [db (get-coeffect context :db)]
+                (println "SELF=" (:self db))
+                (-> context
+                    (assoc-coeffect :self (:self db)))))))
 
 ;; -- Helpers -----------------------------------------------------------------
 
@@ -92,13 +102,18 @@
 ;;
 ;; Receive a new chat message. This may trigger
 ;;  a fetch of people information
-(reg-event-db
+(reg-event-fx
   :receive-msg
-  [conv?-scroll (conv-path :events) trim-v]
-  (fn [events [conv-id msg]]
-    (concat 
-      events
-      [msg])))
+  [inject-self conv?-scroll (conv-path) trim-v]
+  (fn [{:keys [db self]} [conv-id msg]]
+    (let [conv db] ;; see conv-path
+      {:db (update conv :events
+                   concat [msg])
+       :notify-chat!
+       (when-not (or (:focused? db)
+                     (= (id->key (:sender_id msg))
+                        (:id self)))
+         [conv msg])})))
 
 ;;
 ;; Update a conversation. This may trigger
@@ -165,3 +180,9 @@
       {:db (concat db [(msg->event msg)])
        :ipc [:send conv-id msg]})))
 
+(reg-event-db
+  :set-focused
+  [trim-v]
+  (fn [db [focused?]]
+    (println "Focused <-" focused?)
+    (assoc db :focused?  focused?)))
