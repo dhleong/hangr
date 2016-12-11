@@ -60,6 +60,7 @@
       (notify!
         :title (conv-msg->title conv msg)
         :message (msg->notif msg)
+        :icon nil ;; TODO sender's avatar
         :reply? "Reply"
         :on-reply
         (fn [reply]

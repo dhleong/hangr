@@ -4,6 +4,7 @@
   (:require [hangr.util :refer [js->real-clj id->key]]))
 
 (defonce notifier (js/require "node-notifier"))
+(defonce bundle-id (.-bundleId (js/require (str js/__dirname "/package.json"))))
 
 (defn notify!
   "Raise a native notification. Takes an options map
@@ -11,8 +12,7 @@
   user provides a text reply to the notification (macOS only)."
   [& {:keys [title message icon reply? timeout
              on-reply on-click]
-      :or {icon (str js/__dirname "app/img/logo-dark@4x.png")
-           timeout 20}}] ;; so terminal-notifier doesn't linger if ignored
+      :or {timeout 20}}] ;; so terminal-notifier doesn't linger if ignored
   {:pre [(string? title)
          (string? message)]}
   (-> notifier
@@ -21,7 +21,8 @@
              :message message 
              :icon icon
              :reply reply?
-             :timeout timeout}
+             :timeout timeout
+             :sender bundle-id}
         (fn [e resp & [reply]]
           (let [reply (js->real-clj reply)]
             (cond

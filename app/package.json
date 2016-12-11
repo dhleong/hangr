@@ -1,6 +1,7 @@
 {
   "name" : "hangr",
   "version" : "0.0-DEV",
+  "bundleId": "com.github.hangr",
   "build-commit" : "0000",
   "build-date" : "0000-00-00",
   "main" : "app.js",

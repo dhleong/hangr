@@ -172,7 +172,7 @@ function getBasicReleaseInfo(build, paths) {
     "asar": true,
     "out": paths.release,
     "overwrite": true,
-    "app-bundle-id": "com.example",
+    "app-bundle-id": packageJson.bundleId,
     "app-version": build.version,
     "version-string": {
       "ProductVersion": build.version,
@@ -185,6 +185,7 @@ function getBasicReleaseInfo(build, paths) {
 function stampRelease(build, paths) {
   grunt.log.writeln("\nStamping release with build metadata...");
   var pkg = grunt.file.readJSON(paths.releasePkg);
+  pkg.bundleId = packageJson.bundleId;
   pkg.version = build.version;
   pkg["build-commit"] = build.commit;
   pkg["build-date"] = build.date;
@@ -326,11 +327,11 @@ grunt.registerTask('release-mac', function() {
   var cb = null;
   if (os === "mac") {
     cb = function (f) {
-      var dirName = path.join(f, "..")
+      var dirName = path.join(f, "..");
       var dmgName = path.join(dirName, path.basename(dirName) + ".dmg");
       grunt.config.set("appdmg", {
         options: {
-          "title": "hangr",
+          "title": packageJson.name,
           "background": "scripts/dmg/TestBkg.png",
           "icon-size": 80,
           "contents": [
@@ -343,13 +344,13 @@ grunt.registerTask('release-mac', function() {
         }
       });
       grunt.task.run("appdmg");
-    }
+    };
   }
   var opts = {
     "arch": "x64",
     "platform": "darwin",
     "icon": "app/img/logo.icns"
-  }
+  };
   defineRelease(done, opts, cb);
 });
 
