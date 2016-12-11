@@ -58,11 +58,15 @@
   (fn [[conv msg]]
     (when msg
       (notify!
-        {:title (conv-msg->title conv msg)
-         :message (msg->notif msg)
-         :reply? "Reply"}
+        :title (conv-msg->title conv msg)
+        :message (msg->notif msg)
+        :reply? "Reply"
+        :on-reply
         (fn [reply]
-          (dispatch [:send-html (:id conv) reply]))))))
+          (dispatch [:send-html (:id conv) reply]))
+        :on-click
+        (fn []
+          (dispatch [:select-conv (:id conv)]))))))
 
 (reg-fx
   :scroll-to-bottom

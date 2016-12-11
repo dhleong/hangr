@@ -9,12 +9,10 @@
   "Raise a native notification. Takes an options map
   and, optionally, a callback that's called when the
   user provides a text reply to the notification (macOS only)."
-  [{:keys [title message icon reply?]
-    :or {title nil 
-         message nil
-         icon (str js/__dirname "app/img/logo.ico")
-         reply? nil}} 
-   & [reply-cb]]
+  [& {:keys [title message icon reply? timeout
+             on-reply on-click]
+      :or {icon (str js/__dirname "app/img/logo-dark@4x.png")
+           timeout 20}}] ;; so terminal-notifier doesn't linger if ignored
   {:pre [(string? title)
          (string? message)]}
   (-> notifier
@@ -22,10 +20,21 @@
         #js {:title title
              :message message 
              :icon icon
-             :reply reply?}
+             :reply reply?
+             :timeout timeout}
         (fn [e resp & [reply]]
-          (when-let [reply (js->real-clj reply)]
-            (reply-cb (:activationValue reply)))))))
+          (let [reply (js->real-clj reply)]
+            (cond
+              ;; did they reply inline?
+              (and on-reply (:activationValue reply)) 
+              (on-reply (:activationValue reply))
+              ;; nope; did they tap to open the notif?
+              (and (= "activate" resp)
+                   on-click)
+              (on-click)
+              ;; else, ignored...
+              :else 
+              nil)))))) 
 
 (defn conv-msg->title
   "Pick a 'Title' for the `msg` received in the
