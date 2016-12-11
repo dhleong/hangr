@@ -2,7 +2,7 @@
 
 const electron = require('electron'),
       fs = require('fs-extra'),
-      {app, dialog, ipcMain, Menu} = electron,
+      {app, dialog, ipcMain, Menu, Tray} = electron,
       packageJson = require(__dirname + '/package.json'),
 
       {dockManager, DockedWindow} = require('./docked-window'),
@@ -25,6 +25,7 @@ const acceleratorKey = "CommandOrControl";
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the javascript object is GCed.
 var mainWindow = null;
+var systemTray = null;
 
 // make sure app.getDataPath() exists
 // https://github.com/oakmac/cuttle/issues/92
@@ -49,7 +50,7 @@ function showVersion() {
     });
 }
 
-var fileMenu = {
+const fileMenu = {
     label: 'File',
     submenu: [
         {
@@ -72,7 +73,7 @@ var fileMenu = {
     ]
 };
 
-var helpMenu = {
+const helpMenu = {
     label: 'Help',
     submenu: [
         {
@@ -82,7 +83,7 @@ var helpMenu = {
     ]
 };
 
-var debugMenu = {
+const debugMenu = {
     label: 'Debug',
     submenu: [
         {
@@ -91,13 +92,23 @@ var debugMenu = {
             click: function() {
                 var active = dockManager.findActive();
                 if (active) active.toggleDevTools();
-                else mainWindow.toggleDevTools();
+                else if (mainWindow) mainWindow.toggleDevTools();
             }
         }
     ]
 };
 
-var menuTemplate = [fileMenu, debugMenu, helpMenu];
+const menuTemplate = [fileMenu, debugMenu, helpMenu];
+
+
+const trayContextMenu = [
+    {
+        label: 'Quit',
+        click: function() {
+            app.quit();
+        }
+    }
+];
 
 //------------------------------------------------------------------------------
 // Util
@@ -107,6 +118,12 @@ function urlForConvId(convId) {
     return `/c/${convId}`;
 }
 
+function showMainWindow() {
+    mainWindow = new DockedWindow();
+    mainWindow.on('closed', () => {
+        mainWindow = null;
+    });
+}
 
 //------------------------------------------------------------------------------
 // Register IPC Calls from the Renderers
@@ -145,7 +162,7 @@ ipcMain.on('select-conv', (e, convId) => {
 ipcMain.on('send', (e, convId, msg) => {
     console.log(`Request: send(${convId}, ${JSON.stringify(msg)})`);
     // forward to the mainWindow so it can update friends list
-    mainWindow.send('send', convId, msg);
+    if (mainWindow) mainWindow.send('send', convId, msg);
 
     // do this last, because it modifies msg
     connMan.send(convId, msg);
@@ -156,13 +173,13 @@ ipcMain.on('send', (e, convId, msg) => {
 //------------------------------------------------------------------------------
 
 app.on('window-all-closed', () => {
-    // TODO actually, probably not
-    app.quit();
+    // just consume the event so electron doesn't
+    // close the app (the default behavior)
 });
 
 app.on('ready', () => {
-    // TODO the mainWindow is special and should only hide, not close
-    mainWindow = new DockedWindow();
+    // show the main window
+    showMainWindow();
 
     Menu.setApplicationMenu(
         Menu.buildFromTemplate(menuTemplate));
@@ -178,7 +195,7 @@ app.on('ready', () => {
 
     ConnectionManager.CHAT_EVENTS.forEach(event => {
         connMan.forwardEvent(event, function(e, convId, ...args) {
-            mainWindow.send(event, ...args);
+            if (mainWindow) mainWindow.send(event, ...args);
             var convWin = dockManager.findWithUrl(urlForConvId(convId));
             if (convWin) convWin.send(event, ...args);
         });
@@ -186,4 +203,29 @@ app.on('ready', () => {
 
     // begin connecting immediately
     connMan.open();
+
+    // TODO 'click' doesn't work consistently on linux,
+    // so we should set the context menu for that; on OSX,
+    // though, we want to be able to just click the system
+    // menu icon to open the friends list
+    const trayMenu = Menu.buildFromTemplate(trayContextMenu);
+    systemTray = new Tray(__dirname + '/img/logo-light.png');
+    systemTray.on('click', (e) => {
+        if (e.altKey) {
+            systemTray.popUpContextMenu(trayMenu);
+            return;
+        }
+
+        if (mainWindow) {
+            mainWindow.show();
+        } else {
+            showMainWindow();
+        }
+    });
+    systemTray.on('right-click', () => {
+        systemTray.popUpContextMenu(trayMenu);
+    });
+
+    // hide the dock icon; we have a tray icon!
+    app.dock.hide();
 });

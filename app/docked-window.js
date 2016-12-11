@@ -98,6 +98,12 @@ class DockManager {
 
 const Manager = new DockManager();
 
+const DELEGATED_METHODS = [
+    'on', 'once', 'removeListener', 'removeAllListeners',
+    'close', 'focus', 'show',
+    'getURL', 'setPosition', 
+    'openDevTools', 'toggleDevTools',
+];
 class DockedWindow {
     constructor(url = '/') {
         this.url = url;
@@ -124,18 +130,13 @@ class DockedWindow {
         // and load the index.html of the app.
         win.loadURL('file://' + __dirname + '/index.html#' + url);
 
-        // delegate some event stuff
-        this.on = win.on.bind(win);
-        this.once = win.once.bind(win);
-        this.removeListener = win.removeListener.bind(win);
-        this.removeAllListeners = win.removeAllListeners.bind(win);
+        // delegate some stuff
+        DELEGATED_METHODS.forEach(methodName => {
+            this[methodName] = win[methodName].bind(win);
+        });
 
         // LAST:
         Manager.adopt(this);
-    }
-
-    close() {
-        this.win.close();
     }
 
     get height() {
@@ -150,22 +151,6 @@ class DockedWindow {
     send(/* event, ... args */) {
         var contents = this.win.webContents;
         contents.send.apply(contents, Array.from(arguments));
-    }
-
-    getURL() {
-        return this.win.getURL();
-    }
-
-    setPosition(x, y, animate) {
-        this.win.setPosition(x, y, animate);
-    }
-
-    openDevTools() {
-        this.win.openDevTools();
-    }
-
-    toggleDevTools() {
-        this.win.toggleDevTools();
     }
 }
 
