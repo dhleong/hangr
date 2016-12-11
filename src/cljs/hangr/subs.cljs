@@ -3,12 +3,31 @@
   hangr.subs
   (:require [re-frame.core :refer [reg-sub trim-v subscribe]]))
 
+;; -- Helpers -----------------------------------------------------------------
+
+(defn fill-members
+  "Given a conv and a map of id -> person `people`,
+  fill out the :members array to include as much
+  info about each member as possible"
+  [conv people]
+  (update 
+    conv
+    :members
+    (partial
+      map
+      (fn [member]
+        (let [person (get people (:id member))]
+          (if (:name person) ;; don't override with worse info
+            person
+            member))))))
+
 ;; -- Simple subscriptions ----------------------------------------------------
 ;; NOTE: keywords are functions! In this shortcut, they act on db
 ;;  to just return a specific key
 
-(reg-sub :connecting?  :connecting?)
+(reg-sub :connecting? :connecting?)
 (reg-sub :self :self) 
+(reg-sub :people :people) 
 
 ;; -- Internal subscriptions --------------------------------------------------
 ;; Note the use of namespaced keywords to get the raw field. Actual
@@ -43,7 +62,8 @@
   :convs
   :<- [:self]
   :<- [::convs]
-  (fn [[self convs] _]
+  :<- [:people]
+  (fn [[self convs people] _]
     (when (and self convs)
       (->> convs
            vals
@@ -58,13 +78,16 @@
              (fn [conv]
                (long (-> conv :events last :timestamp)))
              ;; compare in reverse order (higher timestamps first)
-             #(compare %2 %1))))))
+             #(compare %2 %1))
+           ;; fill out the members
+           (map #(fill-members % people))))))
 
 (reg-sub
   :conv
   :<- [:self]
   :<- [::convs]
-  (fn [[self convs] [_ id]]
+  :<- [:people]
+  (fn [[self convs people] [_ id]]
     (when (and self convs)
       (-> convs
           (get id)
@@ -78,4 +101,5 @@
                       (and
                         (not= (:sender %)
                               (:id self))
-                        (not (:client-generated-id %))))))))))
+                        (not (:client-generated-id %))))))
+          (fill-members people)))))

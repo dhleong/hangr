@@ -83,10 +83,14 @@
 (reg-event-db
   :initialize-db
   (fn [db _]
-    (assoc default-value
-           :page
-           (:page (or db
-                      default-value)))))
+    ;; NOTE: we don't always want to start from scratch
+    ;; when developing; some values we should copy over
+    ;; if possible
+    (let [copy-source (or db
+                          default-value)]
+      (assoc default-value
+             :page (:page copy-source)
+             :people (:people copy-source)))))
 
 (reg-event-db
   :navigate
@@ -122,11 +126,26 @@
   :update-conv
   [conv?-scroll trim-v]
   (fn [{:keys [db]} [conv]]
-    ;; (println "Update conv" conv)
-    ;; (when-not (-> db :people ))
     {:db (assoc-in db 
                    [:convs (:id conv)]
-                   conv)}))
+                   conv)
+     :get-entities (let [known-ids (-> db :people keys set)
+                         id-known? (partial contains? known-ids)]
+                     (->> conv
+                          :members
+                          (map :id)
+                          (remove id-known?)
+                          seq))}))
+
+;;
+;; Update a person
+(reg-event-db
+  :update-person
+  [trim-v]
+  (fn [db [person]]
+    (assoc-in db 
+              [:people (:id person)]
+              person)))
 
 ;;
 ;; Update a pending sent message with the fully

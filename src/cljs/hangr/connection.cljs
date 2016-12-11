@@ -7,6 +7,16 @@
 (defonce electron (js/require "electron"))
 (defonce ipc (.-ipcRenderer electron))
 
+(defn entity->clj
+  [js-entity]
+  (-> js-entity
+      js->real-clj
+      (as-> entity
+        (let [props (:properties entity)]
+          (assoc props
+                 :name (:display_name props)
+                 :id (id->key (:id entity)))))))
+
 (defn event->clj
   "Converts an event object (which may be a JS type OR already
   a Clojure map) into a format appropriate for use in hangr"
@@ -69,9 +79,16 @@
 
 (def ipc-listeners
   {:connected
-   (fn on-connected[]
+   (fn on-connected []
      (println "Connected!")
      (dispatch [:connected]))
+
+   :got-entities
+   (fn on-entities
+     [_ entities]
+     (.log js/console "Got entities" entities)
+     (doseq [person (map entity->clj entities)]
+       (dispatch [:update-person person])))
 
    :recent-conversations
    (fn [_ convs]

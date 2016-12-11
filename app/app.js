@@ -129,6 +129,10 @@ function showMainWindow() {
 // Register IPC Calls from the Renderers
 //------------------------------------------------------------------------------
 
+ipcMain.on('get-entities', (e, ids) => {
+    connMan.getEntities(ids);
+});
+
 ipcMain.on('request-status', (e) => {
     // TODO automate this stuff:
     if (connMan.connected) {
@@ -150,7 +154,7 @@ ipcMain.on('select-conv', (e, convId) => {
     console.log("Request: select", url);
     var existing = dockManager.findWithUrl(url);
     if (existing) {
-        // TODO focus/restore
+        existing.show();
         return;
     }
 

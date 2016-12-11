@@ -57,6 +57,7 @@ body {
 //
 
 ul#conversations {
+    @avatar-size: 32px;
 
     margin: 0;
     padding: 0;
@@ -68,6 +69,25 @@ ul#conversations {
         list-style: none;
         margin: 0;
         padding: 0.5em 8px;
+
+        .avatar {
+            width: @avatar-size;
+            height: @avatar-size;
+            float: left;
+            vertical-align: middle;
+            border-radius: @avatar-size / 2;
+            margin-right: 8px;
+
+        }
+
+        div.avatar {
+            background-color: #999;
+            color: #fff;
+            font-size: 10pt;
+            line-height: @avatar-size;
+            text-align: center;
+            vertical-align: middle;
+        }
 
         .name {
             font-size: 12pt; 

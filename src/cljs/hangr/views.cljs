@@ -5,7 +5,8 @@
             [reagent.core  :as reagent]
             [re-frame.core :refer [subscribe dispatch]]
             [hangr.util.notification :refer [msg->notif]]
-            [hangr.views.conversation :refer [conversation conversation-title]]))
+            [hangr.views.conversation :refer [conversation conversation-title]]
+            [hangr.views.friends-list :refer [friends-list]]))
 
 ;; -- Loading Spinner ---------------------------------------------------------
 
@@ -14,37 +15,6 @@
   [:div#loading
    [:div.loader]
    reason])
-
-;; -- Friends List ------------------------------------------------------------
-
-(defn friends-list-item
-  [conv]
-  (let [self (subscribe [:self])]
-    (fn [conv]
-      [:li.conversation
-       {:on-click 
-        #(dispatch [:select-conv (:id conv)])}
-       [:div.name
-        [conversation-title conv]]
-       [:div.preview
-        ;; FIXME: use a more appropriate function
-        ;; TODO: support images
-        (msg->notif (->> conv
-                         :events
-                         last))]])))
-
-(defn friends-list
-  []
-  (let [convs (subscribe [:convs])]
-    (fn []
-      (let [convs @convs]
-        (if (seq convs)
-          ;; we have conversations
-          [:ul#conversations
-           (for [c convs] 
-             ^{:key (:id c)} [friends-list-item c])]
-          ;; nothing : ()
-          [:div "No conversations"])))))
 
 ;; -- No-such-page handler ----------------------------------------------------
 

@@ -70,6 +70,16 @@ class ConnectionManager extends EventEmitter {
         this._pendingSents = {};
     }
 
+    getEntities(ids) {
+        this.client.getentitybyid(ids)
+        .done(result => {
+            console.log(`gotEntities(${JSON.stringify(result, null, ' ')}})`);
+            this.emit('got-entities', result.entities);
+        }, e => {
+            console.warn(`ERROR: getEntities(${JSON.stringify(ids)}})`, e);
+        });
+    }
+
     /** Be connected */
     open() {
         this._backoff = INITIAL_BACKOFF;
@@ -197,6 +207,7 @@ ConnectionManager.GLOBAL_EVENTS = [
     'reconnecting',
     'self-info',
     'recent-conversations',
+    'got-entities',
 ];
 ConnectionManager.CHAT_EVENTS = [
     // events only the friends window wants
