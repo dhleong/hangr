@@ -61,9 +61,12 @@
                ;; clean up `:event` and put it in :events
                :events
                (->> (:event c)
-                    (remove #(clojure.string/starts-with?
-                               (:event_id %)
-                               "observed_"))
+                    (remove #(let [ev-id (:event_id %)]
+                               (or
+                                 (not ev-id)
+                                 (clojure.string/starts-with?
+                                   ev-id
+                                   "observed_"))))
                     (map event->clj))))
       ;; remove some unnecessary keys
       (dissoc :event)))

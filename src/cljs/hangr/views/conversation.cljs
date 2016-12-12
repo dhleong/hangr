@@ -4,7 +4,7 @@
   (:require [clojure.string :as string]
             [reagent.core  :as reagent]
             [re-frame.core :refer [subscribe dispatch]]
-            [hangr.util :refer [click-dispatch]]))
+            [hangr.util :refer [click-dispatch id->key]]))
 
 ;; -- Attachment Types --------------------------------------------------------
 
@@ -31,6 +31,22 @@
      {:href url
       :on-click (click-dispatch [:open-external url])}
      (:text segment)]))
+
+;; -- Hangout Events ----------------------------------------------------------
+
+(defn hangout-event-end
+  [member-map self event hangouts-ev]
+  (let [participant-ids (->> hangouts-ev :participant_id (map id->key) set)]
+    (if (contains?
+          participant-ids
+          (:id self))
+      [:div "📞 You were in a call with "
+       (->> participant-ids
+            (remove (partial = (:id self)))
+            (map (comp :name member-map))
+            (string/join ", "))]
+      [:div "✖️ You missed a call from "
+       (->> event :sender_id id->key member-map :name)])))
 
 ;; -- Conversation Item Facade ------------------------------------------------
 
@@ -63,9 +79,11 @@
 
 (defn conversation
   [id]
-  (let [conv (subscribe [:conv id])]
+  (let [conv (subscribe [:conv id])
+        self (subscribe [:self])]
     (fn []
       (let [conv @conv
+            self @self
             member-map
             (->> conv
                  :members
@@ -74,18 +92,22 @@
         [:div#conversation
          [:ul#events
           (for [event (:events conv)]
-            (let [class-name 
-                  (->>
-                    [(if (:incoming? event)
-                       "incoming"
-                       "outgoing")
-                     (when (:client-generated-id event)
-                       "pending")]
-                    (filter identity)
-                    (string/join " "))]
-              ^{:key (:id event)} [:li.event
-                                   {:class class-name}
-                                   [conversation-item event]]))]
+            (if-let [hangouts-ev (:hangout_event event)]
+              (when (= "END_HANGOUT" (:event_type hangouts-ev))
+                ^{:key (:id event)} [:li.hangout.event
+                                     [hangout-event-end member-map self event hangouts-ev]])
+              (let [class-name 
+                    (->>
+                      [(if (:incoming? event)
+                         "incoming"
+                         "outgoing")
+                       (when (:client-generated-id event)
+                         "pending")]
+                      (filter identity)
+                      (string/join " "))]
+                ^{:key (:id event)} [:li.event
+                                     {:class class-name}
+                                     [conversation-item event]])))]
          [:div#composer
           [:div.input
            {:content-editable true

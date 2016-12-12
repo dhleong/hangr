@@ -71,6 +71,7 @@ class ConnectionManager extends EventEmitter {
     }
 
     getEntities(ids) {
+        // TODO attempt to serve from local cache?
         this.client.getentitybyid(ids)
         .done(result => {
             console.log(`gotEntities(${JSON.stringify(result, null, ' ')}})`);
@@ -86,6 +87,7 @@ class ConnectionManager extends EventEmitter {
 
         var client = this.client = new Client();
         client.on('connect_failed', () => {
+            console.log("connection: failed; reconnecting after", this._backoff);
             setTimeout(this._reconnect.bind(this), this._backoff);
             this.emit('reconnecting in', this._backoff);
             this._backoff *= 2;

@@ -13,6 +13,7 @@
 
 (defonce get-entities-queue (atom []))
 (defonce get-entities-timer (atom nil))
+(def get-entities-delay 10)
 
 (defn- ipc!
   [event & args]
@@ -46,7 +47,9 @@
       (swap! get-entities-queue concat (map (comp :chat_id key->id) ids))
       ;; if we don't already have a running timer, start one
       (when (nil? @get-entities-timer)
-        (reset! get-entities-timer (js/setTimeout run-get-entities-queue 100))))))
+        (reset! get-entities-timer 
+                (js/setTimeout run-get-entities-queue 
+                               get-entities-delay))))))
 
 (reg-fx
   :open-external

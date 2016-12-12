@@ -128,6 +128,16 @@ ul#conversations {
             overflow: hidden;
             display: block;
 
+            &.hangout {
+                .roboto-condensed();
+
+                background-color: #f8f8f8;
+                font-size: 10pt;
+                text-align: center;
+                margin: @message-margin 0;
+                padding: (@message-margin / 2) @message-margin;
+            }
+
             &.incoming {
                 .event-item {
                     background-color: #f0f0f0;

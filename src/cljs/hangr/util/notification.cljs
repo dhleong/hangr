@@ -54,11 +54,35 @@
 (defn msg->notif
   "Extract text from a `msg` to be used in a notification"
   [msg]
-  (->> msg
-       :chat_message
-       :message_content
-       :segment
-       (filter #(= "TEXT"
-                   (:type %)))
-       (map :text)
-       (clojure.string/join " ")))
+  (or
+    (when-let [text-parts 
+               (->> msg
+                    :chat_message
+                    :message_content
+                    :segment
+                    (filter #(= "TEXT"
+                                (:type %)))
+                    (map :text)
+                    seq)]
+      (clojure.string/join " " text-parts))
+    ;
+    (when-let [img-parts 
+               (->> msg
+                    :chat_message
+                    :message_content
+                    :attachment
+                    seq)]
+      "Sent you an image")
+    ;
+    (when-let [hangout-event (-> msg :hangout_event :event_type)]
+      (println "HI")
+      (case hangout-event
+        "START_HANGOUT" "Call Started"
+        "END_HANGOUT" "Call Ended"
+        nil))
+    ;
+    (do
+      ; NB: js/console gives us nicer inspection
+      (.log js/console "Can't create text preview for" (clj->js msg))
+      ; just return a blank string for safety
+      "")))
