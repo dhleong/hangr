@@ -43,18 +43,14 @@ class DockManager {
         window._index = index;
         this.position(window, 'in');
 
-        window.on('closed', () => {
-            for (var i=window._index + 1; i < this._windows.length; i++) {
-                var win = this._windows[i];
-
-                // shift it back
-                --win._index;
-
-                // re-position it
-                this.position(win, 'out');
-            }
-
-            this._windows.splice(window._index, 1);
+        window.on('hide', () => {
+            window._hidden = true;
+            this._animateOut(window);
+        });
+        window.on('closed', this._animateOut.bind(this, window));
+        window.on('show', () => {
+            if (!window._hidden) return;
+            this._animateIn(window);
         });
     }
 
@@ -94,13 +90,41 @@ class DockManager {
 
         window.setPosition(x, y, !!animate);
     }
+
+    _animateOut(window) {
+        for (var i=window._index + 1; i < this._windows.length; i++) {
+            var win = this._windows[i];
+
+            // shift it back
+            --win._index;
+
+            // re-position it
+            this.position(win, 'out');
+        }
+
+        this._windows.splice(window._index, 1);
+    }
+
+    _animateIn(window) {
+        for (var i=window._index; i < this._windows.length; i++) {
+            var win = this._windows[i];
+
+            // shift it back
+            ++win._index;
+
+            // re-position it
+            this.position(win, 'out');
+        }
+
+        this._windows.splice(window._index, 0, window);
+    }
 }
 
 const Manager = new DockManager();
 
 const DELEGATED_METHODS = [
     'on', 'once', 'removeListener', 'removeAllListeners',
-    'close', 'focus', 'show',
+    'close', 'focus', 'hide', 'show',
     'getURL', 'setPosition', 
     'openDevTools', 'toggleDevTools',
 ];

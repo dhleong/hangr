@@ -36,6 +36,12 @@ fs.ensureDirSync(app.getPath('userData'));
 // Main
 //------------------------------------------------------------------------------
 
+function quit() {
+    mainWindow.removeAllListeners('close');
+    mainWindow.close();
+    app.quit();
+}
+
 const versionString =
     `Version   ${packageJson.version}\n` +
     `Date      ${packageJson['build-date']}\n` +
@@ -66,9 +72,7 @@ const fileMenu = {
         {
             label: 'Quit',
             accelerator: acceleratorKey + '+Q',
-            click: function() {
-                app.quit();
-            }
+            click: quit
         }
     ]
 };
@@ -104,9 +108,7 @@ const menuTemplate = [fileMenu, debugMenu, helpMenu];
 const trayContextMenu = [
     {
         label: 'Quit',
-        click: function() {
-            app.quit();
-        }
+        click: quit
     }
 ];
 
@@ -120,6 +122,11 @@ function urlForConvId(convId) {
 
 function showMainWindow() {
     mainWindow = new DockedWindow();
+    mainWindow.on('close', e => {
+        console.log('"Closing" main window');
+        e.preventDefault();
+        mainWindow.hide();
+    });
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
@@ -175,11 +182,6 @@ ipcMain.on('send', (e, convId, msg) => {
 //------------------------------------------------------------------------------
 // Ready
 //------------------------------------------------------------------------------
-
-app.on('window-all-closed', () => {
-    // just consume the event so electron doesn't
-    // close the app (the default behavior)
-});
 
 app.on('ready', () => {
     // show the main window
