@@ -143,14 +143,12 @@
          {:on-click 
           (fn [e]
             (when-not (anything-focused?)
-              (println (.-target e))
               (focus!)))}
          [conversation-events id]]
         [:div#composer
          [:div#composer-input.input
           {:content-editable true
            :placeholder "Message"
-           :autofocus "autofocus"
            :on-key-press
            (fn [e]
              (when (and (= "Enter" (.-key e))
