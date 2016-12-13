@@ -77,6 +77,19 @@ const fileMenu = {
     ]
 };
 
+const editMenu = {
+    label: 'Edit',
+    submenu: [
+        { label: "Undo", accelerator: 'CmdOrCtrl+Z', role: 'undo' },
+        { label: "Redo", accelerator: 'Shift+CmdOrCtrl+Z', role: 'redo' },
+        { type: "separator" },
+        { label: "Cut", accelerator: 'CmdOrCtrl+X', role: 'cut' },
+        { label: "Copy", accelerator: 'CmdOrCtrl+C', role: 'copy' },
+        { label: "Paste", accelerator: 'CmdOrCtrl+V', role: 'pasteandmatchstyle' },
+        { label: "Select All", accelerator: 'CmdOrCtrl+A', role: 'selectall' }
+    ]
+};
+
 const helpMenu = {
     label: 'Help',
     submenu: [
@@ -102,7 +115,7 @@ const debugMenu = {
     ]
 };
 
-const menuTemplate = [fileMenu, debugMenu, helpMenu];
+const menuTemplate = [fileMenu, editMenu, debugMenu, helpMenu];
 
 
 const trayContextMenu = [
