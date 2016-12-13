@@ -36,8 +36,13 @@ fs.ensureDirSync(app.getPath('userData'));
 // Main
 //------------------------------------------------------------------------------
 
-function quit() {
+/** cleanup before we can quit */
+function preQuit() {
     mainWindow.removeAllListeners('close');
+}
+
+function quit() {
+    preQuit();
     mainWindow.close();
     app.quit();
 }
@@ -211,6 +216,9 @@ ipcMain.on('send', (e, convId, msg) => {
 //------------------------------------------------------------------------------
 // Ready
 //------------------------------------------------------------------------------
+
+// hook into the event so we can quit more gracefully at cli (with ctrl+c)
+app.on('before-quit', preQuit);
 
 app.on('ready', () => {
     // show the main window
