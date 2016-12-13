@@ -68,14 +68,43 @@ class ConnectionManager extends EventEmitter {
 
         this.connected = false;
         this._pendingSents = {};
+        this._entities = {};
     }
 
     getEntities(ids) {
-        // TODO attempt to serve from local cache?
-        this.client.getentitybyid(ids)
+
+        // attempt to serve from local cache
+        var servedFromCache = [];
+        var uncached = ids.filter(id => {
+            if (this._entities[id]) {
+                servedFromCache.push(this._entities[id]);
+                return false;
+            }
+
+            // uncached
+            return true;
+        });
+
+        if (servedFromCache.length) {
+            console.log(`getEntities: served ${servedFromCache.length} from cache`);
+            this.emit('got-entities', servedFromCache);
+        }
+
+        if (!uncached.length) {
+            console.log('getEntities: no more!');
+            return;
+        }
+
+        // some new ones; fetch
+        this.client.getentitybyid(uncached)
         .done(result => {
-            console.log(`gotEntities(${JSON.stringify(result, null, ' ')}})`);
+            console.log(`getEntities => ${JSON.stringify(result, null, ' ')}}`);
             this.emit('got-entities', result.entities);
+
+            // cache for later
+            result.entities.forEach(entity => {
+                this._entities[entity.id.chat_id] = entity;
+            });
         }, e => {
             console.warn(`ERROR: getEntities(${JSON.stringify(ids)}})`, e);
         });
