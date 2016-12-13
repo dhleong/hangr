@@ -148,8 +148,24 @@ ipcMain.on('request-status', (e) => {
             e.sender.send('self-info', connMan.lastSelfInfo);
         }
 
-        if (connMan.lastConversations) {
-            e.sender.send('recent-conversations', connMan.lastConversations);
+        var cachedConvs = connMan.lastConversations;
+        if (cachedConvs) {
+            // if it's a conversation page, filter down
+            //  to the conversation they're interested in.
+            //  A bit of a hack, but speeds up conversation
+            //  window load time by quite a bit
+            var convMatch = e.sender.getURL().match(/#\/c\/(.*)/);
+            if (convMatch) {
+                var convId = convMatch[1];
+                cachedConvs = cachedConvs.filter(conv => {
+                    return (conv.conversation_id && conv.conversation_id.id === convId) || 
+                        (conv.conversation && 
+                            conv.conversation_id && 
+                            conv.conversation_id.id === convId);
+                });
+            }
+
+            e.sender.send('recent-conversations', cachedConvs);
         }
     } else {
         e.sender.send('reconnecting');
