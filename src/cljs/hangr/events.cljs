@@ -126,16 +126,20 @@
   :update-conv
   [conv?-scroll trim-v]
   (fn [{:keys [db]} [conv]]
-    {:db (assoc-in db 
-                   [:convs (:id conv)]
-                   conv)
-     :get-entities (let [known-ids (-> db :people keys set)
-                         id-known? (partial contains? known-ids)]
-                     (->> conv
-                          :members
-                          (map :id)
-                          (remove id-known?)
-                          seq))}))
+    (let [updated-db
+          (assoc-in db 
+                    [:convs (:id conv)]
+                    conv)]
+      {:db updated-db
+       :get-entities (let [known-ids (-> db :people keys set)
+                           id-known? (partial contains? known-ids)]
+                       (->> conv
+                            :members
+                            (map :id)
+                            (remove id-known?)
+                            seq))
+       :check-unread (when (= :friends (first (:page db)))
+                       (:convs updated-db))})))
 
 ;;
 ;; Update a person

@@ -75,7 +75,6 @@
       "Sent you an image")
     ;
     (when-let [hangout-event (-> msg :hangout_event :event_type)]
-      (println "HI")
       (case hangout-event
         "START_HANGOUT" "Call Started"
         "END_HANGOUT" "Call Ended"

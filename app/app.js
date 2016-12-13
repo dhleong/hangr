@@ -14,13 +14,13 @@ const electron = require('electron'),
 const devConfigFile = __dirname + '/config.json';
 var devConfig = {};
 if (fs.existsSync(devConfigFile)) {
-  devConfig = require(devConfigFile);
+    devConfig = require(devConfigFile);
 }
 
-
-// const isDev = (packageJson.version.indexOf("DEV") !== -1);
-const acceleratorKey = "CommandOrControl";
-
+const trayIcons = {
+    light: __dirname + '/img/logo-light.png',
+    dark: __dirname + '/img/logo-dark.png',
+};
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the javascript object is GCed.
@@ -66,7 +66,7 @@ const fileMenu = {
     submenu: [
         {
             label: 'Close Window',
-            accelerator: acceleratorKey + '+W',
+            accelerator: 'CmdOrCtrl+W',
             click: function() {
                 var active = dockManager.findActive();
                 if (active) {
@@ -76,7 +76,7 @@ const fileMenu = {
         },
         {
             label: 'Quit',
-            accelerator: acceleratorKey + '+Q',
+            accelerator: 'CmdOrCtrl+Q',
             click: quit
         }
     ]
@@ -110,7 +110,7 @@ const debugMenu = {
     submenu: [
         {
             label: 'Toggle DevTools',
-            accelerator: acceleratorKey + '+Shift+I',
+            accelerator: 'CmdOrCtrl+Shift+I',
             click: function() {
                 var active = dockManager.findActive();
                 if (active) active.toggleDevTools();
@@ -213,6 +213,11 @@ ipcMain.on('send', (e, convId, msg) => {
     connMan.send(convId, msg);
 });
 
+ipcMain.on('set-unread!', (e, anyUnread) => {
+    // mainWindow controls unread status
+    systemTray.setImage(anyUnread ? trayIcons.dark : trayIcons.light);
+});
+
 //------------------------------------------------------------------------------
 // Ready
 //------------------------------------------------------------------------------
@@ -227,7 +232,7 @@ app.on('ready', () => {
     Menu.setApplicationMenu(
         Menu.buildFromTemplate(menuTemplate));
 
-    if (devConfig.hasOwnProperty('dev-tools') && devConfig['dev-tools'] === true) {
+    if (devConfig['dev-tools'] === true) {
         mainWindow.openDevTools();
     }
 
@@ -252,7 +257,7 @@ app.on('ready', () => {
     // though, we want to be able to just click the system
     // menu icon to open the friends list
     const trayMenu = Menu.buildFromTemplate(trayContextMenu);
-    systemTray = new Tray(__dirname + '/img/logo-light.png');
+    systemTray = new Tray(trayIcons.light);
     systemTray.on('click', (e) => {
         if (e.altKey) {
             systemTray.popUpContextMenu(trayMenu);
