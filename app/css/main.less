@@ -207,7 +207,6 @@ ul#conversations {
         border-top: 1px solid darken(@bg, 10%);
 
         .input {
-            display:inline-block;
             min-height: @composer-inner-height;
             padding: @composer-padding;
             width: 100%;
@@ -215,7 +214,7 @@ ul#conversations {
             color: @input-color;
 
             // support the placeholder element
-            &:empty:not(:focus):before {
+            &:empty:before {
                 content: attr(placeholder);
                 color: lighten(@input-color, 50%);
             }

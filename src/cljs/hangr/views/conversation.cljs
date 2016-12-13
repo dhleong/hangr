@@ -6,6 +6,24 @@
             [re-frame.core :refer [subscribe dispatch]]
             [hangr.util :refer [click-dispatch id->key]]))
 
+;; -- Utility functions -------------------------------------------------------
+
+(defn- anything-focused?
+  []
+  (let [sel (.getSelection js/window)
+        range (when (> (.-rangeCount sel) 0)
+                (.getRangeAt sel 0))]
+    (when range
+      (> (- (.-endOffset range)
+            (.-startOffset range))
+         0))))
+
+(defn- focus!
+  []
+  (-> js/document
+      (.getElementById "composer-input")
+      (.focus)))
+
 ;; -- Attachment Types --------------------------------------------------------
 
 (defn attachment-image
@@ -75,9 +93,12 @@
            ;; see above
            {:key (str event-id "s" i)}))))])
 
-;; -- Main Interface ----------------------------------------------------------
+;; -- Conversation Events -----------------------------------------------------
 
-(defn conversation
+(defn conversation-events
+  "Conversation event list, broken out from (conversation) to avoid
+  unnecessary redraws of the composer (since it doesn't actually depend
+  on any of the stuff this thing subscribes to)"
   [id]
   (let [conv (subscribe [:conv id])
         self (subscribe [:self])]
@@ -89,40 +110,58 @@
                  :members
                  (map (fn [m] [(:id m) m]))
                  (into {}))]
-        [:div#conversation
-         [:ul#events
-          (for [event (:events conv)]
-            (if-let [hangouts-ev (:hangout_event event)]
-              (when (= "END_HANGOUT" (:event_type hangouts-ev))
-                ^{:key (:id event)} [:li.hangout.event
-                                     [hangout-event-end member-map self event hangouts-ev]])
-              (let [class-name 
-                    (->>
-                      [(if (:incoming? event)
-                         "incoming"
-                         "outgoing")
-                       (when (:client-generated-id event)
-                         "pending")]
-                      (filter identity)
-                      (string/join " "))]
-                ^{:key (:id event)} [:li.event
-                                     {:class class-name}
-                                     [conversation-item event]])))]
-         [:div#composer
-          [:div.input
-           {:content-editable true
-            :placeholder "Message"
-            :on-key-press
-            (fn [e]
-              (when (and (= "Enter" (.-key e))
-                         (not (.-shiftKey e)))
-                (.preventDefault e)
-                (let [el (.-target e)
-                      raw-message (.-innerHTML el)]
-                  ; clear the input box
-                  (set! (.-innerHTML el) "")
-                  ; dispatch the event
-                  (dispatch [:send-html (:id conv) raw-message]))))}]]]))))
+        [:ul#events
+         (for [event (:events conv)]
+           (if-let [hangouts-ev (:hangout_event event)]
+             (when (= "END_HANGOUT" (:event_type hangouts-ev))
+               ^{:key (:id event)} [:li.hangout.event
+                                    [hangout-event-end member-map self event hangouts-ev]])
+             (let [class-name 
+                   (->>
+                     [(if (:incoming? event)
+                        "incoming"
+                        "outgoing")
+                      (when (:client-generated-id event)
+                        "pending")]
+                     (filter identity)
+                     (string/join " "))]
+               ^{:key (:id event)} [:li.event
+                                    {:class class-name}
+                                    [conversation-item event]])))]))))
+
+;; -- Main Interface ----------------------------------------------------------
+
+(defn conversation
+  [id]
+  (reagent/create-class
+    {:display-name "conversation"
+     :component-did-mount focus!
+     :reagent-render
+     (fn [id]
+       [:div#conversation
+        [:div
+         {:on-click 
+          (fn [e]
+            (when-not (anything-focused?)
+              (println (.-target e))
+              (focus!)))}
+         [conversation-events id]]
+        [:div#composer
+         [:div#composer-input.input
+          {:content-editable true
+           :placeholder "Message"
+           :autofocus "autofocus"
+           :on-key-press
+           (fn [e]
+             (when (and (= "Enter" (.-key e))
+                        (not (.-shiftKey e)))
+               (.preventDefault e)
+               (let [el (.-target e)
+                     raw-message (.-innerHTML el)]
+                 ; clear the input box
+                 (set! (.-innerHTML el) "")
+                 ; dispatch the event
+                 (dispatch [:send-html id raw-message]))))}]]])}))
 
 (defn conversation-title
   [id-or-conv]
