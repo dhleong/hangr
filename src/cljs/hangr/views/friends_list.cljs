@@ -3,6 +3,7 @@
   hangr.views.friends-list
   (:require [clojure.string :as string]
             [re-frame.core :refer [subscribe dispatch]]
+            [hangr.util.conversation :refer [unread?]]
             [hangr.util.notification :refer [msg->notif]]
             [hangr.views.conversation :refer [conversation-title]]))
 
@@ -34,7 +35,10 @@
             avatar (->> others first :photo_url)]
         [:li.conversation
          {:on-click 
-          #(dispatch [:select-conv (:id conv)])}
+          #(dispatch [:select-conv (:id conv)])
+          :class 
+          (when (unread? conv)
+            "unread")}
          (if avatar
            [:img.avatar
             {:src (str "http:" avatar)}]

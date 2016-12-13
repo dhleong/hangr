@@ -70,6 +70,14 @@ ul#conversations {
         margin: 0;
         padding: 0.5em 8px;
 
+        &.unread {
+            font-weight: bold;
+
+            .preview {
+                color: #555;
+            }
+        }
+
         .avatar {
             width: @avatar-size;
             height: @avatar-size;

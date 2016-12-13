@@ -67,7 +67,13 @@
                                  (clojure.string/starts-with?
                                    ev-id
                                    "observed_"))))
-                    (map event->clj))))
+                    (map event->clj))
+               ;; clean up some self info
+               :self
+               (let [self-conv-state (-> c :conversation :self_conversation_state)
+                     self-read-state (-> self-conv-state :self_read_state)]
+                 {:id (-> self-read-state :participant_id id->key)
+                  :latest-read-timestamp (:latest_read_timestamp self-read-state)})))
       ;; remove some unnecessary keys
       (dissoc :event)))
 

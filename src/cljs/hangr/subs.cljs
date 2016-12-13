@@ -1,25 +1,10 @@
 (ns ^{:author "Daniel Leong"
       :doc "Subscriptions"}
   hangr.subs
-  (:require [re-frame.core :refer [reg-sub trim-v subscribe]]))
+  (:require [re-frame.core :refer [reg-sub trim-v subscribe]]
+            [hangr.util.conversation :refer [event-incoming? fill-members]]))
 
 ;; -- Helpers -----------------------------------------------------------------
-
-(defn fill-members
-  "Given a conv and a map of id -> person `people`,
-  fill out the :members array to include as much
-  info about each member as possible"
-  [conv people]
-  (update 
-    conv
-    :members
-    (partial
-      map
-      (fn [member]
-        (let [person (get people (:id member))]
-          (if (:name person) ;; don't override with worse info
-            person
-            member))))))
 
 ;; -- Simple subscriptions ----------------------------------------------------
 ;; NOTE: keywords are functions! In this shortcut, they act on db
@@ -80,7 +65,7 @@
              ;; compare in reverse order (higher timestamps first)
              #(compare %2 %1))
            ;; fill out the members
-           (map #(fill-members % people))))))
+           (map (partial fill-members people))))))
 
 (reg-sub
   :conv
@@ -98,8 +83,6 @@
               map 
               #(assoc %
                       :incoming?
-                      (and
-                        (not= (:sender %)
-                              (:id self))
-                        (not (:client-generated-id %))))))
-          (fill-members people)))))
+                      (event-incoming? (:id self) %))))
+          (as-> c
+            (fill-members people c))))))

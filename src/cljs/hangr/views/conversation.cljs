@@ -35,14 +35,14 @@
 ;; -- Hangout Events ----------------------------------------------------------
 
 (defn hangout-event-end
-  [member-map self event hangouts-ev]
+  [member-map self-id event hangouts-ev]
   (let [participant-ids (->> hangouts-ev :participant_id (map id->key) set)]
     (if (contains?
           participant-ids
-          (:id self))
+          self-id)
       [:div "📞 You were in a call with "
        (->> participant-ids
-            (remove (partial = (:id self)))
+            (remove (partial = self-id))
             (map (comp :name member-map))
             (string/join ", "))]
       [:div "✖️ You missed a call from "
@@ -128,10 +128,10 @@
   [id-or-conv]
   (let [conv (if (string? id-or-conv)
                (subscribe [:conv id-or-conv])
-               (atom id-or-conv))
-        self (subscribe [:self])]
+               (atom id-or-conv))]
     (fn []
-      (let [conv @conv]
+      (let [conv @conv
+            self-id (-> conv :self :id)]
         [:span 
          (or
            ; prefer the chosen name, if there is one
@@ -142,7 +142,7 @@
              (->> conv 
                   :members
                   ; remove ourself...
-                  (remove #(= (:id @self)
+                  (remove #(= self-id
                               (:id %)))
                   ; get the name
                   (map :name))))]))))

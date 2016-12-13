@@ -1,5 +1,5 @@
 (ns ^{:author "Daniel Leong"
-      :doc "Message utilities"}
+      :doc "Utilities for creating messages"}
   hangr.util.msg
   (:require [clojure.string :refer [split]]))
 
