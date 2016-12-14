@@ -5,6 +5,8 @@ const electron = require('electron'),
       {app, dialog, ipcMain, Menu, Tray} = electron,
       packageJson = require(__dirname + '/package.json'),
 
+      {urlForConvId} = require('./util'),
+      {IpcHandler} = require('./ipc'),
       {dockManager, DockedWindow} = require('./docked-window'),
       ConnectionManager = require('./connection'),
     
@@ -134,10 +136,6 @@ const trayContextMenu = [
 // Util
 //------------------------------------------------------------------------------
 
-function urlForConvId(convId) {
-    return `/c/${convId}`;
-}
-
 function showMainWindow() {
     mainWindow = new DockedWindow();
     mainWindow.on('close', e => {
@@ -154,73 +152,10 @@ function showMainWindow() {
 // Register IPC Calls from the Renderers
 //------------------------------------------------------------------------------
 
-ipcMain.on('get-entities', (e, ids) => {
-    connMan.getEntities(ids);
-});
-
-ipcMain.on('mark-read!', (e, convId, timestamp) => {
-    connMan.markRead(convId, timestamp);
-});
-
-ipcMain.on('request-status', (e) => {
-    // TODO automate this stuff:
-    if (connMan.connected) {
-        dockManager.dispatch('connected');
-        if (connMan.lastSelfInfo) {
-            e.sender.send('self-info', connMan.lastSelfInfo);
-        }
-
-        var cachedConvs = connMan.lastConversations;
-        if (cachedConvs) {
-            // if it's a conversation page, filter down
-            //  to the conversation they're interested in.
-            //  A bit of a hack, but speeds up conversation
-            //  window load time by quite a bit
-            var convMatch = e.sender.getURL().match(/#\/c\/(.*)/);
-            if (convMatch) {
-                var convId = convMatch[1];
-                cachedConvs = cachedConvs.filter(conv => {
-                    return (conv.conversation_id && conv.conversation_id.id === convId) || 
-                        (conv.conversation && 
-                            conv.conversation_id && 
-                            conv.conversation_id.id === convId);
-                });
-            }
-
-            e.sender.send('recent-conversations', cachedConvs);
-        }
-    } else {
-        e.sender.send('reconnecting');
-    }
-});
-
-ipcMain.on('select-conv', (e, convId) => {
-    var url = urlForConvId(convId);
-    console.log("Request: select", url);
-    var existing = dockManager.findWithUrl(url);
-    if (existing) {
-        existing.show();
-        return;
-    }
-
-    // TODO Using a constructor as if it were a function
-    //  leaves a bad smell...
-    new DockedWindow(url);
-});
-
-ipcMain.on('send', (e, convId, msg) => {
-    console.log(`Request: send(${convId}, ${JSON.stringify(msg)})`);
-    // forward to the mainWindow so it can update friends list
-    if (mainWindow) mainWindow.send('send', convId, msg);
-
-    // do this last, because it modifies msg
-    connMan.send(convId, msg);
-});
-
-ipcMain.on('set-unread!', (e, anyUnread) => {
-    // mainWindow controls unread status
-    systemTray.setImage(anyUnread ? trayIcons.dark : trayIcons.light);
-});
+const ipcHandler = new IpcHandler(trayIcons, dockManager, connMan, 
+    () => systemTray,
+    () => mainWindow);
+ipcHandler.attach(ipcMain);
 
 //------------------------------------------------------------------------------
 // Ready

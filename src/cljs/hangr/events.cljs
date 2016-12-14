@@ -88,7 +88,6 @@
     :before (fn inject-self
               [context]
               (let [db (get-coeffect context :db)]
-                (println "SELF=" (:self db))
                 (-> context
                     (assoc-coeffect :self (:self db)))))))
 

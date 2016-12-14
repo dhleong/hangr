@@ -74,6 +74,14 @@ class DockManager {
         });
     }
 
+    open(url) {
+        // NOTE: Using a constructor as if it were a function
+        //  leaves a bad smell, but it's well-contained here;
+        //  at some point we should probably refactor the stuff
+        //  out of constructor and stop exporting DockedWindow
+        new DockedWindow(url);
+    }
+
     position(window, animate) {
         var screenHeight = screenSize().height;
         var x = this._anchor.position(window._index);
