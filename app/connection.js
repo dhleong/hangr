@@ -99,6 +99,11 @@ class ConnectionManager extends EventEmitter {
         this.client.getentitybyid(uncached)
         .done(result => {
             console.log(`getEntities => ${JSON.stringify(result, null, ' ')}}`);
+            if (result.error_description) {
+                console.warn('getEntities:', result.error_description);
+                return;
+            }
+
             this.emit('got-entities', result.entities);
 
             // cache for later
@@ -107,6 +112,24 @@ class ConnectionManager extends EventEmitter {
             });
         }, e => {
             console.warn(`ERROR: getEntities(${JSON.stringify(ids)}})`, e);
+        });
+    }
+
+    markRead(convId, timestamp) {
+        this.client.updatewatermark(convId, timestamp)
+        .done(result => {
+            console.log(`markedRead(${convId}, ${timestamp})`, result);
+            if (result.error_description) {
+                return;
+            }
+
+            // update the last_read_timestamp
+            var conv = this._cachedConv(convId);
+            if (conv) {
+                conv.conversation.self_conversation_state.self_read_state.latest_read_timestamp = timestamp;
+            }
+        }, e => {
+            console.warn(`ERROR: markRead(${convId}, ${timestamp})`, e);
         });
     }
 
@@ -188,11 +211,15 @@ class ConnectionManager extends EventEmitter {
         });
     }
 
-    _appendToConversation(convId, event) {
+    _cachedConv(convId) {
         if (!this.lastConversations) return;
-        var conv = this.lastConversations.find(conv => 
+        return this.lastConversations.find(conv => 
                 (conv.conversation_id && conv.conversation_id.id === convId) || 
                 (conv.conversation && conv.conversation.conversation_id.id === convId));
+    }
+
+    _appendToConversation(convId, event) {
+        var conv = this._cachedConv(convId);
         if (!conv) {
             console.warn("Couldn't find conversation", convId);
             return;

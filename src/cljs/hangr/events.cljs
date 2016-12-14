@@ -2,15 +2,24 @@
       :doc "events"}
   hangr.events
   (:require
-    [re-frame.core :refer [reg-event-db reg-event-fx inject-cofx path trim-v
-                           after debug
+    [re-frame.core :refer [reg-event-db reg-event-fx reg-cofx inject-cofx 
+                           path trim-v after debug
                            ->interceptor get-coeffect get-effect 
                            assoc-coeffect assoc-effect]]
     [cljs.spec :as s]
     [hangr.db :refer [default-value]]
     [hangr.util :refer [key->id id->key]]
+    [hangr.util.conversation :refer [unread?]]
     [hangr.util.msg :refer [html->msg msg->event]]))
 
+;; -- Coeffects ---------------------------------------------------------------
+;;
+
+(reg-cofx
+   :now
+   (fn [coeffects _]
+     ;; hangouts uses microseconds, for some reason
+      (assoc coeffects :now (* 1000 (.now js/Date)))))
 
 ;; -- Interceptors ------------------------------------------------------------
 ;;
@@ -179,6 +188,29 @@
 ;; -- Actions -----------------------------------------------------------------
 
 (reg-event-fx
+  :mark-read!
+  [(inject-cofx :now) trim-v]
+  (fn [{:keys [db now]} [conv-id]]
+    (let [conv (-> db :convs (get conv-id))
+          had-unread? (unread? conv)]
+      (if had-unread?
+        ; update the db eagerly
+        (let [updated-db
+              (assoc-in db
+                        [:convs conv-id :self :latest-read-timestamp]
+                        now)]
+          ; update the db
+          {:db updated-db
+           ; send request to mark read
+           ; NOTE: the service expects timestamps in milliseconds.
+           ; WHY does it return them in microseconds?!
+           :ipc [:mark-read! conv-id (/ now 1000)]
+           ; check if we should update the unread
+           :check-unread (:convs updated-db)})
+        ;; no change
+        {}))))
+
+(reg-event-fx
   :open-external
   [trim-v]
   (fn [_ [url]]
@@ -193,7 +225,8 @@
   :select-conv
   [trim-v]
   (fn [_ [conv-id]]
-    {:ipc [:select-conv conv-id]}))
+    {:ipc [:select-conv conv-id]
+     :dispatch [:mark-read! conv-id]}))
 
 (reg-event-fx
   :send-html
@@ -201,7 +234,8 @@
   (fn [{:keys [db]} [conv-id msg-html]]
     (let [msg (html->msg msg-html)]
       {:db (concat db [(msg->event msg)])
-       :ipc [:send conv-id msg]})))
+       :ipc [:send conv-id msg]
+       :dispatch [:mark-read! conv-id]})))
 
 (reg-event-db
   :sending-msg

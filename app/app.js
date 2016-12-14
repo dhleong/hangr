@@ -158,6 +158,10 @@ ipcMain.on('get-entities', (e, ids) => {
     connMan.getEntities(ids);
 });
 
+ipcMain.on('mark-read!', (e, convId, timestamp) => {
+    connMan.markRead(convId, timestamp);
+});
+
 ipcMain.on('request-status', (e) => {
     // TODO automate this stuff:
     if (connMan.connected) {
