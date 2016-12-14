@@ -139,7 +139,7 @@
      :reagent-render
      (fn [id]
        [:div#conversation
-        [:div
+        [:div#events-container.scroll-host
          {:on-click 
           (fn [e]
             (when-not (anything-focused?)

@@ -5,7 +5,8 @@
     [re-frame.core :refer [reg-event-db reg-event-fx reg-cofx inject-cofx 
                            path trim-v after debug
                            ->interceptor get-coeffect get-effect 
-                           assoc-coeffect assoc-effect]]
+                           assoc-coeffect assoc-effect
+                           dispatch]]
     [cljs.spec :as s]
     [hangr.db :refer [default-value]]
     [hangr.util :refer [key->id id->key]]
@@ -67,11 +68,18 @@
     :id :conv-scroll
     :after (fn conv-scroll-after
              [context]
-             (let [db (get-coeffect context :db)] 
+             (let [db (get-coeffect context :db)
+                   conv? (= :conv
+                            (first (:page db)))] 
+               ; make SURE we scroll to the bottom,
+               ;  even if we render slowly
+               (when conv?
+                 (js/setTimeout
+                   #(dispatch [:scroll-to-bottom])
+                   100))
+               ; hope for an instant scroll
                (-> context
-                   (assoc-effect :scroll-to-bottom
-                                 (= :conv
-                                    (first (:page db)))))))))
+                   (assoc-effect :scroll-to-bottom conv?))))))
 
 (def inject-self
   "Inject the :self var into the context"

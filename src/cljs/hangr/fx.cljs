@@ -94,9 +94,13 @@
   :scroll-to-bottom
   (fn [do-scroll?]
     (when do-scroll?
-      (.play
-        (Scroll. 
-          js/document.body
-          #js [0, (.-scrollTop js/document.body)]
-          #js [0, 99999] ;; cheat?
-          20)))))
+      (let [scroller 
+            (or
+              (aget (.getElementsByClassName js/document "scroll-host") 0)
+              (.getElementById js/document "app-container"))]
+        (.play
+          (Scroll. 
+            scroller
+            #js [0, (.-scrollTop scroller)]
+            #js [0, 99999] ;; cheat?
+            20))))))

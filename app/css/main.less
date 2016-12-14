@@ -44,7 +44,13 @@ body {
 #app-container {
     .roboto();
     
-    margin-top: (@title-height + 20px);
+    position: absolute;
+    top: (@title-height + 20px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: scroll;
+
     padding-top: 8px;
 }
 
@@ -119,15 +125,32 @@ ul#conversations {
 // Conversation/chat list
 //
 #conversation {
-    @composer-inner-height: 1em;
-    @composer-padding: .5em;
+    @composer-inner-height: 16pt;
+    @composer-font-size: 12pt;
+    @composer-padding: 6pt;
     @composer-height: (@composer-inner-height + 2 * @composer-padding);
-    @message-margin: 1em;
-    @message-separation: .5em;
+    @message-margin: 12pt;
+    @message-separation: 5pt;
+
+    #events-container {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: @composer-height;
+        overflow-y: scroll;
+
+        margin: 0;
+        padding: 0;
+    }
 
     ul#events {
-        margin: 0 0 (@composer-height + @message-separation) 0;
-        padding: 0;
+
+        margin: 0;
+        // margin: 0 0 @message-separation 0;
+        // padding: 0;
+        padding: @message-separation 0 0 0;
 
         .event {
             margin-bottom: @message-separation;
@@ -207,6 +230,7 @@ ul#conversations {
         border-top: 1px solid darken(@bg, 10%);
 
         .input {
+            font-size: @composer-font-size;
             min-height: @composer-inner-height;
             padding: @composer-padding;
             width: 100%;
