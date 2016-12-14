@@ -11,6 +11,7 @@
 ;;  to just return a specific key
 
 (reg-sub :connecting? :connecting?)
+(reg-sub :focused? :focused?)
 (reg-sub :self :self) 
 (reg-sub :people :people) 
 

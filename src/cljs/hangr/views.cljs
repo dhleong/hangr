@@ -26,10 +26,13 @@
 
 (defn main
   []
-  (let [page (subscribe [:page])]
+  (let [page (subscribe [:page])
+        focused? (subscribe [:focused?])]
     (fn []
       (let [[page arg] @page]
         [:div
+         {:class (when-not @focused?
+                   "unfocused")}
          [:div#title 
           (case page
             :conv [conversation-title arg]
