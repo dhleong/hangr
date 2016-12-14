@@ -35,13 +35,6 @@
 
 ;; -- Segment Types -----------------------------------------------------------
 
-(defn segment-text
-  [segment]
-  ;; TODO formatting
-  (when-let [formatting (:formatting segment)]
-    (println "TODO: format:" formatting))
-  [:span.segment.text (:text segment)])
-
 (defn segment-link
   [segment]
   (let [url (-> segment :link_data :link_target)]
@@ -49,6 +42,17 @@
      {:href url
       :on-click (click-dispatch [:open-external url])}
      (:text segment)]))
+
+(defn segment-linebreak
+  []
+  [:p])
+
+(defn segment-text
+  [segment]
+  ;; TODO formatting
+  (when-let [formatting (:formatting segment)]
+    (println "TODO: format:" formatting))
+  [:span.segment.text (:text segment)])
 
 ;; -- Hangout Events ----------------------------------------------------------
 
@@ -88,7 +92,7 @@
            (case (:type segment)
              "TEXT" [segment-text segment]
              "LINK" [segment-link segment]
-             "NEWLINE" [:p]
+             "LINE_BREAK" [segment-linebreak]
              [:span (str "UNKNOWN SEGMENT:" segment)])
            ;; see above
            {:key (str event-id "s" i)}))))])
