@@ -158,6 +158,10 @@ class ConnectionManager extends EventEmitter {
             this.emit('received', msg.conversation_id.id, msg);
         });
 
+        client.on('watermark', msg => {
+            console.log(`*** <<< ${JSON.stringify(msg, null, ' ')}`);
+        });
+
         // go!
         this._reconnect();
     }

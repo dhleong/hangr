@@ -1,7 +1,13 @@
 'use strict';
 
-const electron = require('electron'),
-      {BrowserWindow} = electron;
+var electron;
+try {
+    electron = require('electron');
+} catch (e) {
+    // unit test mode
+    electron = {};
+}
+const {BrowserWindow} = electron;
 
 const WindowDimens = {
     w: 240,
@@ -50,6 +56,14 @@ class DockManager {
         window.on('closed', this._animateOut.bind(this, window));
         window.on('show', () => {
             if (!window._hidden) return;
+            window._hidden = false;
+
+            // ensure the index isn't out of range if we're
+            // showing it out of the order we hid it in
+            window._index = Math.min(
+                window._index, 
+                this._windows.length
+            );
             this._animateIn(window);
         });
     }
@@ -114,6 +128,12 @@ class DockManager {
     }
 
     _animateIn(window) {
+        if (this._windows.indexOf(window) !== -1) {
+            throw new Error(`IllegalState: _animateIn(${window.url}) that's already in _windows`);
+        }
+
+        this.position(window, 'out');
+
         for (var i=window._index; i < this._windows.length; i++) {
             var win = this._windows[i];
 
@@ -189,4 +209,7 @@ class DockedWindow {
 module.exports = {
     DockedWindow,
     dockManager: Manager,
+
+    // constructor, for testing
+    DockManager,
 };

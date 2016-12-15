@@ -91,6 +91,13 @@ class IpcHandler {
         }
 
         this.dockManager.open(url);
+
+        this.connMan.client.setfocus(convId)
+        .then(resp => {
+            console.log(resp);
+        }, e => {
+            console.log(e);
+        });
     }
 
     send(e, convId, msg) {
