@@ -74,7 +74,7 @@
   (let [self-id (-> conv :self :id)
         members (->> (:members conv)
                      (remove (comp (partial = self-id) :id))
-                     (sort-by :latest-read-timestamp))
+                     (sort-by (comp long :latest-read-timestamp)))
         member-read-events (map 
                              (fn [member]
                                {:sender (:id member)
@@ -85,7 +85,7 @@
     (update-in 
       conv
       [:events]
-      (partial join-sorted-by :timestamp)
+      (partial join-sorted-by (comp long :timestamp))
       member-read-events)))
 
 (defn unread?
