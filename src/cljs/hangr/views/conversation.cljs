@@ -57,8 +57,9 @@
 ;; -- Hangout Events ----------------------------------------------------------
 
 (defn hangout-event-end
-  [member-map self-id event hangouts-ev]
-  (let [participant-ids (->> hangouts-ev :participant_id (map id->key) set)]
+  [member-map self event hangouts-ev]
+  (let [participant-ids (->> hangouts-ev :participant_id (map id->key) set)
+        self-id (:id self)]
     (if (contains?
           participant-ids
           self-id)
