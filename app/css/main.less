@@ -43,6 +43,8 @@ body {
 // singleton elements
 
 @title-height: 20px;
+@title-padding-vert: 10px;
+@title-border-bottom: 1px;
 #title {
     .roboto-condensed();
     .unselectable();
@@ -56,8 +58,8 @@ body {
     height: @title-height;
     text-align: right;
     background: @bg;
-    border-bottom: 1px solid darken(@bg, 10%);
-    padding: 10px 12px;
+    border-bottom: @title-border-bottom solid darken(@bg, 10%);
+    padding: @title-padding-vert 12px;
     margin: 0;
 
     position: fixed;
@@ -70,7 +72,7 @@ body {
     .roboto();
     
     position: absolute;
-    top: (@title-height + 20px);
+    top: ((2 * @title-padding-vert) + @title-height + @title-border-bottom);
     left: 0;
     right: 0;
     bottom: 0;
