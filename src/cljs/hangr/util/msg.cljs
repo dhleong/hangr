@@ -1,7 +1,7 @@
 (ns ^{:author "Daniel Leong"
       :doc "Utilities for creating messages"}
   hangr.util.msg
-  (:require [clojure.string :refer [split]]))
+  (:require [clojure.string :as string :refer [split]]))
 
 ; url-regex is, by default, a global regex, which, 
 ;  unlike on jvm, has state. that doesn't play well
@@ -47,7 +47,10 @@
 
 (defn html->msg
   [html]
-  (let [lines (split html #"(?:\<br[ /]*>)+")]
+  (let [lines (-> html
+                  ; TODO any other entities?
+                  (string/replace "&nbsp;" " ")
+                  (split #"(?:\<br[ /]*>)+"))]
     ;; TODO formatting? <a>-style links?
     ;; TODO images?
     ;; TODO message type? (eg /me)
