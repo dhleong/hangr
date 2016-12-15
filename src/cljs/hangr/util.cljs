@@ -33,3 +33,10 @@
   (fn [e]
     (.preventDefault e)
     (dispatch event)))
+
+(defn join-sorted-by
+  "Join sorted sequences by interleaving elements from both
+  using the given sort-key"
+  [sort-key coll1 coll2 & colls]
+  (->> (apply concat coll1 coll2 colls)
+       (sort-by sort-key)))

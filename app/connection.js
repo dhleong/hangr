@@ -98,7 +98,6 @@ class ConnectionManager extends EventEmitter {
         // some new ones; fetch
         this.client.getentitybyid(uncached)
         .done(result => {
-            console.log(`getEntities => ${JSON.stringify(result, null, ' ')}}`);
             if (result.error_description) {
                 console.warn('getEntities:', result.error_description);
                 return;
@@ -158,9 +157,18 @@ class ConnectionManager extends EventEmitter {
             this.emit('received', msg.conversation_id.id, msg);
         });
 
-        client.on('watermark', msg => {
-            console.log(`*** <<< ${JSON.stringify(msg, null, ' ')}`);
+        client.on('focus', msg => {
+            console.log(`*** <<F ${JSON.stringify(msg, null, ' ')}`);
         });
+
+        client.on('presence', msg => {
+            console.log(`*** <<P ${JSON.stringify(msg, null, ' ')}`);
+        });
+
+        client.on('watermark', msg => {
+            console.log(`*** <<W ${JSON.stringify(msg, null, ' ')}`);
+        });
+
 
         // go!
         this._reconnect();

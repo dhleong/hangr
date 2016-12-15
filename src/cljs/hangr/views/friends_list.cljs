@@ -5,21 +5,17 @@
             [re-frame.core :refer [subscribe dispatch]]
             [hangr.util.conversation :refer [unread?]]
             [hangr.util.notification :refer [msg->notif]]
-            [hangr.views.conversation :refer [conversation-title]]))
+            [hangr.views.conversation :refer [conversation-title]]
+            [hangr.views.widgets :refer [avatar]]))
 
 ;; -- Helper Functions --------------------------------------------------------
 
-(defn avatar-text
-  [person]
-  (let [name (or (:name person)
-                 (:first_name person))]
-    (if (and name
-             (not= "+" (first name)))
-      (->> name
-           (#(string/split % #" +"))
-           (map first)
-           (string/join ""))
-      "?")))
+(defn avatars
+  "Shows 1-N avatars from a vector of :members
+  (not including the active user)"
+  [users]
+  ; TODO support N > 1
+  [avatar (first users)])
 
 ;; -- Conversation Item -------------------------------------------------------
 
@@ -31,20 +27,14 @@
             others (->> conv 
                         :members 
                         (remove #(= (:id self) 
-                                    (:id %))))
-            avatar (->> others first :photo_url)]
+                                    (:id %))))]
         [:li.conversation
          {:on-click 
           #(dispatch [:select-conv (:id conv)])
           :class 
           (when (unread? conv)
             "unread")}
-         (if avatar
-           [:img.avatar
-            {:src (str "http:" avatar)}]
-           [:div.avatar
-            (avatar-text (first others))
-            ])
+         [avatars others]
          [:div.name
           [conversation-title conv]]
          [:div.preview

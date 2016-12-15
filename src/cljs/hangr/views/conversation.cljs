@@ -4,7 +4,8 @@
   (:require [clojure.string :as string]
             [reagent.core  :as reagent]
             [re-frame.core :refer [subscribe dispatch]]
-            [hangr.util :refer [click-dispatch id->key]]))
+            [hangr.util :refer [click-dispatch id->key]]
+            [hangr.views.widgets :refer [avatar]]))
 
 ;; -- Utility functions -------------------------------------------------------
 
@@ -71,6 +72,20 @@
       [:div "✖️ You missed a call from "
        (->> event :sender_id id->key member-map :name)])))
 
+;; -- Special Hangr-only Events -----------------------------------------------
+
+(defn hangr-read-indicator
+  [member-map event]
+  (let [member (get member-map (:sender event))]
+    [:div.event.read-indicator
+     ;; TODO active state
+     [avatar {:class "inactive"} member]]))
+
+(defn hangr-event
+  [member-map event]
+  (case (:hangr-type event)
+    :read-indicator [hangr-read-indicator member-map event]))
+
 ;; -- Conversation Item Facade ------------------------------------------------
 
 (defn conversation-item
@@ -117,10 +132,18 @@
                  (into {}))]
         [:ul#events
          (for [event (:events conv)]
-           (if-let [hangouts-ev (:hangout_event event)]
-             (when (= "END_HANGOUT" (:event_type hangouts-ev))
-               ^{:key (:id event)} [:li.hangout.event
-                                    [hangout-event-end member-map self event hangouts-ev]])
+           (cond
+             ; hangout event:
+             (not (nil? (:hangout_event event)))
+             (let [hangouts-ev (:hangout_event event)]
+               (when (= "END_HANGOUT" (:event_type hangouts-ev))
+                 ^{:key (:id event)} [:li.hangout.event
+                                      [hangout-event-end member-map self event hangouts-ev]]))
+             ; special hangr thing
+             (not (nil? (:hangr-type event)))
+             ^{:key (:id event)} [hangr-event member-map event]
+             ; default:
+             :else
              (let [class-name 
                    (->>
                      [(if (:incoming? event)

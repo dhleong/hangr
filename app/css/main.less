@@ -13,6 +13,27 @@
     user-select: none;
 }
 
+.avatar(@avatar-size) {
+    .avatar {
+        width: @avatar-size;
+        height: @avatar-size;
+        float: left;
+        vertical-align: middle;
+        border-radius: @avatar-size / 2;
+        margin-right: 8px;
+
+    }
+
+    div.avatar {
+        background-color: #999;
+        color: #fff;
+        font-size: 10pt;
+        line-height: @avatar-size;
+        text-align: center;
+        vertical-align: middle;
+    }
+}
+
 // global config
 
 body {
@@ -88,24 +109,7 @@ ul#conversations {
             }
         }
 
-        .avatar {
-            width: @avatar-size;
-            height: @avatar-size;
-            float: left;
-            vertical-align: middle;
-            border-radius: @avatar-size / 2;
-            margin-right: 8px;
-
-        }
-
-        div.avatar {
-            background-color: #999;
-            color: #fff;
-            font-size: 10pt;
-            line-height: @avatar-size;
-            text-align: center;
-            vertical-align: middle;
-        }
+        .avatar(@avatar-size);
 
         .name {
             .roboto-condensed();
@@ -176,6 +180,17 @@ ul#conversations {
                 text-align: center;
                 margin: @message-margin 0;
                 padding: (@message-margin / 2) @message-margin;
+            }
+
+            &.read-indicator {
+                @avatar-size: 17px;
+                padding-left: 8px;
+
+                .avatar(@avatar-size); 
+
+                .inactive.avatar {
+                    opacity: 0.5;
+                }
             }
 
             &.incoming {
