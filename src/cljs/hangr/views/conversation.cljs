@@ -4,7 +4,8 @@
   (:require [clojure.string :as string]
             [reagent.core  :as reagent]
             [re-frame.core :refer [subscribe dispatch]]
-            [hangr.util :refer [click-dispatch id->key]]
+            [hangr.util :refer [id->key]]
+            [hangr.util.ui :refer [click-dispatch]]
             [hangr.views.widgets :refer [avatar]]))
 
 ;; -- Utility functions -------------------------------------------------------

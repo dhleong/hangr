@@ -1,12 +1,18 @@
-(ns hangr.connection-test
+(ns hangr.util.parse-test
   (:require [cljs.test :refer-macros [deftest testing is run-tests]]
-            [hangr.connection :refer [conv->clj]]))
+            [hangr.util.parse :refer [conv->clj]]))
 
 (deftest conv->clj-test
   (testing "Basic test"
     (let [conv {:conversation
                 {:conversation_id
-                 {:id "conv-id"}}
+                 {:id "conv-id"}
+                 :self_conversation_state
+                 {:self_read_state
+                  {:participant_id
+                   {:chat_id "malcolm"
+                    :gaia_id "reynolds"}
+                   :latest_read_timestamp 9001}}}
                 :event
                 [{:event_id "observed_123"}
                  {:event_id "456"
@@ -23,7 +29,10 @@
                           :sender_id
                           {:chat_id "malcolm"
                            :gaia_id "reynolds"}}]
-                        :members [])
+                        :members []
+                        :self
+                        {:id :malcolm|reynolds
+                         :latest-read-timestamp 9001})
                  (dissoc :event)) 
             (conv->clj
               (clj->js conv)))))))

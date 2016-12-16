@@ -25,7 +25,10 @@
                                         :asset-path    "js/p/out"
                                         :optimizations :none
                                         :pretty-print  true
-                                        :cache-analysis true}}}}
+                                        :cache-analysis true}}}
+              
+              :test-commands
+              {"frontend" ["lein" "doo" "node" "once"]}}
 
   :clean-targets ^{:protect false} [:target-path "out" "app/js/p"]
 
@@ -42,8 +45,15 @@
                                               :compiler {:source-map true
                                                          :main       "hangr.dev"
                                                          :verbose true}
-                                              :figwheel {:on-jsload "hangr.core/mount-root"}}}}
+                                              :figwheel {:on-jsload "hangr.core/mount-root"}}
+                                        :node-test {:source-paths ["env/dev/cljs" "src" "test"]
+                                                    :compiler {:main "hangr.node-runner"
+                                                               :output-to "app/js/p/testable.js"
+                                                               :optimizations :none
+                                                               :target :nodejs}}}}
                    :source-paths ["env/dev/cljs"]
+
+                   :doo {:build "node-test"}
 
                    :dependencies [[binaryage/devtools "0.8.3"]
                                   [re-frisk "0.3.2"]
