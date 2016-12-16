@@ -1,18 +1,33 @@
+hangr
+=====
 
-# hangr
+*Hangouts, the way it was meant to be*
 
-## Requirements
+## What?
+
+Hangr is an unofficial, "native" app (using [Electron](http://electron.atom.io/)) for Google Hangouts
+that brings back the old Chrome extension UI with windows floating on the desktop, pinned to the bottom.
+
+Hangr is currently in a very early stage of development, but does
+support most basic features so far. If there's something missing
+and there's not already an issue for it, open one! Or, better yet,
+make a Pull Request!
+
+## Contributing
+
+Want to help out? Here's some things you might need to know:
+
+### Requirements
 
 * JDK 1.7+
 * Leiningen 2.5.3
-* node.js 5.1.1 [This is done to match the verion of node.js being used in Electron v0.37.2]
-* [NSIS](http://nsis.sourceforge.net/)
+* node.js 6.5.0 [Or whatever version is compatible with Electron]
 
 On Mac/Linux, installing node.js using [Node Version Manager](https://github.com/creationix/nvm) is recommended.
 
-This project uses Electron v0.35.2. Please check [Electron's GitHub page](https://github.com/atom/electron) for the latest version. The version is specified in `Gruntfile.js` under the `Grunt Config` section.
+This project uses Electron. Please check [Electron's GitHub page](https://github.com/electron/electron) for the latest version. The version is specified in `Gruntfile.js` under the `Grunt Config` section.
 
-## Setup
+### Setup
 
 On Mac/Linux:
 
@@ -29,24 +44,13 @@ scripts\setup.bat
 This will install the node dependencies for the project, along with grunt and bower and will also run `grunt setup`.
 
 
-## Development mode
+### Development mode
 
-Start the figwheel server:
-
-```
-lein figwheel
-```
-
-If you are on OSX/Linux and have `rlwrap` installed, you can start the figwheel server with:
+Start the figwheel server and repl:
 
 ```
-rlwrap lein figwheel
+scripts/repl
 ```
-
-This will give better readline support.
-
-More about [figwheel](https://github.com/bhauman/lein-figwheel) here.
-
 
 In another terminal window, launch the electron app:
 
@@ -54,43 +58,15 @@ In another terminal window, launch the electron app:
 grunt launch
 ```
 
-You can edit the `src/cljs/hangr/core.cljs` file and the changes should show up in the electron app without the need to re-launch.
+You can edit the files under `src/cljs/hangr/` and the changes should show up in the electron app without the need to re-launch.
+You can also connect to the repl using [Cider](https://github.com/clojure-emacs/cider-nrepl) via 
+[vim-fireplace](https://github.com/tpope/vim-fireplace/) or whatever else you prefer.
 
-## Using nREPL with figwheel
+### Dependencies
 
-- Start the repl using `lein repl`.
+Node dependencies are in `package.json` file. Clojure/ClojureScript dependencies are in `project.clj`.
 
-```
-user> (use 'figwheel-sidecar.repl-api)
-nil
-user> (def figwheel-config
-        {:figwheel-options {:css-dirs ["app/css"]}
-         :build-ids ["dev"]
-         :all-builds
-           [{:id "dev"
-             :figwheel {:on-jsload "hangr.core/mount-root"}
-             :source-paths ["src/cljs" "env/dev/cljs"]
-             :compiler {:main "hangr.dev"
-                        :asset-path "js/p/out"
-                        :output-to "app/js/p/app.js"
-                        :output-dir "app/js/p/out" }}]})
-#'user/figwheel-config
-user> (start-figwheel! figwheel-config)
-Figwheel: Starting server at http://localhost:3449
-Figwheel: Watching build - dev
-Compiling "resources/public/js/repler.js" from ["src/cljs" "env/dev/cljs"]...
-Successfully compiled "app/js/p/app.js" in 2.06 seconds.
-Figwheel: Starting CSS Watcher for paths  ["app/css"]
-#<SystemMap>
-```
-
-See [Figwheel wiki](https://github.com/bhauman/lein-figwheel/wiki/Using-the-Figwheel-REPL-within-NRepl) for more details.
-
-## Dependencies
-
-Node dependencies are in `package.json` file. Bower dependencies are in `bower.json` file. Clojure/ClojureScript dependencies are in `project.clj`.
-
-## Icons
+### Icons
 
 Please replace the icons provided with your application's icons. The development icons are from [node-appdmg](https://github.com/LinusU/node-appdmg) project.
 
@@ -102,11 +78,12 @@ Files to replace:
 * scripts/dmg/TestBkg.png
 * scripts/dmg/TestBkg@2x.png
 
-## Creating a build for release
+### Creating a build for release
 
 To create a Windows build from a non-Windows platform, please install `wine`. On OS X, an easy option is using homebrew.
 
-On Windows before doing a production build, please edit the `scripts/build-windows-exe.nsi` file. The file is the script for creating the NSIS based setup file.
+On Windows before doing a production build, please edit the `scripts/build-windows-exe.nsi` file. The file is the script for creating 
+the [NSIS](http://nsis.sourceforge.net/)-based setup file.
 
 On Mac OSX, please edit the variables for the plist in `release-mac` task in `Gruntfile.js`.
 
@@ -125,7 +102,7 @@ This will create the directories in the `builds` folder.
 Note: you will need to be on OSX to create a DMG file and on Windows to create the setup .exe file.
 
 
-## Grunt commands
+### Grunt commands
 
 To run a command, type `grunt <command>` in the terminal.
 
@@ -135,9 +112,9 @@ To run a command, type `grunt <command>` in the terminal.
 | setup         | Download electron project, installs bower dependencies and setups up the app config file. |
 | launch        | Launches the electron app                                                                 |
 | release       | Creates a Win/OSX/Linux executables                                                       |
-| outdated      | List all outdated clj/cljs/node/bower dependencies                                        |
+| check-old     | List all outdated clj/cljs/node/bower dependencies                                        |
 
-## Leiningen commands
+### Leiningen commands
 
 To run a command, type `lein <command>` in the terminal.
 

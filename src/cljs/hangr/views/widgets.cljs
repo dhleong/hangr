@@ -21,10 +21,10 @@
 
 (defn avatar
   [user-or-opts & [user]]
-  (let [user (or user user-or-opts)
-        opts (if user
+  (let [opts (if user
                user-or-opts
                {})
+        user (or user user-or-opts)
         avatar-url (:photo_url user)]
     (if avatar-url
       [:img.avatar

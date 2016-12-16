@@ -1,6 +1,6 @@
 (defproject hangr "0.1.0-alpha1"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "Hangouts, the way it was meant to be"
+  :url "http://github.com/dhleong/hangr"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
@@ -9,7 +9,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.293"]
                  [reagent "0.6.0"]
-                 [re-frame "0.8.0"]
+                 [re-frame "0.9.0"]
                  [secretary "1.2.3"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]

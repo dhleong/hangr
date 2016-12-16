@@ -4,7 +4,8 @@
   (:require-macros [secretary.core :refer [defroute]])
   (:require [goog.events :as events]
             [reagent.core :as reagent]
-            [re-frame.core :refer [dispatch dispatch-sync]]
+            [re-frame.core :refer [dispatch dispatch-sync 
+                                   clear-subscription-cache!]]
             [re-frisk.core :refer [enable-re-frisk!]]
             [secretary.core :as secretary]
             [hangr.events]
@@ -37,13 +38,10 @@
   []
   ; core DB init
   (dispatch-sync [:initialize-db])
+  ; clean up for hot reloads
+  (clear-subscription-cache!)
   #_(when js/goog.DEBUG 
     (enable-re-frisk!))
-  ; track window focused-ness
-  (set! (.-onfocus js/window) 
-        #(dispatch [:set-focused true]))
-  (set! (.-onblur js/window) 
-        #(dispatch [:set-focused false]))
   ; init the connection
   (connection/init!)
   ; start rendering
@@ -51,4 +49,9 @@
 
 (defn init!
   []
+  ; track window focused-ness
+  (set! (.-onfocus js/window) 
+        #(dispatch [:set-focused true]))
+  (set! (.-onblur js/window) 
+        #(dispatch [:set-focused false]))
   (mount-root))
