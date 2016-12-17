@@ -1,0 +1,5 @@
+language: clojure
+before_install:
+    - nvm install 6
+    - npm install
+script: scripts/test
