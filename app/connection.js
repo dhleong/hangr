@@ -10,6 +10,7 @@ const EventEmitter = require('events'),
       {BrowserWindow} = require('electron'),
       Client = require('hangupsjs'),
       Promise = require('promise'),
+      {parsePresencePacket} = require('./util'),
     
       INITIAL_BACKOFF = 1000;
 
@@ -162,7 +163,9 @@ class ConnectionManager extends EventEmitter {
         });
 
         client.on('presence', msg => {
-            console.log(`*** <<P ${JSON.stringify(msg, null, ' ')}`);
+            console.log('*** <<P', msg);
+            const asJson = parsePresencePacket(msg);
+            console.log(`     -> ${JSON.stringify(asJson, null, ' ')}`);
         });
 
         client.on('watermark', msg => {
