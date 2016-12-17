@@ -23,25 +23,22 @@
   in a conversation"
   [conv person-id]
   (let [given (->> conv 
-                   :conversation 
-                   :read_state
-                   (filter #(= person-id
-                               (id->key (:participant_id %))))
-                   first
-                   :last_read_timestamp)]
-    (when (number? given)
-      (if (> given 0)
-        ; easy case; we actually know
-        given
-        ; timestamp = 0 means "unchanged"; find the most recent event where they're the sender
-        (or (->> conv 
-                 :events
-                 (filter #(= person-id
-                             (:sender %)))
-                 last
-                 :timestamp)
-            ; fall back to 0 if it was just nil
-            0)))))
+                   :read-states
+                   person-id
+                   :latest-read-timestamp)]
+    (if (and (number? given)
+             (> given 0))
+      ; easy case; we actually know
+      given
+      ; timestamp = 0 means "unchanged"; find the most recent event where they're the sender
+      (or (->> conv 
+               :events
+               (filter #(= person-id
+                           (:sender %)))
+               last
+               :timestamp)
+          ; fall back to 0 if it was just nil
+          0))))
 
 (defn fill-members
   "Given a conv and a map of id -> person `people`,

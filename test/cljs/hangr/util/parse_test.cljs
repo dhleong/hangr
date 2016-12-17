@@ -12,7 +12,12 @@
                   {:participant_id
                    {:chat_id "malcolm"
                     :gaia_id "reynolds"}
-                   :latest_read_timestamp 9001}}}
+                   :latest_read_timestamp 9001}}
+                 :read_state
+                 [{:participant_id
+                   {:chat_id "its"
+                    :gaia_id "kaylee"}
+                   :last_read_timestamp 42}]}
                 :event
                 [{:event_id "observed_123"}
                  {:event_id "456"
@@ -32,8 +37,11 @@
                         :members []
                         :self
                         {:id :malcolm|reynolds
-                         :latest-read-timestamp 9001})
+                         :latest-read-timestamp 9001}
+                        :read-states
+                        {:its|kaylee
+                         {:latest-read-timestamp 42}})
                  (dissoc :event)) 
-            (conv->clj
-              (clj->js conv)))))))
+             (conv->clj
+               (clj->js conv)))))))
 

@@ -166,7 +166,21 @@ class ConnectionManager extends EventEmitter {
         });
 
         client.on('watermark', msg => {
-            console.log(`*** <<W ${JSON.stringify(msg, null, ' ')}`);
+            var convId = msg.conversation_id.id;
+            this.emit('watermark', convId, msg);
+
+            // update any cached value
+            var cached = this._cachedConv(convId);
+            if (cached) {
+                var readStates = cached.conversation.read_state;
+                readStates.some(state => {
+                    if (state.participant_id.chat_id === msg.participant_id.chat_id) {
+                        // update the timestamp
+                        state.last_read_timestamp = msg.latest_read_timestamp;
+                        return true; // short-circuit some()
+                    }
+                });
+            }
         });
 
 
@@ -286,6 +300,7 @@ ConnectionManager.CHAT_EVENTS = [
     // and the rest will be passed along
     'sent',
     'received',
+    'watermark',
 ];
 
 module.exports = ConnectionManager;

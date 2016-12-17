@@ -64,6 +64,16 @@
                                    ev-id
                                    "observed_"))))
                     (map event->clj))
+               ;; clean up read states
+               :read-states
+               (->> c
+                    :conversation
+                    :read_state
+                    (map
+                      (fn [state]
+                        {(-> state :participant_id id->key)
+                         {:latest-read-timestamp (:last_read_timestamp state)}}))
+                    (into {}))
                ;; clean up some self info
                :self
                (let [self-conv-state (-> c :conversation :self_conversation_state)
@@ -81,3 +91,11 @@
       (as-> s
         (assoc s
                :id (-> s :self_entity :id id->key)))))
+
+(defn watermark->clj
+  [js-watermark]
+  (-> js-watermark
+      js->real-clj
+      (as-> w
+        (assoc w
+               :sender (-> w :participant_id id->key)))))

@@ -2,6 +2,7 @@
   (:require [cljs.test :refer-macros [deftest testing is run-tests]]
             [cljs.nodejs :as node]
             [hangr.util.conversation :refer [conv-event-incoming? event-incoming? 
+                                             fill-members
                                              unread?
                                              conv-latest-read
                                              insert-read-indicators]]))
@@ -55,43 +56,34 @@
 
 (deftest conv-latest-read-test
   (testing "Easy case: we have a timestamp"
-    (let [conv {:conversation
-                {:read_state
-                 [{:participant_id
-                   {:chat_id "itskaylee"
-                    :gaia_id "itskaylee"}
-                   :last_read_timestamp 9001}]}}]
+    (let [conv {:read-states
+                {:itskaylee
+                 {:latest-read-timestamp 9001}}}]
       (is (= 9001 (conv-latest-read
                     conv
-                    :itskaylee|itskaylee)))))
+                    :itskaylee)))))
   (testing "No outgoing and no timestamp"
-    (let [conv {:conversation
-                {:read_state
-                 [{:participant_id
-                   {:chat_id "itskaylee"
-                    :gaia_id "itskaylee"}
-                   :last_read_timestamp 0}]}
+    (let [conv {:read-states
+                {:itskaylee
+                 {:latest-read-timestamp 0}}
                 :events
                 [{:sender :mreynolds
                   :timestamp 42}]}]
       (is (= 0 (conv-latest-read
                  conv
-                 :itskaylee|itskaylee)))))
+                 :itskaylee)))))
   (testing "No timestamp, but an outgoing message"
-    (let [conv {:conversation
-                {:read_state
-                 [{:participant_id
-                   {:chat_id "itskaylee"
-                    :gaia_id "itskaylee"}
-                   :last_read_timestamp 0}]}
+    (let [conv {:read-states
+                {:itskaylee
+                 {:latest-read-timestamp 0}}
                 :events
-                [{:sender :itskaylee|itskaylee
+                [{:sender :itskaylee
                   :timestamp 9001}
                  {:sender :mreynolds
                   :timestamp 42}]}]
       (is (= 9001 (conv-latest-read
                     conv
-                    :itskaylee|itskaylee))))))
+                    :itskaylee))))))
 
 (deftest insert-read-indicators-test
   (testing "Insert for multiple"
@@ -124,3 +116,15 @@
                :id "tammd-read"
                :timestamp 20}]
              (:events inserted))))))
+
+(deftest fill-members-test
+  (testing "Fill with no match"
+    (let [conv {:read-states
+                {:itskaylee
+                 {:latest-read-timestamp 9001}}
+                :members
+                [{:id :itskaylee}]}]
+      (is (= [{:id :itskaylee
+               :latest-read-timestamp 9001}]
+            (:members 
+              (fill-members {}  conv)))))))

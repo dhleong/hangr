@@ -3,8 +3,8 @@
   hangr.connection
   (:require [re-frame.core :refer [dispatch]]
             [hangr.util :refer [js->real-clj id->key]]
-            [hangr.util.parse :refer [entity->clj event->clj 
-                                      conv->clj self->clj]]))
+            [hangr.util.parse :refer [entity->clj event->clj conv->clj self->clj
+                                      watermark->clj]]))
 
 (defonce electron (js/require "electron"))
 (defonce ipc (.-ipcRenderer electron))
@@ -48,7 +48,16 @@
    (fn [_ received-msg-event]
      (.log js/console "Received" received-msg-event)
      (let [ev (event->clj received-msg-event)]
-       (dispatch [:receive-msg (-> ev :conversation_id :id) ev])))})
+       (dispatch [:receive-msg (-> ev :conversation_id :id) ev])))
+   
+   :watermark
+   (fn [_ watermark-event]
+     (.log js/console "Watermark" watermark-event)
+     (let [ev (watermark->clj watermark-event)]
+       (dispatch [:update-watermark 
+                  (-> ev :conversation_id :id) 
+                  (:sender ev)
+                  (:latest_read_timestamp ev)])))})
 
 ;; NB: since this isn't really an SPA, we handle
 ;;  the hangouts connection in the parent process

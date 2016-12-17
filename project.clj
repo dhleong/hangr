@@ -19,6 +19,11 @@
 
   :min-lein-version "2.5.3"
 
+  :external-config 
+  {:devtools/config {:features-to-install    [:formatters :hints]
+                     :fn-symbol              "F"
+                     :print-config-overrides true}}
+
   :cljsbuild {:builds {:app {:source-paths ["src/cljs"]
                              :compiler {:output-to     "app/js/p/app.js"
                                         :output-dir    "app/js/p/out"

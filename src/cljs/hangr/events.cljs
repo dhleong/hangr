@@ -255,3 +255,14 @@
   [trim-v]
   (fn [db [focused?]]
     (assoc db :focused? focused?)))
+
+(reg-event-db
+  :update-watermark
+  [(conv-path :read-states) trim-v]
+  (fn [read-states [conv-id sender-id latest-read-timestamp]]
+    (let [updated (assoc-in
+                    read-states
+                    [sender-id :latest-read-timestamp]
+                    latest-read-timestamp)]
+      (.log js/console "Updated: " sender-id updated)
+      updated)))
