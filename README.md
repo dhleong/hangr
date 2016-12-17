@@ -1,4 +1,4 @@
-hangr
+hangr [![Build Status](http://img.shields.io/travis/dhleong/hangr.svg?style=flat)](https://travis-ci.org/dhleong/hangr)
 =====
 
 *Hangouts, the way it was meant to be*
