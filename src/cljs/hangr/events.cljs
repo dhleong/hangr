@@ -151,11 +151,29 @@
                            id-known? (partial contains? known-ids)]
                        (->> conv
                             :members
-                            (map :id)
+                            keys
                             (remove id-known?)
                             seq))
        :check-unread (when (= :friends (first (:page db)))
                        (:convs updated-db))})))
+
+;;
+;; Update focus status
+(reg-event-fx
+  :update-focus
+  [(inject-cofx :now) (conv-path) trim-v]
+  (fn [{:keys [db now]} [conv-id sender-id focused? device]]
+    (let [conv db] ;; see conv-path
+      {:db (-> conv
+               (update-in [:members sender-id]
+                          assoc
+                          :focused? focused?
+                          :device device)
+               (update-in [:read-states sender-id :latest-read-timestamp]
+                          (fn [old-value]
+                            (if focused?
+                              now
+                              old-value))))})))
 
 ;;
 ;; Update a person

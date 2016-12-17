@@ -90,12 +90,15 @@
     (let [inserted
           (insert-read-indicators
             {:members
-             [{:id :mreynolds
+             {:mreynolds
+              {:id :mreynolds
                :latest-read-timestamp 30}
+              :tammd
               {:id :tammd
                :latest-read-timestamp 20}
+              :itskaylee
               {:id :itskaylee
-               :latest-read-timestamp 10}]
+               :latest-read-timestamp 10}}
              :events
              [{:sender :mreynolds
                :timestamp 15}
@@ -123,8 +126,30 @@
                 {:itskaylee
                  {:latest-read-timestamp 9001}}
                 :members
-                [{:id :itskaylee}]}]
-      (is (= [{:id :itskaylee
-               :latest-read-timestamp 9001}]
+                {:itskaylee
+                 {:id :itskaylee
+                  :focused? true}}}]
+      (is (= {:itskaylee
+              {:id :itskaylee
+               :focused? true
+               :latest-read-timestamp 9001}}
             (:members 
-              (fill-members {}  conv)))))))
+              (fill-members {}  conv))))))
+  (testing "Fill with match"
+    (let [conv {:read-states
+                {:itskaylee
+                 {:latest-read-timestamp 9001}}
+                :members
+                {:itskaylee
+                 {:id :itskaylee
+                  :focused? true}}}
+          people {:itskaylee
+                  {:id :itskaylee
+                   :name "Kaylee"}}]
+      (is (= {:itskaylee
+              {:id :itskaylee
+               :name "Kaylee"
+               :focused? true
+               :latest-read-timestamp 9001}}
+            (:members 
+              (fill-members people conv)))))))

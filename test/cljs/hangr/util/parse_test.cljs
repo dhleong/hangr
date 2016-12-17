@@ -34,7 +34,7 @@
                           :sender_id
                           {:chat_id "malcolm"
                            :gaia_id "reynolds"}}]
-                        :members []
+                        :members {} 
                         :self
                         {:id :malcolm|reynolds
                          :latest-read-timestamp 9001}

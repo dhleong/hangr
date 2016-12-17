@@ -48,20 +48,22 @@
   (update 
     conv
     :members
-    (partial
-      map
-      (fn [member]
-        (let [person-id (:id member)
-              person (get people person-id)]
-          (assoc
-            (if (:name person) ; don't override with worse info
-              person
-              member)
-            ; also, insert their latest-read-timestamp
-            :latest-read-timestamp
-            (conv-latest-read
-              conv
-              person-id)))))))
+    (fn [members-map]
+      (->> members-map
+           (map
+             (fn [[person-id member]]
+               (let [person (get people person-id)]
+                 {person-id
+                  (assoc
+                    (if (:name person) ; don't override with worse info
+                      (merge member person)
+                      member)
+                    ; also, insert their latest-read-timestamp
+                    :latest-read-timestamp
+                    (conv-latest-read
+                      conv
+                      person-id))})))
+           (into {})))))
 
 (defn insert-read-indicators
   "Given a conv whose :members array has been updated
@@ -70,6 +72,7 @@
   [conv]
   (let [self-id (-> conv :self :id)
         members (->> (:members conv)
+                     vals
                      (remove (comp (partial = self-id) :id))
                      (sort-by (comp long :latest-read-timestamp)))
         member-read-events (map 

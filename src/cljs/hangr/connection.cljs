@@ -15,43 +15,54 @@
      (println "Connected!")
      (dispatch [:connected]))
 
+   :focus
+   (fn on-focus
+     [js-focus-event]
+     (let [focus-event (js->real-clj js-focus-event)]
+       (.log js/console "Got focus-event" focus-event)
+       (dispatch [:update-focus
+                  (-> focus-event :conversation_id :id)
+                  (-> focus-event :user_id id->key)
+                  (= "FOCUSED" (:status focus-event))
+                  (:device focus-event)])))
+
    :got-entities
    (fn on-entities
-     [_ entities]
+     [entities]
      (.log js/console "Got entities" entities)
      (doseq [person (map entity->clj entities)]
        (dispatch [:update-person person])))
 
    :recent-conversations
-   (fn [_ convs]
+   (fn [convs]
      (.log js/console "Got conversations" convs)
      (doseq [conv (map conv->clj convs)]
        (dispatch [:update-conv conv])))
    
    :self-info
-   (fn [_ info]
+   (fn [info]
      (.log js/console "Got self info" info)
      (dispatch [:set-self (self->clj info)]))
 
    :send
-   (fn [_ conv-id sending-msg-event]
+   (fn [conv-id sending-msg-event]
      (.log js/console "Sending..." sending-msg-event)
      (dispatch [:sending-msg conv-id (js->real-clj sending-msg-event)]))
    
    :sent
-   (fn [_ sent-msg-event]
+   (fn [sent-msg-event]
      (.log js/console "Sent" sent-msg-event)
      (let [ev (event->clj sent-msg-event)]
        (dispatch [:update-sent (-> ev :conversation_id :id) ev])))
    
    :received
-   (fn [_ received-msg-event]
+   (fn [received-msg-event]
      (.log js/console "Received" received-msg-event)
      (let [ev (event->clj received-msg-event)]
        (dispatch [:receive-msg (-> ev :conversation_id :id) ev])))
    
    :watermark
-   (fn [_ watermark-event]
+   (fn [watermark-event]
      (.log js/console "Watermark" watermark-event)
      (let [ev (watermark->clj watermark-event)]
        (dispatch [:update-watermark 
@@ -69,4 +80,8 @@
   (doseq [[event-id handler] ipc-listeners]
     (let [event-id (name event-id)] 
       (.removeAllListeners ipc event-id)
-      (.on ipc event-id handler))))
+      (.on ipc 
+           event-id 
+           (fn event-handler-wrapper
+             [e & args]
+             (apply handler args))))))

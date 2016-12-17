@@ -159,11 +159,15 @@ class ConnectionManager extends EventEmitter {
         });
 
         client.on('focus', msg => {
+            // TODO remember focus states for if we close and re-open a conversation?
+            // TODO Also, update the latest-read-timestamp for this user
             console.log(`*** <<F ${JSON.stringify(msg, null, ' ')}`);
+            delete msg._header;
+            this.emit('focus', msg.conversation_id.id, msg);
         });
 
         client.on('presence', msg => {
-            console.log('*** <<P', msg);
+            console.log(`*** <<P ${JSON.stringify(msg)}`);
             const asJson = parsePresencePacket(msg);
             console.log(`     -> ${JSON.stringify(asJson, null, ' ')}`);
         });
@@ -304,6 +308,7 @@ ConnectionManager.CHAT_EVENTS = [
     'sent',
     'received',
     'watermark',
+    'focus',
 ];
 
 module.exports = ConnectionManager;

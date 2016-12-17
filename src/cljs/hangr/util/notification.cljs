@@ -44,6 +44,7 @@
   (let [sender-id (id->key (:sender_id msg))
         sender (->> conv
                     :members
+                    vals
                     (filter #(= (:id %)
                                 sender-id))
                     first)]

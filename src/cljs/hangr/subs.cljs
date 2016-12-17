@@ -57,7 +57,7 @@
            (filter
              (fn [conv]
                (contains?
-                 (set (map :id (:members conv)))
+                 (set (keys (:members conv)))
                  (:id self))))
            ;; sort with most recent first
            (sort-by 

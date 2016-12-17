@@ -35,7 +35,7 @@
                :id 
                (or (-> c :conversation_id :id)
                    (-> c :conversation :conversation_id :id))
-               ;; create a nice list of members (participants)
+               ;; create a nice map of members (participants)
                :members
                (->> c
                     :conversation
@@ -53,7 +53,12 @@
                               (filter #(= raw-id
                                           (:id %)))
                               first
-                              :fallback_name)})))
+                              :fallback_name)}))
+                    ; convert into a map
+                    (map
+                      (fn [member]
+                        {(:id member) member}))
+                    (into {}))
                ;; clean up `:event` and put it in :events
                :events
                (->> (:event c)

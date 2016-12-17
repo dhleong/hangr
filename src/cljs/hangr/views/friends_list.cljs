@@ -26,6 +26,7 @@
       (let [self @self
             others (->> conv 
                         :members 
+                        vals
                         (remove #(= (:id self) 
                                     (:id %))))]
         [:li.conversation

@@ -78,9 +78,15 @@
 (defn hangr-read-indicator
   [member-map event]
   (let [member (get member-map (:sender event))]
+    (.log js/console "MEMBER = " member)
     [:div.event.read-indicator
      ;; TODO active state
-     [avatar {:class "inactive"} member]]))
+     [avatar 
+      {:class 
+       (if (:focused? member)
+         "focused"
+         "inactive")} 
+      member]]))
 
 (defn hangr-event
   [member-map event]
@@ -126,11 +132,7 @@
     (fn []
       (let [conv @conv
             self @self
-            member-map
-            (->> conv
-                 :members
-                 (map (fn [m] [(:id m) m]))
-                 (into {}))]
+            member-map (:members conv)]
         [:ul#events
          (for [event (:events conv)]
            (cond
@@ -207,6 +209,7 @@
              ", "
              (->> conv 
                   :members
+                  vals
                   ; remove ourself...
                   (remove #(= self-id
                               (:id %)))

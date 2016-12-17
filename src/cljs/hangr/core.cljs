@@ -18,7 +18,7 @@
            [goog.history EventType]))
 
 ;; -- Debugging aids ----------------------------------------------------------
-(devtools/install!)       ;; we love https://github.com/binaryage/cljs-devtools
+(devtools/install! [:formatters :hints])       ;; we love https://github.com/binaryage/cljs-devtools
 (enable-console-print!)   ;; so println writes to console.log
 
 ;; -- Routes and History ------------------------------------------------------
