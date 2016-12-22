@@ -90,13 +90,10 @@ class IpcHandler {
             return;
         }
 
-        this.dockManager.open(url);
-
-        this.connMan.client.setfocus(convId)
-        .then(resp => {
-            console.log(resp);
-        }, e => {
-            console.log(e);
+        var window = this.dockManager.open(url);
+        window.on('closed', () => {
+            // unfocus
+            this.connMan.setFocus(convId, false);
         });
     }
 
@@ -108,6 +105,11 @@ class IpcHandler {
 
         // do this last, because it modifies msg
         this.connMan.send(convId, msg);
+    }
+
+    set_focused$(e, convId, isFocused) {
+        console.log(`Request: focus(${convId}, ${isFocused})`);
+        this.connMan.setFocus(convId, isFocused);
     }
 
     set_unread$(e, anyUnread) {

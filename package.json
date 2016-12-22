@@ -1,14 +1,19 @@
 {
   "name": "hangr",
   "scripts": {
-    "test": "node_modules/mocha/bin/mocha test test/js"
+    "test": "node_modules/mocha/bin/mocha test test/js",
+    "postinstall": "cd node_modules/hangupsjs && ../coffee-script/bin/coffee -o lib src"
   },
+  "//": [
+      "NOTE:",
+      "The above postinstall script above and devDependency on coffee-script below are temporary until upstream hangupsjs supports setfocus with params"
+  ],
   "license": "Private",
   "private": true,
   "bundleId": "com.github.hangr",
   "dependencies": {
     "fs-extra": "^1.0.0",
-    "hangupsjs": "^1.3.4",
+    "hangupsjs": "dhleong/hangupsjs#069ad84",
     "mocha": "^3.2.0",
     "node-notifier": "mikaelbr/node-notifier#36a43bb",
     "promise": "^7.1.1",
@@ -16,6 +21,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "coffee-script": "^1.12.2",
     "electron-packager": "8.4.0",
     "grunt": "1.0.1",
     "grunt-contrib-less": "^1.3.0",

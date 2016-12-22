@@ -93,7 +93,7 @@ class DockManager {
         //  leaves a bad smell, but it's well-contained here;
         //  at some point we should probably refactor the stuff
         //  out of constructor and stop exporting DockedWindow
-        new DockedWindow(url);
+        return new DockedWindow(url);
     }
 
     position(window, animate) {

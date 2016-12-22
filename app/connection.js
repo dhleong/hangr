@@ -244,6 +244,19 @@ class ConnectionManager extends EventEmitter {
         });
     }
 
+    setFocus(convId, isFocused) {
+        var focusType = isFocused ? Client.FocusStatus.FOCUSED : Client.FocusStatus.UNFOCUSED;
+        var timeout = 60; // we can be longer since we get explicit events on desktop
+        this.client.setfocus(convId, focusType, timeout)
+        .done(result => {
+            // if we get here, this path SHOULD exist, but be safe...
+            var status = result && result.response_header && result.response_header.status;
+            console.log(`setFocus(${convId}, ${isFocused})`, status);
+        }, e => {
+            console.warn(`ERROR: setFocus(${convId}, ${isFocused})`, e);
+        });
+    }
+
     _cachedConv(convId) {
         if (!this.lastConversations) return;
         return this.lastConversations.find(conv => 

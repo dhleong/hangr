@@ -268,11 +268,16 @@
   (fn [events [conv-id msg]]
     (concat events [(msg->event msg)])))
 
-(reg-event-db
+(reg-event-fx
   :set-focused
   [trim-v]
-  (fn [db [focused?]]
-    (assoc db :focused? focused?)))
+  (fn [{:keys [db]} [focused?]]
+    {:db (assoc db :focused? focused?)
+     :ipc (let [page (:page db)]
+            (println "set-focused" page focused? (:focused? db))
+            (when (and (= :conv (first page))
+                       (not= (:focused? db) focused?))
+              [:set-focused! (second page) focused?]))}))
 
 (reg-event-db
   :update-watermark

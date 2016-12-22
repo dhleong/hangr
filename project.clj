@@ -58,7 +58,8 @@
                    :dependencies [[binaryage/devtools "0.8.3"]
                                   [re-frisk "0.3.2"]
                                   [figwheel-sidecar "0.5.8"]
-                                  [com.cemerick/piggieback "0.2.1"]]
+                                  [com.cemerick/piggieback "0.2.1"]
+                                  [doo "0.1.7"]]
 
                    :plugins [[lein-ancient "0.6.10"]
                              [lein-kibit "0.1.3"]
