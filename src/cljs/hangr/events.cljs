@@ -280,6 +280,14 @@
               [:set-focused! (second page) focused?]))}))
 
 (reg-event-db
+  :update-typing
+  [(conv-path :members) trim-v]
+  (fn [members [conv-id user-id status]]
+    (-> members
+        (assoc-in [user-id :typing]
+                   status))))
+
+(reg-event-db
   :update-watermark
   [(conv-path :read-states) trim-v]
   (fn [read-states [conv-id sender-id latest-read-timestamp]]

@@ -172,6 +172,12 @@ class ConnectionManager extends EventEmitter {
             console.log(`     -> ${JSON.stringify(asJson, null, ' ')}`);
         });
 
+        client.on('typing', msg => {
+            console.log(`*** <<T ${JSON.stringify(msg)}`);
+            delete msg._header;
+            this.emit('typing', msg.conversation_id.id, msg);
+        });
+
         client.on('watermark', msg => {
             var convId = msg.conversation_id.id;
             this.emit('watermark', convId, msg);
@@ -318,10 +324,11 @@ ConnectionManager.CHAT_EVENTS = [
     // and a specific chat want. the first
     // argument of the event MUST be the chat id,
     // and the rest will be passed along
-    'sent',
-    'received',
-    'watermark',
     'focus',
+    'received',
+    'sent',
+    'typing',
+    'watermark',
 ];
 
 module.exports = ConnectionManager;
