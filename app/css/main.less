@@ -1,3 +1,8 @@
+// theming
+
+@message-bg-incoming: #f0f0f0;
+@read-indicator-avatar-size: 20px;
+
 // mixins
 
 .roboto() {
@@ -185,8 +190,10 @@ ul#conversations {
             }
 
             &.read-indicator {
-                @avatar-size: 17px;
+                @avatar-size: @read-indicator-avatar-size;
                 padding-left: 8px;
+                display: flex;
+                flex-direction: row;
 
                 .avatar(@avatar-size); 
 
@@ -197,7 +204,7 @@ ul#conversations {
 
             &.incoming {
                 .event-item {
-                    background-color: #f0f0f0;
+                    background-color: @message-bg-incoming;
                 }
                 margin-right: @message-margin;
                 margin-left: (@message-margin / 4);
@@ -306,4 +313,45 @@ ul#conversations {
 @keyframes load8 {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+///
+// Typing indicator
+//
+.typing-indicator {
+    display: flex;
+    flex-direction: row;
+    height: @read-indicator-avatar-size;
+
+    align-items: center;
+    background-color: @message-bg-incoming;
+    border-radius: 4px;
+    padding: 0 4px;
+
+    .part {
+        width: 4px;
+        height: 4px;
+        background-color: darken(@message-bg-incoming, 75%);
+        border-radius: 50%;
+        margin: 0 1px;
+        opacity: 0.4;
+    }
+
+    &.typing .part {
+        &:nth-of-type(1) {
+            animation: 1s blink infinite .3333s;
+        }
+        &:nth-of-type(2) {
+            animation: 1s blink infinite .6666s;
+        }
+        &:nth-of-type(3) {
+            animation: 1s blink infinite .9999s;
+        }
+    }
+}
+
+@keyframes blink {
+    50% {
+        opacity: 1;
+    }
 }

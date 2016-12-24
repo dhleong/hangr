@@ -80,6 +80,7 @@
                                {:sender (:id member)
                                 :hangr-type :read-indicator
                                 :id (str (name (:id member)) "-read")
+                                :typing (:typing member)
                                 :timestamp (:latest-read-timestamp member)})
                              members)]
     (update-in 

@@ -34,3 +34,10 @@
        opts
        (avatar-text user)])))
 
+(defn typing-indicator
+  [state]
+  [:div.typing-indicator
+   {:class (name state)}
+   [:span.part]
+   [:span.part]
+   [:span.part]])

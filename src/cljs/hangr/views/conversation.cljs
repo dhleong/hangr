@@ -6,7 +6,7 @@
             [re-frame.core :refer [subscribe dispatch]]
             [hangr.util :refer [id->key]]
             [hangr.util.ui :refer [click-dispatch]]
-            [hangr.views.widgets :refer [avatar]]))
+            [hangr.views.widgets :refer [avatar typing-indicator]]))
 
 ;; -- Utility functions -------------------------------------------------------
 
@@ -80,13 +80,17 @@
   (let [member (get member-map (:sender event))]
     (.log js/console "MEMBER = " member)
     [:div.event.read-indicator
-     ;; TODO active state
      [avatar 
       {:class 
        (if (:focused? member)
          "focused"
          "inactive")} 
-      member]]))
+      member]
+     ; typing state:
+     (let [typing (:typing member)]
+       (when-not (or (nil? typing)
+                     (= :stopped typing))
+         [typing-indicator typing]))]))
 
 (defn hangr-event
   [member-map event]
