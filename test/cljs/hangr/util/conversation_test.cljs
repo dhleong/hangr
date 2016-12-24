@@ -95,7 +95,8 @@
                :latest-read-timestamp 30}
               :tammd
               {:id :tammd
-               :latest-read-timestamp 20}
+               :latest-read-timestamp 20
+               :typing :typing}
               :itskaylee
               {:id :itskaylee
                :latest-read-timestamp 10}}
@@ -109,6 +110,7 @@
       (is (= [{:sender :itskaylee
                :hangr-type :read-indicator
                :id "itskaylee-read"
+               :typing nil
                :timestamp 10}
               {:sender :mreynolds
                :timestamp 15}
@@ -117,6 +119,7 @@
               {:sender :tammd
                :hangr-type :read-indicator
                :id "tammd-read"
+               :typing :typing
                :timestamp 20}]
              (:events inserted))))))
 
