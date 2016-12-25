@@ -177,7 +177,9 @@ ul#conversations {
 
             list-style: none;
             overflow: hidden;
-            display: block;
+            display: flex;
+
+            .avatar(32px);
 
             &.hangout {
                 .roboto-condensed();
@@ -221,7 +223,7 @@ ul#conversations {
                 }
                 margin-left: @message-margin;
                 margin-right: (@message-margin / 4);
-                text-align: right;
+                justify-content: flex-end;
             }
 
             .event-item {

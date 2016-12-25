@@ -166,9 +166,12 @@
                         "pending")]
                      (filter identity)
                      (string/join " "))]
-               ^{:key (:id event)} [:li.event
-                                    {:class class-name}
-                                    [conversation-item event]])))]))))
+               ^{:key (:id event)} 
+               [:li.event
+                {:class class-name}
+                (when (:incoming? event)
+                  [avatar (get member-map (:sender event))])
+                [conversation-item event]])))]))))
 
 ;; -- Main Interface ----------------------------------------------------------
 
