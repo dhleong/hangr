@@ -63,6 +63,17 @@
         :on-click (click-dispatch [:open-external url])}
        img])))
 
+(defn attachment-image2
+  [attachment]
+  (let [data (-> attachment :data vals first)
+        url (-> data (nth 4))
+        thumbnail (-> data (nth 5))]
+    [:a
+     {:href url
+      :on-click (click-dispatch [:open-external url])}
+     [:img.attachment
+      {:src thumbnail
+       :class "image"}]]))
 
 ;; -- Segment Types -----------------------------------------------------------
 
@@ -141,6 +152,7 @@
            (let [embed-item (:embed_item attachment)]
              (cond
                (:plus_photo embed-item) [attachment-image embed-item]
+               (= 249 (-> embed-item :type_ first)) [attachment-image2 embed-item]
                :else [:span (str "UNKNOWN ATTACHMENT:" embed-item)]))
            ;; we can't use the reader macro since it's coming
            ;;  from a (case)
