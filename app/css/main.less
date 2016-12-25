@@ -20,13 +20,15 @@
 
 .avatar(@avatar-size) {
     .avatar {
+        .unselectable();
+
         width: @avatar-size;
         height: @avatar-size;
+        min-width: @avatar-size;
         float: left;
         vertical-align: middle;
         border-radius: @avatar-size / 2;
         margin-right: 8px;
-
     }
 
     div.avatar {
@@ -232,6 +234,11 @@ ul#conversations {
                 border-radius: 8px;
                 padding: 8px;
 
+                // NB: &:has(> img.sticker) would be great...
+                &.has-sticker {
+                    background: none !important;
+                }
+
                 .segment {
                     // handle long urls
                     overflow-wrap: break-word;
@@ -239,6 +246,13 @@ ul#conversations {
                     word-break: break-word;
                     hyphens: auto;
                     font-size: 11pt;
+                }
+
+                .image,.sticker {
+                    max-width: 100%;
+                }
+                .sticker {
+                    .unselectable();
                 }
 
                 a.link {

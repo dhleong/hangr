@@ -26,6 +26,19 @@
       (.getElementById "composer-input")
       (.focus)))
 
+(defn- sticker?
+  "Returns truthy if the embed-item is a sticker"
+  [embed-item]
+  (let [photo (:plus_photo embed-item)]
+    (and
+      ; it must at least be a photo...
+      photo
+      ; is this sufficient? seems sketchy
+      (nil? (-> photo
+                :data
+                :thumbnail
+                :url)))))
+
 (defn- submit-event?
   "Check if the key press event is a submit event"
   [e]
@@ -36,9 +49,19 @@
 
 (defn attachment-image
   [attachment]
-  [:img.attachment
-   {:src (-> attachment :plus_photo :data :thumbnail :image_url)
-    :style {:max-width "100%"}}])
+  (let [sticker? (sticker? attachment)
+        url (-> attachment :plus_photo :data :url)
+        img [:img.attachment
+             {:src (-> attachment :plus_photo :data :thumbnail :image_url)
+              :class (if sticker?
+                       "sticker"
+                       "image")}]]
+    (if (and sticker? url)
+      img
+      [:a
+       {:href url
+        :on-click (click-dispatch [:open-external url])}
+       img])))
 
 
 ;; -- Segment Types -----------------------------------------------------------
@@ -107,9 +130,11 @@
 
 (defn conversation-item
   [event]
-  [:div.event-item
-   (let [content (-> event :chat_message :message_content)
-         event-id (:id event)] 
+  (let [content (-> event :chat_message :message_content)
+        event-id (:id event)]
+    [:div.event-item
+     {:class (when (-> content :attachment first :embed_item sticker?)
+               "has-sticker")}
      (concat
        (for [[i attachment] (map-indexed list (:attachment content))]
          (with-meta
@@ -128,7 +153,7 @@
              "LINE_BREAK" [segment-linebreak]
              [:span (str "UNKNOWN SEGMENT:" segment)])
            ;; see above
-           {:key (str event-id "s" i)}))))])
+           {:key (str event-id "s" i)})))]))
 
 ;; -- Conversation Events -----------------------------------------------------
 
