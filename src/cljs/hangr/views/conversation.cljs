@@ -210,6 +210,36 @@
                   [avatar (get member-map (:sender event))])
                 [conversation-item event]])))]))))
 
+;; -- File drag-and-drop Receiver ---------------------------------------------
+
+(defn file-drop-receiver
+  [id]
+  (let [toggle-class
+        (fn [class-name add? e]
+          (.preventDefault e)
+          (-> e
+              .-target
+              .-classList
+              (.toggle class-name add?)))] 
+    [:div#drop-receiver.drop-receiver
+     {:on-drag-enter (partial toggle-class "dragover" :add!)
+      :on-drag-leave (partial toggle-class "dragover" false)
+      :on-drag-over #(.preventDefault %)
+      :on-drop
+      (fn [e]
+        ; remove dragover class and preventDefault on the event
+        (toggle-class "dragover" false e)
+        ; TODO: block multiple files (only a single file is supported)
+        (let [path (-> e
+                       .-dataTransfer
+                       .-files
+                       (aget 0)
+                       .-path)]
+          ;; TODO upload, etc.
+          (println "DROP" path)))}
+     ; TODO: something a bit nicer
+     "Drop here to send!"]))
+
 ;; -- Main Interface ----------------------------------------------------------
 
 (defn composer
@@ -249,6 +279,7 @@
      :reagent-render
      (fn [id]
        [:div#conversation
+        [file-drop-receiver]
         [:div#events-container.scroll-host
          {:on-click 
           (fn [e]

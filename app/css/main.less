@@ -5,6 +5,13 @@
 
 // mixins
 
+.material-transition(@kind, @duration: 480ms) {
+  transition: @kind @duration;
+
+  // this is like the material design "linear in, slow out"
+  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+}
+
 .roboto() {
     font-family: 'Roboto', sans-serif;
 }
@@ -297,6 +304,33 @@ ul#conversations {
                 outline: none;
             }
         }
+    }
+}
+
+//
+// Drag-and-drop receiver
+.drop-receiver {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    opacity: 0;
+    z-index: 999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+
+    .material-transition(background-color);
+
+    &.dragover {
+        opacity: 1;
+        visibility: visible;
+        // display: block;
+        background-color: fade(#34D2E0, 30%);
+        pointer-events: auto;
     }
 }
 
