@@ -12,12 +12,8 @@
 (defonce ipc-renderer (.-ipcRenderer electron))
 (defonce shell (.-shell electron))
 
-(defonce get-entities-queue (atom []))
-(defonce get-entities-timer (atom nil))
-(def get-entities-delay 10)
-
-(defonce set-unread-timer (atom nil))
-(def set-unread-delay 10)
+;; -- IPC messaging -----------------------------------------------------------
+;;
 
 (defn- ipc!
   [event & args]
@@ -30,18 +26,18 @@
             ipc-renderer
             ipc-args)))
 
-(defn- run-get-entities-queue
-  []
-  (reset! get-entities-timer nil)
-  (when-let [queue (seq (distinct @get-entities-queue))]
-    (reset! get-entities-queue [])
-    (ipc! :get-entities queue)))
-
 (reg-fx
   :ipc
   (fn [[event & args]]
     (when event
       (apply ipc! event args))))
+
+
+;; -- Check Unread ------------------------------------------------------------
+;;
+
+(defonce set-unread-timer (atom nil))
+(def set-unread-delay 10)
 
 (reg-fx
   :check-unread
@@ -57,6 +53,20 @@
                   #(ipc! :set-unread! any-unread)
                   set-unread-delay))))))
 
+;; -- Get Entities ------------------------------------------------------------
+;;
+
+(defonce get-entities-queue (atom []))
+(defonce get-entities-timer (atom nil))
+(def get-entities-delay 10)
+
+(defn- run-get-entities-queue
+  []
+  (reset! get-entities-timer nil)
+  (when-let [queue (seq (distinct @get-entities-queue))]
+    (reset! get-entities-queue [])
+    (ipc! :get-entities queue)))
+
 (reg-fx
   :get-entities
   (fn [ids]
@@ -69,10 +79,16 @@
                 (js/setTimeout run-get-entities-queue 
                                get-entities-delay))))))
 
+;; -- Open External -----------------------------------------------------------
+;;
+
 (reg-fx
   :open-external
   (fn [url]
     (.openExternal shell url)))
+
+;; -- Chat Notification -------------------------------------------------------
+;;
 
 (reg-fx
   :notify-chat!
@@ -90,6 +106,9 @@
         (fn []
           (dispatch [:select-conv (:id conv)]))))))
 
+;; -- Scroll Page to bottom ---------------------------------------------------
+;;
+
 (reg-fx
   :scroll-to-bottom
   (fn [do-scroll?]
@@ -104,3 +123,33 @@
             #js [0, (.-scrollTop scroller)]
             #js [0, 99999] ;; cheat?
             20))))))
+
+;; -- Typing notifications ----------------------------------------------------
+;;
+
+(defonce typing!-timer (atom nil))
+(def typing!-delay 3000)
+
+(reg-fx
+  :typing!
+  (fn [[conv-id stop?]]
+    (if stop?
+      (do
+        (when-let [timer @typing!-timer]
+          (js/clearTimeout timer)
+          (reset! typing!-timer nil))
+        (ipc! :set-typing! conv-id :stopped))
+      (do
+        (if-let [timer @typing!-timer]
+          ; if there's a timer, clear it
+          (js/clearTimeout timer)
+          ; ... otherwise, send :typing
+          (ipc! :set-typing! conv-id :typing))
+        ; in any case, start a new timer
+        (reset! typing!-timer
+                (js/setTimeout 
+                  (fn []
+                    (reset! typing!-timer nil)
+                    (ipc! :set-typing! conv-id :paused))
+                  typing!-delay))))))
+

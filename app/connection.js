@@ -263,6 +263,18 @@ class ConnectionManager extends EventEmitter {
         });
     }
 
+    /**
+     * Set typingState for a conversation
+     * @param typingState One of "typing," "paused," or "stopped"
+     */
+    setTyping(convId, typingState) {
+        var status = Client.TypingStatus[typingState.toUpperCase()];
+        this.client.settyping(convId, status)
+        .catch(e => {
+            console.warn(`ERROR: setTyping(${convId}, ${status})`, e);
+        });
+    }
+
     _cachedConv(convId) {
         if (!this.lastConversations) return;
         return this.lastConversations.find(conv => 

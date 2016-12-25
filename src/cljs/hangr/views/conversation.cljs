@@ -26,6 +26,12 @@
       (.getElementById "composer-input")
       (.focus)))
 
+(defn- submit-event?
+  "Check if the key press event is a submit event"
+  [e]
+  (and (= "Enter" (.-key e))
+       (not (.-shiftKey e))))
+
 ;; -- Attachment Types --------------------------------------------------------
 
 (defn attachment-image
@@ -166,6 +172,35 @@
 
 ;; -- Main Interface ----------------------------------------------------------
 
+(defn composer
+  "The 'composer,' the input box"
+  [id]
+  [:div#composer
+   [:div#composer-input.input
+    {:content-editable true
+     :placeholder "Message"
+     :on-key-press
+     (fn [e]
+       (when (submit-event? e)
+         ; don't create a newline, please:
+         (.preventDefault e)
+         (let [el (.-target e)
+               raw-message (.-innerHTML el)]
+           ; clear the input box
+           (set! (.-innerHTML el) "")
+           ; eagerly trigger typing stopped event
+           (dispatch [:typing! id :stop!])
+           ; dispatch the event
+           (dispatch [:send-html id raw-message]))))
+     :on-key-up
+     (fn [e]
+       (when-not (submit-event? e)
+         (let [raw-message (.-innerHTML (.-target e))]
+           ;; if the input is empty, also stop typing
+           ;; otherwise, just dispatch a typing event
+           (dispatch [:typing! id (when (empty? raw-message)
+                                    :stop!)]))))}]])
+
 (defn conversation
   [id]
   (reagent/create-class
@@ -180,21 +215,7 @@
             (when-not (anything-focused?)
               (focus!)))}
          [conversation-events id]]
-        [:div#composer
-         [:div#composer-input.input
-          {:content-editable true
-           :placeholder "Message"
-           :on-key-press
-           (fn [e]
-             (when (and (= "Enter" (.-key e))
-                        (not (.-shiftKey e)))
-               (.preventDefault e)
-               (let [el (.-target e)
-                     raw-message (.-innerHTML el)]
-                 ; clear the input box
-                 (set! (.-innerHTML el) "")
-                 ; dispatch the event
-                 (dispatch [:send-html id raw-message]))))}]]])}))
+        [composer id]])}))
 
 (defn conversation-title
   [id-or-conv]

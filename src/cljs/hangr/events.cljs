@@ -279,6 +279,14 @@
                        (not= (:focused? db) focused?))
               [:set-focused! (second page) focused?]))}))
 
+;; handle a local typing event
+(reg-event-fx
+  :typing!
+  [trim-v]
+  (fn [_ [conv-id & [stop?]]]
+    {:typing! [conv-id stop?]}))
+
+;; update the typing status for another user in a conversation
 (reg-event-db
   :update-typing
   [(conv-path :members) trim-v]

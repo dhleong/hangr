@@ -112,6 +112,10 @@ class IpcHandler {
         this.connMan.setFocus(convId, isFocused);
     }
 
+    set_typing$(e, convId, typingState) {
+        this.connMan.setTyping(convId, typingState);
+    }
+
     set_unread$(e, anyUnread) {
         // mainWindow controls unread status
         this.getSystemTray().setImage(
