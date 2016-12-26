@@ -61,8 +61,9 @@
                     :chat_message
                     :message_content
                     :segment
-                    (filter #(= "TEXT"
-                                (:type %)))
+                    (filter #(let [seg-type (:type %)]
+                               (or (= "TEXT" seg-type)
+                                   (= "LINK" seg-type))))
                     (map :text)
                     seq)]
       (clojure.string/join " " text-parts))
