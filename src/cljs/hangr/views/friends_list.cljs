@@ -3,7 +3,7 @@
   hangr.views.friends-list
   (:require [clojure.string :as string]
             [re-frame.core :refer [subscribe dispatch]]
-            [hangr.util.conversation :refer [unread?]]
+            [hangr.util.conversation :refer [plus-photo-data unread?]]
             [hangr.util.notification :refer [msg->notif]]
             [hangr.views.conversation :refer [conversation-title]]
             [hangr.views.widgets :refer [avatar]]))
@@ -39,11 +39,20 @@
          [:div.name
           [conversation-title conv]]
          [:div.preview
-          ;; FIXME: use a more appropriate function
-          ;; TODO: support images
-          (msg->notif (->> conv
+          (let [event (->> conv
                            :events
-                           last))]]))))
+                           last)]
+            (if-let [photo-data (->> event
+                                     :chat_message
+                                     :message_content
+                                     :attachment
+                                     first
+                                     plus-photo-data)]
+              [:img.preview
+               {:src (-> photo-data :thumbnail :image_url)}]
+              ; else, just use a text representation
+              ;; FIXME: use a more appropriate function
+              (msg->notif event)))]]))))
 
 ;; -- Friends List ------------------------------------------------------------
 

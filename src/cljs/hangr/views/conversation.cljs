@@ -6,6 +6,7 @@
             [re-frame.core :refer [subscribe dispatch]]
             [hangr.util :refer [id->key]]
             [hangr.util.ui :refer [click-dispatch]]
+            [hangr.util.conversation :refer [plus-photo-data]]
             [hangr.views.widgets :refer [avatar typing-indicator]]))
 
 ;; -- Utility functions -------------------------------------------------------
@@ -32,13 +33,6 @@
     #{".jpg" ".png" "jpeg"} ; TODO etc
     (string/lower-case 
       (subs path (- (count path) 4)))))
-
-(defn- plus-photo-data
-  "Extract the :plus_photo :data field from an embed-item, 
-  if possible. Sometimes it's returned in weird places"
-  [embed-item]
-  (or (-> embed-item :plus_photo :data)
-      (:embeds.PlusPhoto.plus_photo embed-item)))
 
 (defn- sticker?
   "Returns truthy if the embed-item is a sticker"
