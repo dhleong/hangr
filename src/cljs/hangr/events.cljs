@@ -81,15 +81,24 @@
                (-> context
                    (assoc-effect :scroll-to-bottom conv?))))))
 
-(def inject-self
-  "Inject the :self var into the context"
+(defn inject-db
+  "Create an interceptor that injects a path in the db as a coeffect"
+  [path]
   (->interceptor
-    :id :inject-self
-    :before (fn inject-self
+    :id :inject-db
+    :before (fn inject-db-handler
               [context]
               (let [db (get-coeffect context :db)]
                 (-> context
-                    (assoc-coeffect :self (:self db)))))))
+                    (assoc-coeffect path (get db path)))))))
+
+(def inject-pending-image
+  "Inject the :pending-image var into the context"
+  (inject-db :pending-image))
+
+(def inject-self
+  "Inject the :self var into the context"
+  (inject-db :self))
 
 ;; -- Helpers -----------------------------------------------------------------
 
@@ -212,6 +221,11 @@
 
 ;; -- Actions -----------------------------------------------------------------
 
+(reg-event-db
+  :cancel-image!
+  (fn [db]
+    (assoc db :pending-image nil)))
+
 (reg-event-fx
   :mark-read!
   [(inject-cofx :now) trim-v]
@@ -255,12 +269,14 @@
 
 (reg-event-fx
   :send-html
-  [conv?-scroll (conv-path :events) trim-v]
-  (fn [{:keys [db]} [conv-id msg-html]]
+  [conv?-scroll inject-pending-image (conv-path :events) trim-v]
+  (fn [{:keys [db pending-image]} [conv-id msg-html]]
     (let [msg (html->msg msg-html)]
       {:db (concat db [(msg->event msg)])
-       :ipc [:send conv-id msg]
-       :dispatch [:mark-read! conv-id]})))
+       :ipc [:send conv-id pending-image msg]
+       :dispatch-n (list
+                     [:mark-read! conv-id]
+                     [:cancel-image!])})))
 
 (reg-event-db
   :send-image
@@ -271,7 +287,8 @@
 (reg-event-db
   :sending-msg
   [(conv-path :events) trim-v]
-  (fn [events [conv-id msg]]
+  (fn [events [conv-id image msg]]
+    ;; TODO include the image
     (concat events [(msg->event msg)])))
 
 (reg-event-fx

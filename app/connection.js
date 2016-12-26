@@ -214,8 +214,32 @@ class ConnectionManager extends EventEmitter {
         });
     }
 
-    send(convId, rawMsg) {
-        var imageId; // TODO images?
+    /**
+     * Send a message, optionally including an image
+     * @params imagePath Path to an image to attach. If you
+     *  don't need an image, pass NULL (DO NOT omit)
+     */
+    send(convId, imagePath, rawMsg) {
+        if (!imagePath) {
+            console.log("send: No image");
+            return this._send(convId, undefined, rawMsg);
+        } else {
+            // upload, then send
+            console.log("send: Uploading image", imagePath);
+            return this.client.uploadimage(imagePath)
+            .then(imageId => {
+                console.log("send: Uploaded image ->", imageId);
+                return this._send(convId, imageId, rawMsg);
+            });
+        }
+    }
+
+    /**
+     * Actually do the sending
+     * @params imageId An image id retrieved via client.uploadimage,
+     * or undefined if no imageId
+     */
+    _send(convId, imageId, rawMsg) {
         var otrStatus = Client.OffTheRecordStatus.ON_THE_RECORD;
         var clientGeneratedId = rawMsg.shift();
         var deliveryMedium; // TODO use the same as the original conversation?

@@ -97,14 +97,14 @@ class IpcHandler {
         });
     }
 
-    send(e, convId, msg) {
-        console.log(`Request: send(${convId}, ${JSON.stringify(msg)})`);
+    send(e, convId, imagePath, msg) {
+        console.log(`Request: send(${convId}, ${imagePath}, ${JSON.stringify(msg)})`);
         // forward to the mainWindow so it can update friends list
         var mainWindow = this.getMainWindow();
-        if (mainWindow) mainWindow.send('send', convId, msg);
+        if (mainWindow) mainWindow.send('send', convId, imagePath, msg);
 
         // do this last, because it modifies msg
-        this.connMan.send(convId, msg);
+        this.connMan.send(convId, imagePath, msg);
     }
 
     set_focused$(e, convId, isFocused) {

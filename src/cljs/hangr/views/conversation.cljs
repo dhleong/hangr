@@ -33,16 +33,22 @@
     (string/lower-case 
       (subs path (- (count path) 4)))))
 
+(defn- plus-photo-data
+  "Extract the :plus_photo :data field from an embed-item, 
+  if possible. Sometimes it's returned in weird places"
+  [embed-item]
+  (or (-> embed-item :plus_photo :data)
+      (:embeds.PlusPhoto.plus_photo embed-item)))
+
 (defn- sticker?
   "Returns truthy if the embed-item is a sticker"
   [embed-item]
-  (let [photo (:plus_photo embed-item)]
+  (let [photo (plus-photo-data embed-item)]
     (and
       ; it must at least be a photo...
       photo
       ; is this sufficient? seems sketchy
       (nil? (-> photo
-                :data
                 :thumbnail
                 :url)))))
 
@@ -57,9 +63,10 @@
 (defn attachment-image
   [attachment]
   (let [sticker? (sticker? attachment)
-        url (-> attachment :plus_photo :data :url)
+        photo-data (plus-photo-data attachment)
+        url (:url photo-data)
         img [:img.attachment
-             {:src (-> attachment :plus_photo :data :thumbnail :image_url)
+             {:src (-> photo-data :thumbnail :image_url)
               :class (if sticker?
                        "sticker"
                        "image")}]]
@@ -158,7 +165,7 @@
          (with-meta
            (let [embed-item (:embed_item attachment)]
              (cond
-               (:plus_photo embed-item) [attachment-image embed-item]
+               (plus-photo-data embed-item) [attachment-image embed-item]
                (= 249 (-> embed-item :type_ first)) [attachment-image2 embed-item]
                :else [:span (str "UNKNOWN ATTACHMENT:" embed-item)]))
            ;; we can't use the reader macro since it's coming
@@ -236,6 +243,11 @@
       (fn [e]
         ; remove dragover class and preventDefault on the event
         (toggle-class "dragover" false e)
+        (let [el (.-target e)]
+          ; make EXTRA SURE it's removed
+          (js/setTimeout
+            #(.toggle el "dragover" false)
+            20))
         ; TODO: block multiple files (only a single file is supported)
         (let [files (-> e
                        .-dataTransfer
@@ -269,7 +281,7 @@
        (when-let [img @img]
          [:div.pending-image
           [:div.delete-button
-           {:on-click (click-dispatch [:send-image nil])}
+           {:on-click (click-dispatch [:cancel-image!])}
            "✖️"]
           [:img
            {:src img}]])])))
