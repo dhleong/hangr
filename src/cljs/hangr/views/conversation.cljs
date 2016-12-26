@@ -246,9 +246,8 @@
         (let [el (.-target e)]
           ; make EXTRA SURE it's removed
           (js/setTimeout
-            #(.toggle el "dragover" false)
+            #(.toggle (.-classList el) "dragover" false)
             20))
-        ; TODO: block multiple files (only a single file is supported)
         (let [files (-> e
                        .-dataTransfer
                        .-files)

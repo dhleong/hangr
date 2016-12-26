@@ -65,22 +65,32 @@
          (cons (client-generated-id)))))
 
 (defn msg->event
-  [msg]
-  {:id (first msg)
-   :client-generated-id (first msg)
-   :chat_message
-   {:message_content
-    {:segment
-     (map
-       (fn [[type & args]]
-         (case (keyword type)
-           :text {:type "TEXT"
-                  :text (first args)}
-           :link {:type "LINK"
-                  :text (or (second args)
-                            (first args))
-                  :link_data
-                  {:link_target (first args)}}
-           :newline {:type "NEWLINE"}))
-       (rest msg))}}
-   :timestamp (* (.now js/Date) 1000)})
+  ([msg]
+   (msg->event msg nil))
+  ([msg image-path]
+   {:id (first msg)
+    :client-generated-id (first msg)
+    :chat_message
+    {:message_content
+     {:attachment
+      (when image-path
+        [{:embed_item
+          {:embeds.PlusPhoto.plus_photo
+           {:url image-path
+            :thumbnail
+            {:url image-path
+             :image_url image-path}}}}])
+      :segment
+      (map
+        (fn [[type & args]]
+          (case (keyword type)
+            :text {:type "TEXT"
+                   :text (first args)}
+            :link {:type "LINK"
+                   :text (or (second args)
+                             (first args))
+                   :link_data
+                   {:link_target (first args)}}
+            :newline {:type "NEWLINE"}))
+        (rest msg))}}
+    :timestamp (* (.now js/Date) 1000)}))

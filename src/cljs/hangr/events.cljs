@@ -272,7 +272,7 @@
   [conv?-scroll inject-pending-image (conv-path :events) trim-v]
   (fn [{:keys [db pending-image]} [conv-id msg-html]]
     (let [msg (html->msg msg-html)]
-      {:db (concat db [(msg->event msg)])
+      {:db (concat db [(msg->event msg pending-image)])
        :ipc [:send conv-id pending-image msg]
        :dispatch-n (list
                      [:mark-read! conv-id]
