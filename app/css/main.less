@@ -345,6 +345,30 @@ ul#conversations {
                 }
             }
 
+            .send-button-container {
+                position: absolute;
+                left: 32px;
+                top: 32px;
+                right: 32px;
+                bottom: 32px;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                cursor: pointer;
+
+                &:hover .send-button {
+                    background-color: #fff;
+                }
+
+                .send-button {
+                    background-color: fade(#fff, 80%);
+                    padding: 8px;
+                    border-radius: 12px;
+                }
+            }
+
             img {
                 max-width: 100%;
                 max-height: 200px;

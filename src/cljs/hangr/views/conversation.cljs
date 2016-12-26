@@ -267,7 +267,7 @@
 ;; -- Pending image overlay ---------------------------------------------------
 
 (defn pending-image
-  []
+  [id]
   (let [img (subscribe [:pending-image])]
     (fn []
       [:div#pending-image-container
@@ -277,7 +277,10 @@
            {:on-click (click-dispatch [:cancel-image!])}
            "✖️"]
           [:img
-           {:src img}]])])))
+           {:src img}]
+          [:div.send-button-container
+           {:on-click (click-dispatch [:send-html id ""])}
+           [:i.fa.fa-paper-plane.send-button]]])])))
 
 ;; -- Main Interface ----------------------------------------------------------
 
@@ -325,7 +328,7 @@
             (when-not (anything-focused?)
               (focus!)))}
          [conversation-events id]]
-        [pending-image]
+        [pending-image id]
         [composer id]])}))
 
 (defn conversation-title
