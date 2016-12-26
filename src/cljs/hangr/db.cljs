@@ -8,4 +8,5 @@
    :people {}
    :self nil
    :convs nil
-   :focused? false})
+   :focused? false
+   :pending-image nil})

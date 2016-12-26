@@ -26,6 +26,13 @@
       (.getElementById "composer-input")
       (.focus)))
 
+(defn- image?
+  [path]
+  (contains?
+    #{".jpg" ".png" "jpeg"} ; TODO etc
+    (string/lower-case 
+      (subs path (- (count path) 4)))))
+
 (defn- sticker?
   "Returns truthy if the embed-item is a sticker"
   [embed-item]
@@ -230,15 +237,42 @@
         ; remove dragover class and preventDefault on the event
         (toggle-class "dragover" false e)
         ; TODO: block multiple files (only a single file is supported)
-        (let [path (-> e
+        (let [files (-> e
                        .-dataTransfer
-                       .-files
+                       .-files)
+              path (-> files
                        (aget 0)
                        .-path)]
-          ;; TODO upload, etc.
-          (println "DROP" path)))}
+          (cond
+            (nil? path)
+            nil ;; ignore
+            ;
+            (> (.-length files) 1)
+            (println "WARN: too many files") ;; TODO snackbar-ish?
+            ;
+            (not (image? path))
+            (println "WARN: not an image") ;; TODO snackbar-ish?
+            ;
+            :else
+            (dispatch [:send-image path]))))}
      ; TODO: something a bit nicer
-     "Drop here to send!"]))
+     [:div.label 
+      "Drop here to send!"]]))
+
+;; -- Pending image overlay ---------------------------------------------------
+
+(defn pending-image
+  []
+  (let [img (subscribe [:pending-image])]
+    (fn []
+      [:div#pending-image-container
+       (when-let [img @img]
+         [:div.pending-image
+          [:div.delete-button
+           {:on-click (click-dispatch [:send-image nil])}
+           "✖️"]
+          [:img
+           {:src img}]])])))
 
 ;; -- Main Interface ----------------------------------------------------------
 
@@ -286,6 +320,7 @@
             (when-not (anything-focused?)
               (focus!)))}
          [conversation-events id]]
+        [pending-image]
         [composer id]])}))
 
 (defn conversation-title

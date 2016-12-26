@@ -263,6 +263,12 @@
        :dispatch [:mark-read! conv-id]})))
 
 (reg-event-db
+  :send-image
+  [trim-v]
+  (fn [db [path]]
+    (assoc db :pending-image path)))
+
+(reg-event-db
   :sending-msg
   [(conv-path :events) trim-v]
   (fn [events [conv-id msg]]

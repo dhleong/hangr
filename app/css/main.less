@@ -305,6 +305,42 @@ ul#conversations {
             }
         }
     }
+
+    #pending-image-container {
+        position: fixed;
+        bottom: @composer-height;
+        left: 0;
+        right: 0;
+
+        .pending-image {
+            padding: 4px;
+            
+            background-color: #fff;
+
+            .delete-button {
+                position: absolute;
+                right: 0;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                cursor: pointer;
+                margin: 0 4px;
+
+                &:hover {
+                    background-color: darken(#fff, 10%);
+                    border-radius: 12px;
+                }
+            }
+
+            img {
+                max-width: 100%;
+                max-height: 200px;
+            }
+        }
+    }
 }
 
 //
