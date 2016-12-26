@@ -52,9 +52,9 @@
      (dispatch [:set-self (self->clj info)]))
 
    :send
-   (fn [conv-id sending-msg-event]
+   (fn [conv-id image sending-msg-event]
      (.log js/console "Sending..." sending-msg-event)
-     (dispatch [:sending-msg conv-id (js->real-clj sending-msg-event)]))
+     (dispatch [:sending-msg conv-id image (js->real-clj sending-msg-event)]))
    
    :sent
    (fn [sent-msg-event]

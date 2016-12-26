@@ -6,6 +6,7 @@
             [re-frame.core :refer [subscribe dispatch]]
             [hangr.util :refer [id->key]]
             [hangr.util.ui :refer [click-dispatch]]
+            [hangr.util.conversation :refer [plus-photo-data]]
             [hangr.views.widgets :refer [avatar typing-indicator]]))
 
 ;; -- Utility functions -------------------------------------------------------
@@ -26,16 +27,22 @@
       (.getElementById "composer-input")
       (.focus)))
 
+(defn- image?
+  [path]
+  (contains?
+    #{".jpg" ".png" "jpeg"} ; TODO etc
+    (string/lower-case 
+      (subs path (- (count path) 4)))))
+
 (defn- sticker?
   "Returns truthy if the embed-item is a sticker"
   [embed-item]
-  (let [photo (:plus_photo embed-item)]
+  (let [photo (plus-photo-data embed-item)]
     (and
       ; it must at least be a photo...
       photo
       ; is this sufficient? seems sketchy
       (nil? (-> photo
-                :data
                 :thumbnail
                 :url)))))
 
@@ -50,9 +57,10 @@
 (defn attachment-image
   [attachment]
   (let [sticker? (sticker? attachment)
-        url (-> attachment :plus_photo :data :url)
+        photo-data (plus-photo-data attachment)
+        url (:url photo-data)
         img [:img.attachment
-             {:src (-> attachment :plus_photo :data :thumbnail :image_url)
+             {:src (-> photo-data :thumbnail :image_url)
               :class (if sticker?
                        "sticker"
                        "image")}]]
@@ -151,7 +159,7 @@
          (with-meta
            (let [embed-item (:embed_item attachment)]
              (cond
-               (:plus_photo embed-item) [attachment-image embed-item]
+               (plus-photo-data embed-item) [attachment-image embed-item]
                (= 249 (-> embed-item :type_ first)) [attachment-image2 embed-item]
                :else [:span (str "UNKNOWN ATTACHMENT:" embed-item)]))
            ;; we can't use the reader macro since it's coming
@@ -210,6 +218,67 @@
                   [avatar (get member-map (:sender event))])
                 [conversation-item event]])))]))))
 
+;; -- File drag-and-drop Receiver ---------------------------------------------
+
+(defn file-drop-receiver
+  [id]
+  (let [toggle-class
+        (fn [class-name add? e]
+          (.preventDefault e)
+          (-> e
+              .-target
+              .-classList
+              (.toggle class-name add?)))] 
+    [:div#drop-receiver.drop-receiver
+     {:on-drag-enter (partial toggle-class "dragover" :add!)
+      :on-drag-leave (partial toggle-class "dragover" false)
+      :on-drag-over #(.preventDefault %)
+      :on-drop
+      (fn [e]
+        ; remove dragover class and preventDefault on the event
+        (toggle-class "dragover" false e)
+        (let [el (.-target e)]
+          ; make EXTRA SURE it's removed
+          (js/setTimeout
+            #(.toggle (.-classList el) "dragover" false)
+            20))
+        (let [files (-> e
+                       .-dataTransfer
+                       .-files)
+              path (-> files
+                       (aget 0)
+                       .-path)]
+          (cond
+            (nil? path)
+            nil ;; ignore
+            ;
+            (> (.-length files) 1)
+            (println "WARN: too many files") ;; TODO snackbar-ish?
+            ;
+            (not (image? path))
+            (println "WARN: not an image") ;; TODO snackbar-ish?
+            ;
+            :else
+            (dispatch [:send-image path]))))}
+     ; TODO: something a bit nicer
+     [:div.label 
+      "Drop here to send!"]]))
+
+;; -- Pending image overlay ---------------------------------------------------
+
+(defn pending-image
+  []
+  (let [img (subscribe [:pending-image])]
+    (fn []
+      [:div#pending-image-container
+       (when-let [img @img]
+         [:div.pending-image
+          [:div.delete-button
+           {:on-click (click-dispatch [:cancel-image!])}
+           "✖️"]
+          [:img
+           {:src img}]])])))
+
 ;; -- Main Interface ----------------------------------------------------------
 
 (defn composer
@@ -249,12 +318,14 @@
      :reagent-render
      (fn [id]
        [:div#conversation
+        [file-drop-receiver]
         [:div#events-container.scroll-host
          {:on-click 
           (fn [e]
             (when-not (anything-focused?)
               (focus!)))}
          [conversation-events id]]
+        [pending-image]
         [composer id]])}))
 
 (defn conversation-title

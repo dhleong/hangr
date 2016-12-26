@@ -83,6 +83,6 @@
     ;
     (do
       ; NB: js/console gives us nicer inspection
-      (.log js/console "Can't create text preview for" (clj->js msg))
+      (js/console.log "Can't create text preview for" (clj->js msg))
       ; just return a blank string for safety
       "")))

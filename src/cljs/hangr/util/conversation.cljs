@@ -89,6 +89,17 @@
       (partial join-sorted-by (comp long :timestamp))
       member-read-events)))
 
+(defn plus-photo-data
+  "Extract the :plus_photo :data field from an embed-item
+  (or an attachment), 
+  if possible. Sometimes it's returned in weird places"
+  [embed-item]
+  (let [embed-item (or (:embed_item embed-item)
+                       embed-item)]
+    (or (-> embed-item :plus_photo :data)
+        (:embeds.PlusPhoto.plus_photo embed-item))))
+
+
 (defn unread?
   "Check if the conversation is unread"
   [conv]

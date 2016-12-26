@@ -5,6 +5,13 @@
 
 // mixins
 
+.material-transition(@kind, @duration: 480ms) {
+  transition: @kind @duration;
+
+  // this is like the material design "linear in, slow out"
+  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+}
+
 .roboto() {
     font-family: 'Roboto', sans-serif;
 }
@@ -129,11 +136,17 @@ ul#conversations {
             white-space: nowrap;
         }
 
-        .preview {
+        div.preview {
             font-size: 10pt;
             color: #999;
             height: 1.2em;
             overflow: hidden;
+        }
+
+        img.preview {
+            max-width: 100%;
+            position: relative;
+            top: -50%;
         }
 
         &:hover {
@@ -222,6 +235,10 @@ ul#conversations {
                 &.pending .event-item {
                     background-color: #f0f0f0;
                     color: #777;
+
+                    img.attachment {
+                        opacity: 0.5;
+                    }
                 }
                 margin-left: @message-margin;
                 margin-right: (@message-margin / 4);
@@ -297,6 +314,69 @@ ul#conversations {
                 outline: none;
             }
         }
+    }
+
+    #pending-image-container {
+        position: fixed;
+        bottom: @composer-height;
+        left: 0;
+        right: 0;
+
+        .pending-image {
+            padding: 4px;
+            
+            background-color: #fff;
+
+            .delete-button {
+                position: absolute;
+                right: 0;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                cursor: pointer;
+                margin: 0 4px;
+
+                &:hover {
+                    background-color: darken(#fff, 10%);
+                    border-radius: 12px;
+                }
+            }
+
+            img {
+                max-width: 100%;
+                max-height: 200px;
+            }
+        }
+    }
+}
+
+//
+// Drag-and-drop receiver
+.drop-receiver {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    opacity: 0;
+    z-index: 999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+
+    .material-transition(background-color);
+
+    &.dragover {
+        opacity: 1;
+        visibility: visible;
+        // display: block;
+        background-color: fade(#34D2E0, 30%);
+        pointer-events: auto;
     }
 }
 

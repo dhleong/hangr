@@ -9,5 +9,21 @@
 <body>
   <div id="app" style="height: inherit"></div>
   <script src="js/p/app.js"></script>
+  <script>
+    // facilitate the drag-and-drop thing
+    var drags = 0;
+    var $ = document.getElementById.bind(document);
+    document.addEventListener('dragenter', e => {
+        var receiver = $('drop-receiver');
+        if (!receiver) return;
+
+        receiver.classList.toggle('dragover', true);
+    });
+    document.addEventListener('dragleave', e => {
+        if (e.target.id == 'drop-receiver') {
+            e.target.classList.toggle('dragover', false);
+        }
+    });
+  </script>
 </body>
 </html>

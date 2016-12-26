@@ -13,6 +13,7 @@
 (reg-sub :connecting? :connecting?)
 (reg-sub :focused? :focused?)
 (reg-sub :self :self) 
+(reg-sub :pending-image :pending-image) 
 (reg-sub :people :people) 
 
 ;; -- Internal subscriptions --------------------------------------------------
