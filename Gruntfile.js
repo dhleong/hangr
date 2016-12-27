@@ -1,3 +1,6 @@
+/* globals pushd: false, popd: false, cp: false, exec: false */
+/* globals rm: false, cat: false, mkdir: false, which: false */
+
 module.exports = function(grunt) {
 'use strict';
 
@@ -101,7 +104,7 @@ grunt.registerTask('cljsbuild-prod', function() {
 });
 
 grunt.registerTask('launch', function(async) {
-  var IsAsync = (async == "true");
+  var IsAsync = (async === "true");
   grunt.log.writeln("\nLaunching development version...");
   var local_exe = exe[os];
   exec(path.join(electron_path, local_exe) + " app", {async:IsAsync});
@@ -139,7 +142,7 @@ function getBuildMeta() {
     date:    moment().format("YYYY-MM-DD")
   };
   var commit = exec("git rev-list HEAD --count", {silent:true}).output.trim();
-  if (commit != '') {
+  if (commit !== '') {
     build.commit = "pre";
   } else {
     build.commit = commit;
@@ -274,7 +277,7 @@ grunt.registerTask('release-linux', function() {
   var opts = {
     "arch": ["x64"],
     "platform": "linux"
-  }
+  };
   defineRelease(done, opts);
 });
 
@@ -318,7 +321,7 @@ grunt.registerTask('release-win', function() {
     "arch": ["x64"],
     "platform": "win32",
     "icon": "app/img/logo.ico"
-  }
+  };
   defineRelease(done, opts, cb);
 });
 
