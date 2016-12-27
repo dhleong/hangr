@@ -1,5 +1,6 @@
 /* globals pushd: false, popd: false, cp: false, exec: false */
 /* globals rm: false, cat: false, mkdir: false, which: false */
+/* globals sed: false */
 
 module.exports = function(grunt) {
 'use strict';
@@ -82,6 +83,7 @@ grunt.loadNpmTasks('winresourcer');
 grunt.registerTask('setup', [
   'less',
   'download-electron',
+  'update-electron-plist',
   'ensure-config-exists',
 ]);
 
@@ -92,6 +94,28 @@ grunt.registerTask('ensure-config-exists', function() {
     cp("example.config.json", "config.json");
   }
   popd();
+});
+
+grunt.registerTask('update-electron-plist', function() {
+  if (os === 'mac') {
+    pushd("electron/Electron.app/Contents");
+    sed('-i', 
+      /<string>com.github.electron<\/string>/,
+      `<string>${packageJson.bundleId}</string>`,
+      "Info.plist");
+    
+    // hax to replace *just* the "DisplayName"
+    var first = true;
+    sed('-i', 
+      /<string>Electron<\/string>/m,
+      function(input) {
+        if (!first) return input;
+        first = false;
+        return `<string>${packageJson.name}</string>`;
+      },
+      "Info.plist");
+    popd();
+  }
 });
 
 grunt.registerTask('run-app-bower', function() {
