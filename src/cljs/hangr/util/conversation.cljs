@@ -97,7 +97,22 @@
   (let [embed-item (or (:embed_item embed-item)
                        embed-item)]
     (or (-> embed-item :plus_photo :data)
-        (:embeds.PlusPhoto.plus_photo embed-item))))
+        (:embeds.PlusPhoto.plus_photo embed-item)
+        ; wacky, protobuf-like version:
+        (when (= [249] (-> embed-item :type_))
+          (let [data (-> embed-item :data vals first)
+                thumbnail-raw (first data)
+                thumbnail-url (-> thumbnail-raw (nth 0))
+                thumbnail-image (-> thumbnail-raw (nth 1))
+                thumbnail-width (-> thumbnail-raw (nth 2))
+                thumbnail-height (-> thumbnail-raw (nth 3))
+                url (-> data (nth 4))]
+            {:url url
+             :thumbnail
+             {:image_url thumbnail-image
+              :url thumbnail-url
+              :width_px thumbnail-width
+              :height_px thumbnail-height}})))))
 
 
 (defn unread?
