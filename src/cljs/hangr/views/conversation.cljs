@@ -83,6 +83,13 @@
       {:src thumbnail
        :class "image"}]]))
 
+(defn attachment-google-voice
+  [attachment]
+  ; for these we have a :data field that looks like:
+  ;   gv-0123456789012344567
+  ; It'd be awesome if we could figure out how to load the audio
+  [:div.segment.text "[Unsupported: Google Voice Voicemail]"])
+
 ;; -- Segment Types -----------------------------------------------------------
 
 (defn segment-link
@@ -160,7 +167,8 @@
            (let [embed-item (:embed_item attachment)]
              (cond
                (plus-photo-data embed-item) [attachment-image embed-item]
-               (= 249 (-> embed-item :type_ first)) [attachment-image2 embed-item]
+               (= [249] (-> embed-item :type_)) [attachment-image2 embed-item]
+               (= [438] (-> embed-item :type_)) [attachment-google-voice embed-item]
                :else [:span (str "UNKNOWN ATTACHMENT:" embed-item)]))
            ;; we can't use the reader macro since it's coming
            ;;  from a (case)
