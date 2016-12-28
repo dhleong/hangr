@@ -6,19 +6,17 @@
             [reagent.core :as reagent]
             [re-frame.core :refer [dispatch dispatch-sync 
                                    clear-subscription-cache!]]
-            [re-frisk.core :refer [enable-re-frisk!]]
+            ;; [re-frisk.core :refer [enable-re-frisk!]]
             [secretary.core :as secretary]
             [hangr.events]
             [hangr.fx]
             [hangr.subs]
             [hangr.views]
-            [hangr.connection :as connection]
-            [devtools.core :as devtools])
+            [hangr.connection :as connection])
   (:import [goog History]
            [goog.history EventType]))
 
 ;; -- Debugging aids ----------------------------------------------------------
-(devtools/install! [:formatters :hints])       ;; we love https://github.com/binaryage/cljs-devtools
 (enable-console-print!)   ;; so println writes to console.log
 
 ;; -- Routes and History ------------------------------------------------------
@@ -40,8 +38,8 @@
   (dispatch-sync [:initialize-db])
   ; clean up for hot reloads
   (clear-subscription-cache!)
-  #_(when js/goog.DEBUG 
-    (enable-re-frisk!))
+  ;; (when js/goog.DEBUG 
+  ;;   (enable-re-frisk!))
   ; init the connection
   (connection/init!)
   ; start rendering

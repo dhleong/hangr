@@ -165,7 +165,7 @@ function getBuildMeta() {
     version: tokens[2].replace(/"/g, "").trim(),
     date:    moment().format("YYYY-MM-DD")
   };
-  var commit = exec("git rev-list HEAD --count", {silent:true}).output.trim();
+  var commit = exec("git rev-list HEAD --count", {silent:true}).stdout.trim();
   if (commit !== '') {
     build.commit = "pre";
   } else {

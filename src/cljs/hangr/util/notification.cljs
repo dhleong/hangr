@@ -15,27 +15,33 @@
       :or {timeout 20}}] ;; so terminal-notifier doesn't linger if ignored
   {:pre [(string? title)
          (string? message)]}
-  (-> notifier
-      (.notify 
-        #js {:title title
-             :message message 
-             :icon icon
-             :reply reply?
-             :timeout timeout
-             :sender bundle-id}
-        (fn [e resp & [reply]]
-          (let [reply (js->real-clj reply)]
-            (cond
-              ;; did they reply inline?
-              (and on-reply (:activationValue reply)) 
-              (on-reply (:activationValue reply))
-              ;; nope; did they tap to open the notif?
-              (and (= "activate" resp)
-                   on-click)
-              (on-click)
-              ;; else, ignored...
-              :else 
-              nil)))))) 
+  (let [params
+        (->> {:title title
+              :message message 
+              :icon icon
+              :reply reply?
+              :timeout timeout
+              :sender bundle-id}
+             (filter second)
+             (into {})
+             clj->js)]
+    (js/console.log "NOTIFY!" params)
+    (-> notifier
+        (.notify 
+          params
+          (fn [e resp & [reply]]
+            (let [reply (js->real-clj reply)]
+              (cond
+                ;; did they reply inline?
+                (and on-reply (:activationValue reply)) 
+                (on-reply (:activationValue reply))
+                ;; nope; did they tap to open the notif?
+                (and (= "activate" resp)
+                     on-click)
+                (on-click)
+                ;; else, ignored...
+                :else 
+                nil))))))) 
 
 (defn conv-msg->title
   "Pick a 'Title' for the `msg` received in the
