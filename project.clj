@@ -9,7 +9,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.293"]
                  [reagent "0.6.0"]
-                 [re-frame "0.9.0"]
+                 [re-frame "0.9.1"]
                  [secretary "1.2.3"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]
