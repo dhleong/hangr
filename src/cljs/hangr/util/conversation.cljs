@@ -114,6 +114,12 @@
               :width_px thumbnail-width
               :height_px thumbnail-height}})))))
 
+(defn scale-photo
+  [photo-data max-width]
+  (when-let [w (-> photo-data :thumbnail :width_px)]
+    (when-let [h (-> photo-data :thumbnail :height_px)]
+      (let [r (/ h w)]
+        [max-width (* r max-width)]))))
 
 (defn unread?
   "Check if the conversation is unread"

@@ -6,8 +6,12 @@
             [re-frame.core :refer [subscribe dispatch]]
             [hangr.util :refer [id->key]]
             [hangr.util.ui :refer [click-dispatch]]
-            [hangr.util.conversation :refer [plus-photo-data]]
+            [hangr.util.conversation :refer [plus-photo-data scale-photo]]
             [hangr.views.widgets :refer [avatar typing-indicator]]))
+
+;; this is hax, measured with devtools; helps to prevent gross
+;; pops with image attachments, though
+(def max-photo-width 204)
 
 ;; -- Utility functions -------------------------------------------------------
 
@@ -58,12 +62,16 @@
   [attachment]
   (let [sticker? (sticker? attachment)
         photo-data (plus-photo-data attachment)
+        scaled-size (scale-photo photo-data max-photo-width)
         url (:url photo-data)
+        styling (when-let [[w h] scaled-size]
+                  {:min-height h})
         img [:img.attachment
              {:src (-> photo-data :thumbnail :image_url)
               :class (if sticker?
                        "sticker"
-                       "image")}]]
+                       "image")
+              :style styling}]]
     (if (and sticker? url)
       img
       [:a
