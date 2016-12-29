@@ -188,13 +188,15 @@ ul#conversations {
         padding: @message-separation 0 0 0;
 
         .event {
+            @avatar-size: 32px;
+
             margin-bottom: @message-separation;
 
             list-style: none;
             overflow: hidden;
             display: flex;
 
-            .avatar(32px);
+            .avatar(@avatar-size);
 
             &.hangout {
                 .roboto-condensed();
@@ -221,7 +223,14 @@ ul#conversations {
 
             &.timestamp {
                 display: flex;
-                justify-content: center;
+
+                &.incoming {
+                    margin-left: @avatar-size + @message-margin;
+                }
+
+                &.outgoing {
+                    margin-right: (@message-margin / 2);
+                }
 
                 color: #999;
                 font-size: 8pt;

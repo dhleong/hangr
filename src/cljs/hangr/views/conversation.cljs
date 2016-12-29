@@ -158,8 +158,11 @@
                     timestamp-formatter-long
                     timestamp-formatter-short)]
     [:div.event.timestamp
-     (:first_name member)
-     " • "
+     {:class (if (:incoming? event)
+               "incoming"
+               "outgoing")}
+     (when (:incoming? event)
+       (str (:first_name member) " • "))
      (unparse formatter date)]))
 
 (defn hangr-event
