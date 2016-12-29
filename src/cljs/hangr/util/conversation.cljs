@@ -3,6 +3,9 @@
   hangr.util.conversation
   (:require [hangr.util :refer [id->key join-sorted-by]]))
 
+(def timestamp-min-separation
+  (* 2 60 1000 1000))
+
 (defn event-incoming?
   "Given the user's (:self) id and an event,
   return true if that event is incoming"
@@ -88,15 +91,33 @@
   "Given a conv, generate timestamp events to be interleaved
   into (:events conv)"
   [conv]
-  ;; TODO FIXME merge timestamps within a minute or so
   (->> conv
        :events
-       (map (fn [e]
-              (-> e
+       (map (fn [ev]
+              (-> ev
                   (select-keys [:sender :timestamp :incoming?])
                   (assoc
                     :hangr-type :timestamp
-                    :id (str "stamp-" (:timestamp e))))))))
+                    :id (str "stamp-" (:timestamp ev))))))
+       (reduce 
+         (fn [coll ev]
+           (cond
+             ; nothing? just do it
+             (empty? coll)
+             [ev]
+             ; within a minute-ish of the last (and same sender?)
+             ;  replace the old one
+             (and
+               (= (:sender (last coll))
+                  (:sender ev))
+               (< (- (:timestamp ev)
+                     (:timestamp (last coll))) 
+                  timestamp-min-separation))
+             (concat (drop-last coll) [ev])
+             ; otherwise, append
+             :else
+             (concat coll [ev])))
+         [])))
 
 (defn insert-hangr-events
   "Inserts special events into :events for rendering convenience"
