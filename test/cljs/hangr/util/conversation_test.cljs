@@ -114,7 +114,15 @@
                :timestamp 10}
               {:sender :mreynolds
                :timestamp 15}
+              {:sender :mreynolds
+               :hangr-type :timestamp
+               :id "stamp-15"
+               :timestamp 15}
               {:sender :tammd
+               :timestamp 20}
+              {:sender :tammd
+               :hangr-type :timestamp
+               :id "stamp-20"
                :timestamp 20}
               {:sender :tammd
                :hangr-type :read-indicator
