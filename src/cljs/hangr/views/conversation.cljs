@@ -4,9 +4,10 @@
   (:require [clojure.string :as string]
             [reagent.core  :as reagent]
             [re-frame.core :refer [subscribe dispatch]]
-            [cljs-time.core :refer [days minus now before?]]
+            [cljs-time.core :refer [days minus now before? to-default-time-zone]]
             [cljs-time.coerce :refer [from-long]]
             [cljs-time.format :refer [formatter unparse]]
+            ;; [cljs-time.local :refer [to-local-date-time]]
             [hangr.util :refer [id->key]]
             [hangr.util.ui :refer [click-dispatch]]
             [hangr.util.conversation :refer [plus-photo-data scale-photo]]
@@ -151,7 +152,8 @@
 (defn hangr-timestamp
   [member-map event]
   (let [member (get member-map (:sender event))
-        date (from-long (/ (:timestamp event) 1000))
+        date (to-default-time-zone
+              (from-long (/ (:timestamp event) 1000)))
         formatter (if (before? date 
                                (minus (now)
                                       (days 6))) 
