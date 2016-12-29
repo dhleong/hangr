@@ -65,29 +65,49 @@
                       person-id))})))
            (into {})))))
 
-(defn insert-read-indicators
+(defn generate-read-events
   "Given a conv whose :members array has been updated
-  via (fill-members), inserts special events into :events
-  to indicate each member's last-read state"
+  via (fill-members), generate read events to be 
+  interleaved into (:events conv)"
   [conv]
   (let [self-id (-> conv :self :id)
         members (->> (:members conv)
                      vals
                      (remove (comp (partial = self-id) :id))
-                     (sort-by (comp long :latest-read-timestamp)))
-        member-read-events (map 
-                             (fn [member]
-                               {:sender (:id member)
-                                :hangr-type :read-indicator
-                                :id (str (name (:id member)) "-read")
-                                :typing (:typing member)
-                                :timestamp (:latest-read-timestamp member)})
-                             members)]
-    (update-in 
-      conv
-      [:events]
-      (partial join-sorted-by (comp long :timestamp))
-      member-read-events)))
+                     (sort-by (comp long :latest-read-timestamp)))]
+    (map 
+      (fn [member]
+        {:sender (:id member)
+         :hangr-type :read-indicator
+         :id (str (name (:id member)) "-read")
+         :typing (:typing member)
+         :timestamp (:latest-read-timestamp member)})
+      members)))
+
+(defn generate-timestamps
+  "Given a conv, generate timestamp events to be interleaved
+  into (:events conv)"
+  [conv]
+  ;; TODO FIXME merge timestamps within a minute or so
+  (->> conv
+       :events
+       (map (fn [e]
+              (-> e
+                  (select-keys [:sender :timestamp :incoming?])
+                  (assoc
+                    :hangr-type :timestamp
+                    :id (str "stamp-" (:timestamp e))))))))
+
+(defn insert-hangr-events
+  "Inserts special events into :events for rendering convenience"
+  [conv]
+  (update-in 
+    conv
+    [:events]
+    (partial join-sorted-by (comp long :timestamp))
+    ; collections to interleave:
+    (generate-timestamps conv)
+    (generate-read-events conv)))
 
 (defn plus-photo-data
   "Extract the :plus_photo :data field from an embed-item

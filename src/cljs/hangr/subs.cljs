@@ -2,7 +2,7 @@
       :doc "Subscriptions"}
   hangr.subs
   (:require [re-frame.core :refer [reg-sub trim-v subscribe]]
-            [hangr.util.conversation :refer [event-incoming? fill-members insert-read-indicators]]))
+            [hangr.util.conversation :refer [event-incoming? fill-members insert-hangr-events]]))
 
 ;; -- Helpers -----------------------------------------------------------------
 
@@ -88,4 +88,4 @@
                       (event-incoming? (:id self) %))))
           (as-> c
             (fill-members people c))
-          insert-read-indicators))))
+          insert-hangr-events))))

@@ -5,7 +5,7 @@
                                              fill-members
                                              unread?
                                              conv-latest-read
-                                             insert-read-indicators]]))
+                                             insert-hangr-events]]))
 
 (deftest incoming?-test
   (testing "Event incoming"
@@ -88,7 +88,7 @@
 (deftest insert-read-indicators-test
   (testing "Insert for multiple"
     (let [inserted
-          (insert-read-indicators
+          (insert-hangr-events
             {:members
              {:mreynolds
               {:id :mreynolds
