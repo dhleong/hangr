@@ -5,7 +5,7 @@
                                              fill-members
                                              unread?
                                              conv-latest-read
-                                             insert-read-indicators]]))
+                                             insert-hangr-events]]))
 
 (deftest incoming?-test
   (testing "Event incoming"
@@ -88,7 +88,7 @@
 (deftest insert-read-indicators-test
   (testing "Insert for multiple"
     (let [inserted
-          (insert-read-indicators
+          (insert-hangr-events
             {:members
              {:mreynolds
               {:id :mreynolds
@@ -114,7 +114,15 @@
                :timestamp 10}
               {:sender :mreynolds
                :timestamp 15}
+              {:sender :mreynolds
+               :hangr-type :timestamp
+               :id "stamp-15"
+               :timestamp 15}
               {:sender :tammd
+               :timestamp 20}
+              {:sender :tammd
+               :hangr-type :timestamp
+               :id "stamp-20"
                :timestamp 20}
               {:sender :tammd
                :hangr-type :read-indicator

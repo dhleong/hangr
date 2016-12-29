@@ -4,6 +4,10 @@
   (:require [clojure.string :as string]
             [reagent.core  :as reagent]
             [re-frame.core :refer [subscribe dispatch]]
+            [cljs-time.core :refer [days minus now before? to-default-time-zone]]
+            [cljs-time.coerce :refer [from-long]]
+            [cljs-time.format :refer [formatter unparse]]
+            ;; [cljs-time.local :refer [to-local-date-time]]
             [hangr.util :refer [id->key]]
             [hangr.util.ui :refer [click-dispatch]]
             [hangr.util.conversation :refer [plus-photo-data scale-photo]]
@@ -12,6 +16,9 @@
 ;; this is hax, measured with devtools; helps to prevent gross
 ;; pops with image attachments, though
 (def max-photo-width 204)
+
+(def timestamp-formatter-long (formatter "MMM dd, h:mm A"))
+(def timestamp-formatter-short (formatter "EEE, h:mm A"))
 
 ;; -- Utility functions -------------------------------------------------------
 
@@ -129,7 +136,6 @@
 (defn hangr-read-indicator
   [member-map event]
   (let [member (get member-map (:sender event))]
-    (.log js/console "MEMBER = " member)
     [:div.event.read-indicator
      [avatar 
       {:class 
@@ -143,10 +149,29 @@
                      (= :stopped typing))
          [typing-indicator typing]))]))
 
+(defn hangr-timestamp
+  [member-map event]
+  (let [member (get member-map (:sender event))
+        date (to-default-time-zone
+              (from-long (/ (:timestamp event) 1000)))
+        formatter (if (before? date 
+                               (minus (now)
+                                      (days 6))) 
+                    timestamp-formatter-long
+                    timestamp-formatter-short)]
+    [:div.event.timestamp
+     {:class (if (:incoming? event)
+               "incoming"
+               "outgoing")}
+     (when (:incoming? event)
+       (str (:first_name member) " • "))
+     (unparse formatter date)]))
+
 (defn hangr-event
   [member-map event]
   (case (:hangr-type event)
-    :read-indicator [hangr-read-indicator member-map event]))
+    :read-indicator [hangr-read-indicator member-map event]
+    :timestamp [hangr-timestamp member-map event]))
 
 ;; -- Conversation Item Facade ------------------------------------------------
 

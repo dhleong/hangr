@@ -10,7 +10,8 @@
                  [org.clojure/clojurescript "1.9.293"]
                  [reagent "0.6.0"]
                  [re-frame "0.9.1"]
-                 [secretary "1.2.3"]]
+                 [secretary "1.2.3"]
+                 [com.andrewmcveigh/cljs-time "0.5.0-alpha2"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]
             [lein-less "1.7.5"]]
