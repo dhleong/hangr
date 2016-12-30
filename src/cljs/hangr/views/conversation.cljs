@@ -11,7 +11,7 @@
             [hangr.util :refer [id->key]]
             [hangr.util.people :refer [first-name]]
             [hangr.util.ui :refer [click-dispatch]]
-            [hangr.util.conversation :refer [plus-photo-data scale-photo]]
+            [hangr.util.conversation :refer [plus-photo-data scale-photo sms?]]
             [hangr.views.widgets :refer [avatar icon typing-indicator]]))
 
 ;; this is hax, measured with devtools; helps to prevent gross
@@ -402,8 +402,11 @@
 
 (defn conversation-header
   [id]
-  [:div
-   [conversation-title id]
-   [:span#video-call
-    {:on-click (click-dispatch [:create-hangout id])}
-    [icon :videocam]]])
+  (let [conv (subscribe [:conv id])]
+    (fn []
+      [:div
+       [conversation-title id]
+       (when (not (sms? @conv))
+         [:span#video-call
+          {:on-click (click-dispatch [:create-hangout id])}
+          [icon :videocam]])])))

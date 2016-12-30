@@ -162,6 +162,17 @@
       (let [r (/ h w)]
         [max-width (* r max-width)]))))
 
+(defn sms?
+  "Check if the conversation is SMS-based"
+  [conv]
+  (let [self-id (-> conv :self :id)]
+    (not
+      (->> conv
+           :conversation
+           :participant_data
+           (remove #(= self-id (id->key (:id %))))
+           (some #(= "GAIA" (:participant_type %)))))))
+
 (defn unread?
   "Check if the conversation is unread"
   [conv]
