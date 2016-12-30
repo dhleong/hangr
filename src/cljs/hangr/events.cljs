@@ -141,12 +141,16 @@
       {:db (update conv :events
                    concat [msg])
        :notify-chat!
-       (when (or
-               (:hangout_event msg)
-               (not (or (:focused? conv)
-                        (= (id->key (:sender_id msg))
-                           (:id self)))))
-         [(fill-members people conv) msg])})))
+       (let [not-self? (not= (id->key (:sender_id msg))
+                             (:id self))
+             hangout? (:hangout_event msg)
+             unfocused? (not (:focused? conv))]
+         ; we can show the notification if we didn't init it
+         ; AND EITHER: it's a hangout call OR the chat is unfocused
+         (when (and not-self?
+                    (or hangout?
+                        unfocused?))
+           [(fill-members people conv) msg]))})))
 
 ;;
 ;; Update a conversation. This may trigger
@@ -229,6 +233,15 @@
   :cancel-image!
   (fn [db]
     (assoc db :pending-image nil)))
+
+(reg-event-fx
+  :create-hangout
+  [trim-v]
+  (fn [{:keys [db]} [conv-id]]
+    ; NB: for now we just do a standard open,
+    ;  but we might be able to auto-click the
+    ;  "join hangout" button later
+    {:dispatch [:open-hangout conv-id]}))
 
 (reg-event-fx
   :mark-read!
