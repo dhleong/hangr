@@ -11,7 +11,7 @@
             [hangr.util :refer [id->key]]
             [hangr.util.ui :refer [click-dispatch]]
             [hangr.util.conversation :refer [plus-photo-data scale-photo]]
-            [hangr.views.widgets :refer [avatar typing-indicator]]))
+            [hangr.views.widgets :refer [avatar icon typing-indicator]]))
 
 ;; this is hax, measured with devtools; helps to prevent gross
 ;; pops with image attachments, though
@@ -120,15 +120,31 @@
   [member-map self event hangouts-ev]
   (let [participant-ids (->> hangouts-ev :participant_id (map id->key) set)
         self-id (:id self)]
-    (if (contains?
-          participant-ids
-          self-id)
-      [:div "📞 You were in a call with "
+    (cond
+      (and ; for some reason [self-id] not= participant-ids
+        (= 1 (count participant-ids))
+        (= self-id (first participant-ids)))
+      [:div.hangout
+       [icon :call_missed]
+       " "
+       (->> member-map
+            vals
+            (remove (comp (partial = self-id) :id))
+            (map :name)
+            (string/join ", "))
+       " missed a call from you"]
+      (contains? participant-ids self-id)
+      [:div.hangout
+       [icon :call]
+       " You were in a call with "
        (->> participant-ids
             (remove (partial = self-id))
             (map (comp :name member-map))
             (string/join ", "))]
-      [:div "✖️ You missed a call from "
+      :else
+      [:div.hangout
+       [icon :call_missed]
+       " You missed a call from "
        (->> event :sender_id id->key member-map :name)])))
 
 ;; -- Special Hangr-only Events -----------------------------------------------
@@ -308,7 +324,7 @@
            {:src img}]
           [:div.send-button-container
            {:on-click (click-dispatch [:send-html id ""])}
-           [:i.fa.fa-paper-plane.send-button]]])])))
+           [icon :send.send-button]]])])))
 
 ;; -- Main Interface ----------------------------------------------------------
 

@@ -199,10 +199,17 @@ ul#conversations {
             .avatar(@avatar-size);
 
             &.hangout {
+                @font-size: 10pt;
+
                 .roboto-condensed();
 
+                .material-icons {
+                    font-size: @font-size;
+                    vertical-align: middle;
+                }
+
                 background-color: #f8f8f8;
-                font-size: 10pt;
+                font-size: @font-size;
                 text-align: center;
                 margin: @message-margin 0;
                 padding: (@message-margin / 2) @message-margin;
