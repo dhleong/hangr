@@ -52,4 +52,7 @@
         #(dispatch [:set-focused true]))
   (set! (.-onblur js/window) 
         #(dispatch [:set-focused false]))
-  (mount-root))
+  ; init db state + start rendering
+  (mount-root)
+  ; initialize focused state
+  (dispatch [:set-focused true]))
