@@ -93,18 +93,38 @@
 (reg-fx
   :notify-chat!
   (fn [[conv msg]]
-    (when msg
-      (notify!
-        :title (conv-msg->title conv msg)
-        :message (msg->notif msg)
-        :icon nil ;; TODO sender's avatar
-        :reply? "Reply"
-        :on-reply
-        (fn [reply]
-          (dispatch [:send-html (:id conv) reply]))
-        :on-click
-        (fn []
-          (dispatch [:select-conv (:id conv)]))))))
+    (let [hangout-type (-> msg :hangout_event :event_type)]
+      (when msg
+        (cond
+          ;
+          ; incoming hangout
+          (= "START_HANGOUT" hangout-type)
+          (notify!
+            :title (conv-msg->title conv msg "Incoming Hangout")
+            :message "Incoming Hangouts Call"
+            :icon nil ;; TODO sender's avatar
+            :wait? true
+            :on-click
+            (fn []
+              (dispatch [:open-hangout (:id conv)])))
+          ;
+          ; hangout ended (missed?)
+          (= "END_HANGOUT" hangout-type)
+          nil ; TODO notify if missed?
+          ;
+          ; else, normal chat message:
+          :else
+          (notify!
+            :title (conv-msg->title conv msg)
+            :message (msg->notif msg)
+            :icon nil ;; TODO sender's avatar
+            :reply? "Reply"
+            :on-reply
+            (fn [reply]
+              (dispatch [:send-html (:id conv) reply]))
+            :on-click
+            (fn []
+              (dispatch [:select-conv (:id conv)]))))))))
 
 ;; -- Scroll Page to bottom ---------------------------------------------------
 ;;

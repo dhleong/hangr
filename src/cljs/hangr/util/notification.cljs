@@ -10,7 +10,7 @@
   "Raise a native notification. Takes an options map
   and, optionally, a callback that's called when the
   user provides a text reply to the notification (macOS only)."
-  [& {:keys [title message icon reply? timeout
+  [& {:keys [title message icon reply? timeout wait?
              on-reply on-click]
       :or {timeout 20}}] ;; so terminal-notifier doesn't linger if ignored
   {:pre [(string? title)
@@ -20,6 +20,7 @@
               :message message 
               :icon icon
               :reply reply?
+              :wait wait?
               :timeout timeout
               :sender bundle-id}
              (filter second)
@@ -30,6 +31,7 @@
         (.notify 
           params
           (fn [e resp & [reply]]
+            (js/console.log "notify:" resp)
             (let [reply (js->real-clj reply)]
               (cond
                 ;; did they reply inline?
@@ -46,17 +48,15 @@
 (defn conv-msg->title
   "Pick a 'Title' for the `msg` received in the
   `conv` appropriate for use in a notification"
-  [conv msg]
+  [conv msg & {:keys [fallback]
+               :or {fallback "New Hangouts Message"}}]
   (let [sender-id (id->key (:sender_id msg))
         sender (->> conv
                     :members
-                    vals
-                    (filter #(= (:id %)
-                                sender-id))
-                    first)]
+                    sender-id)]
     (if-let [sender-name (:name sender)]
       sender-name
-      "New Hangouts Message"))) ;; fallback
+      fallback)))
 
 (defn msg->notif
   "Extract text from a `msg` to be used in a notification"
