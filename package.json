@@ -2,7 +2,7 @@
   "name": "hangr",
   "scripts": {
     "test": "node_modules/mocha/bin/mocha test test/js",
-    "postinstall": "cd node_modules/hangupsjs && ../coffee-script/bin/coffee -o lib src"
+    "postinstall": "cd node_modules/hangupsjs && ../.bin/coffee -o lib src"
   },
   "//": [
       "NOTE:",

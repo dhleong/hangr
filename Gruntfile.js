@@ -188,15 +188,17 @@ function getReleasePaths(build) {
   paths.releasePkg = path.join(paths.releaseApp, "package.json");
   paths.releaseCfg = path.join(paths.releaseApp, "config.json");
   paths.releaseResources = path.join(paths.releaseApp, "components");
+  paths.node_modules = path.join(__dirname, 'node_modules');
   return paths;
 }
 
 function getBasicReleaseInfo(build, paths) {
+
   var opts = {
     "dir": paths.releaseApp,
     "name": packageJson.name,
     "version": electron_version,
-    "asar": true,
+    "asar": false,
     "out": paths.release,
     "overwrite": true,
     "app-bundle-id": packageJson.bundleId,
@@ -216,6 +218,7 @@ function stampRelease(build, paths) {
   pkg.version = build.version;
   pkg["build-commit"] = build.commit;
   pkg["build-date"] = build.date;
+  pkg.dependencies = packageJson.dependencies;
   JSON.stringify(pkg, null, "  ").to(paths.releasePkg);
 }
 
@@ -288,6 +291,12 @@ grunt.registerTask('prepare-release', function() {
   cp('-f', paths.rootPkg, paths.releaseApp);
   pushd(paths.releaseApp);
   exec('npm install --no-optional --production --silent');
+
+  grunt.log.writeln("\nCompiling hangupsjs");
+  pushd('node_modules/hangupsjs');
+  exec(path.join(paths.node_modules, '.bin/coffee') + ' -o lib src');
+  popd();
+
   popd();
   cp('-f', paths.devPkg, paths.releaseApp);
 
