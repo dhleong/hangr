@@ -52,7 +52,10 @@
                {:src (-> photo-data :thumbnail :image_url)}]
               ; else, just use a text representation
               ;; FIXME: use a more appropriate function
-              (msg->notif event)))]]))))
+              (let [preview-text (msg->notif event)]
+                (if (= (:id self) (:sender event))
+                  (str "You: " preview-text)
+                  preview-text))))]]))))
 
 ;; -- Friends List ------------------------------------------------------------
 
