@@ -5,7 +5,7 @@
             [reagent.core  :as reagent]
             [re-frame.core :refer [subscribe dispatch]]
             [hangr.util.notification :refer [msg->notif]]
-            [hangr.views.conversation :refer [conversation conversation-title]]
+            [hangr.views.conversation :refer [conversation conversation-header]]
             [hangr.views.friends-list :refer [friends-list]]))
 
 ;; -- Loading Spinner ---------------------------------------------------------
@@ -35,7 +35,7 @@
                    "unfocused")}
          [:div#title 
           (case page
-            :conv [conversation-title arg]
+            :conv [conversation-header arg]
             "Hangr")]
          [:div#app-container
           (case page

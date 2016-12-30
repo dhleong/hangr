@@ -54,10 +54,16 @@ body {
     margin: 0;
 }
 
+.material-icons {
+    vertical-align: middle;
+}
+
 // singleton elements
 
+@title-font-size: 12pt;
 @title-height: 20px;
 @title-padding-vert: 10px;
+@title-background-color: #f0f0f0;
 @title-border-bottom: 1px;
 #title {
     .roboto-condensed();
@@ -67,8 +73,9 @@ body {
         color: #999;
     }
 
-    @bg: #f0f0f0;
+    @bg: @title-background-color;
 
+    font-size: @title-font-size;
     height: @title-height;
     text-align: right;
     background: @bg;
@@ -159,6 +166,17 @@ ul#conversations {
 //
 // Conversation/chat list
 //
+#video-call {
+    cursor: pointer; // NOTE: doesn't work on OSX here...
+    margin-left: 2px;
+    margin-right: -4px;
+    padding: 6px 4px;
+    border-radius: 4px;
+
+    &:hover {
+        background-color: lighten(@title-background-color, 10%);
+    }
+}
 #conversation {
     @composer-inner-height: 16pt;
     @composer-font-size: 12pt;
@@ -205,7 +223,6 @@ ul#conversations {
 
                 .material-icons {
                     font-size: @font-size;
-                    vertical-align: middle;
                 }
 
                 background-color: #f8f8f8;

@@ -9,6 +9,7 @@
             [cljs-time.format :refer [formatter unparse]]
             ;; [cljs-time.local :refer [to-local-date-time]]
             [hangr.util :refer [id->key]]
+            [hangr.util.people :refer [first-name]]
             [hangr.util.ui :refer [click-dispatch]]
             [hangr.util.conversation :refer [plus-photo-data scale-photo]]
             [hangr.views.widgets :refer [avatar icon typing-indicator]]))
@@ -396,5 +397,13 @@
                   ; remove ourself...
                   (remove #(= self-id
                               (:id %)))
-                  ; get the name
-                  (map :name))))]))))
+                  ; get the first name
+                  (map first-name))))]))))
+
+(defn conversation-header
+  [id]
+  [:div
+   [conversation-title id]
+   [:span#video-call
+    {:on-click (click-dispatch [:create-hangout id])}
+    [icon :videocam]]])
