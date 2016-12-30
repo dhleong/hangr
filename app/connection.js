@@ -158,6 +158,12 @@ class ConnectionManager extends EventEmitter {
             this.emit('received', msg.conversation_id.id, msg);
         });
 
+        client.on('hangout_event', msg => {
+            console.log(`*** <<H ${JSON.stringify(msg, null, ' ')}`);
+            this._appendToConversation(msg.conversation_id.id, msg);
+            this.emit('received', msg.conversation_id.id, msg);
+        });
+
         client.on('focus', msg => {
             // TODO remember focus states for if we close and re-open a conversation?
             // TODO Also, update the latest-read-timestamp for this user

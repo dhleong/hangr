@@ -10,7 +10,7 @@
     [cljs.spec :as s]
     [hangr.db :refer [default-value]]
     [hangr.util :refer [key->id id->key]]
-    [hangr.util.conversation :refer [unread?]]
+    [hangr.util.conversation :refer [fill-members unread?]]
     [hangr.util.msg :refer [html->msg msg->event]]))
 
 ;; -- Coeffects ---------------------------------------------------------------
@@ -133,16 +133,24 @@
 ;;  a fetch of people information
 (reg-event-fx
   :receive-msg
-  [inject-self conv?-scroll (conv-path) trim-v]
-  (fn [{:keys [db self]} [conv-id msg]]
+  [inject-self (inject-db :people) 
+   conv?-scroll (conv-path)
+   trim-v]
+  (fn [{:keys [db self people]} [conv-id msg]]
     (let [conv db] ;; see conv-path
       {:db (update conv :events
                    concat [msg])
        :notify-chat!
-       (when-not (or (:focused? db)
-                     (= (id->key (:sender_id msg))
-                        (:id self)))
-         [conv msg])})))
+       (let [not-self? (not= (id->key (:sender_id msg))
+                             (:id self))
+             hangout? (:hangout_event msg)
+             unfocused? (not (:focused? conv))]
+         ; we can show the notification if we didn't init it
+         ; AND EITHER: it's a hangout call OR the chat is unfocused
+         (when (and not-self?
+                    (or hangout?
+                        unfocused?))
+           [(fill-members people conv) msg]))})))
 
 ;;
 ;; Update a conversation. This may trigger
@@ -227,6 +235,15 @@
     (assoc db :pending-image nil)))
 
 (reg-event-fx
+  :create-hangout
+  [trim-v]
+  (fn [{:keys [db]} [conv-id]]
+    ; NB: for now we just do a standard open,
+    ;  but we might be able to auto-click the
+    ;  "join hangout" button later
+    {:dispatch [:open-hangout conv-id]}))
+
+(reg-event-fx
   :mark-read!
   [(inject-cofx :now) trim-v]
   (fn [{:keys [db now]} [conv-id]]
@@ -254,6 +271,18 @@
   [trim-v]
   (fn [_ [url]]
     {:open-external url}))
+
+(reg-event-fx
+  :open-hangout
+  [trim-v]
+  (fn [_ [conv-id]]
+    ; TODO: actually, should we open a new BrowserWindow?
+    ; That would let us style it nicely and control size
+    ; and positioning (currently, it opens as a new tab
+    ; in an existing chrome window, for example...)
+    {:open-external
+     (str "https://plus.google.com/hangouts/_/CONVERSATION/"
+          conv-id)}))
 
 (reg-event-fx
   :scroll-to-bottom
