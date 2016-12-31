@@ -134,6 +134,70 @@ ul#conversations {
 
         .avatar(@avatar-size);
 
+        .avatars-2, .avatars-n {
+            position: relative;
+            width: @avatar-size;
+            height: @avatar-size;
+            float: left;
+            margin-right: 8px;
+        }
+
+        .avatars-2 {
+            .avatar {
+                position: absolute;
+                width: @avatar-size * 0.6;
+                height: @avatar-size * 0.6;
+                min-width: @avatar-size / 2;
+                border-radius: @avatar-size * 0.3;
+                margin-right: 0;
+                line-height: @avatar-size * 0.6;
+                font-size: 7pt;
+
+                &:nth-child(1) {
+                    top: 0;
+                    left: 0;
+                }
+
+                &:nth-child(2) {
+                    bottom: 0;
+                    right: 0;
+                }
+            }
+        }
+
+        .avatars-n {
+            .avatar {
+                position: absolute;
+                width: @avatar-size / 2;
+                height: @avatar-size / 2;
+                min-width: @avatar-size / 2;
+                border-radius: @avatar-size / 4;
+                margin-right: 0;
+                line-height: @avatar-size / 2;
+                font-size: 6pt;
+
+                &:nth-child(1) {
+                    top: 0;
+                    left: 0;
+                }
+
+                &:nth-child(2) {
+                    top: 0;
+                    right: 0;
+                }
+
+                &:nth-child(3) {
+                    bottom: 0;
+                    left: 0;
+                }
+
+                &:nth-child(4) {
+                    bottom: 0;
+                    right: 0;
+                }
+            }
+        }
+
         .name {
             .roboto-condensed();
             

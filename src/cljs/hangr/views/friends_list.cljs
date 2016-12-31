@@ -10,12 +10,40 @@
 
 ;; -- Helper Functions --------------------------------------------------------
 
+(defn avatars-n
+  ([user1 user2]
+   [:div.avatars-2
+    [avatar user1]
+    [avatar user2]])
+  ([user1 user2 user3]
+   [:div.avatars-n
+    [avatar user1]
+    [avatar user2]
+    [avatar user3]])
+  ([user1 user2 user3 & [user-or-count]]
+   [:div.avatars-n
+    [avatar user1]
+    [avatar user2]
+    [avatar user3]
+    (if (number? user-or-count)
+      [:div.avatar (str "+" (if (> user-or-count 9)
+                              "+"
+                              user-or-count))]
+      [avatar user-or-count])]))
+
 (defn avatars
   "Shows 1-N avatars from a vector of :members
   (not including the active user)"
   [users]
-  ; TODO support N > 1
-  [avatar (first users)])
+  (case (count users)
+    1 [avatar (first users)]
+    2 (apply avatars-n users)
+    3 (apply avatars-n users)
+    4 (apply avatars-n users)
+    (apply avatars-n 
+           (concat 
+             (take 3 users)
+             [(- (count users) 3)]))))
 
 ;; -- Conversation Item -------------------------------------------------------
 
