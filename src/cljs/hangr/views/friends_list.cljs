@@ -38,6 +38,7 @@
   (not including the active user)"
   [users]
   (case (count users)
+    0 [:div.avatar "?"] ;; just in case
     1 [avatar (first users)]
     2 (apply avatars-n users)
     3 (apply avatars-n users)

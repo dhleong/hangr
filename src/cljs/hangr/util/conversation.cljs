@@ -144,10 +144,15 @@
           (let [data (-> embed-item :data vals first)
                 thumbnail-raw (first data)
                 thumbnail-url (-> thumbnail-raw (nth 0))
-                thumbnail-image (-> thumbnail-raw (nth 1))
-                thumbnail-width (-> thumbnail-raw (nth 2))
-                thumbnail-height (-> thumbnail-raw (nth 3))
+                thumbnail-raw (if (= 3 (count thumbnail-raw))
+                                thumbnail-raw
+                                (rest thumbnail-raw))
+                thumbnail-image (-> thumbnail-raw (nth 0))
+                thumbnail-width (-> thumbnail-raw (nth 1))
+                thumbnail-height (-> thumbnail-raw (nth 2))
                 url (-> data (nth 4))]
+            (when (nil? thumbnail-height)
+              (js/console.warn "NO thumbnail dimens for " data))
             {:url url
              :thumbnail
              {:image_url thumbnail-image

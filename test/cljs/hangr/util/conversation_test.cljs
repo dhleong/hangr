@@ -5,7 +5,8 @@
                                              fill-members
                                              unread?
                                              conv-latest-read
-                                             insert-hangr-events]]))
+                                             insert-hangr-events
+                                             plus-photo-data]]))
 
 (deftest incoming?-test
   (testing "Event incoming"
@@ -164,3 +165,37 @@
                :latest-read-timestamp 9001}}
             (:members 
               (fill-members people conv)))))))
+
+(deftest plus-photo-data-test
+  (testing "Big protobuf-like"
+    (is (= {:url "url"
+            :thumbnail
+            {:image_url "thumb"
+             :url "thumb-url"
+             :width_px 42
+             :height_px 9001}}
+           (plus-photo-data
+             {:type_ [249]
+              :data
+              {:12345
+               [["thumb-url" "thumb" 42 9001]
+                ""
+                ""
+                ""
+                "url"]}}))))
+  (testing "Small protobuf-like"
+    (is (= {:url "url"
+            :thumbnail
+            {:image_url "thumb"
+             :url "thumb"
+             :width_px 42
+             :height_px 9001}}
+           (plus-photo-data
+             {:type_ [249]
+              :data
+              {:12345
+               [["thumb" 42 9001]
+                ""
+                ""
+                ""
+                "url"]}})))))
