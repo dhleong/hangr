@@ -187,7 +187,7 @@
     (is (= {:url "url"
             :thumbnail
             {:image_url "thumb"
-             :url "thumb"
+             :url nil ;; MUST be nil for inline stickers
              :width_px 42
              :height_px 9001}}
            (plus-photo-data

@@ -143,10 +143,12 @@
         (when (= [249] (-> embed-item :type_))
           (let [data (-> embed-item :data vals first)
                 thumbnail-raw (first data)
-                thumbnail-url (-> thumbnail-raw (nth 0))
-                thumbnail-raw (if (= 3 (count thumbnail-raw))
-                                thumbnail-raw
-                                (rest thumbnail-raw))
+                has-thumb-url? (> (count thumbnail-raw) 3)
+                thumbnail-url (when has-thumb-url?
+                                (-> thumbnail-raw (nth 0)))
+                thumbnail-raw (if has-thumb-url?
+                                (rest thumbnail-raw)
+                                thumbnail-raw)
                 thumbnail-image (-> thumbnail-raw (nth 0))
                 thumbnail-width (-> thumbnail-raw (nth 1))
                 thumbnail-height (-> thumbnail-raw (nth 2))
