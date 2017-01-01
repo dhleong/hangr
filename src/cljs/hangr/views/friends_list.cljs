@@ -8,6 +8,8 @@
             [hangr.views.conversation :refer [conversation-title]]
             [hangr.views.widgets :refer [avatar]]))
 
+(def *nbsp* "\u00a0")
+
 ;; -- Helper Functions --------------------------------------------------------
 
 (defn avatars-n
@@ -82,7 +84,7 @@
               ;; FIXME: use a more appropriate function
               (let [preview-text (msg->notif event)]
                 (if (= (:id self) (:sender event))
-                  (str "You: " preview-text)
+                  (str "You:" *nbsp* preview-text)
                   preview-text))))]]))))
 
 ;; -- Friends List ------------------------------------------------------------
