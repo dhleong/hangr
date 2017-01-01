@@ -68,8 +68,34 @@ class ConnectionManager extends EventEmitter {
         super();
 
         this.connected = false;
+        this.client = null; // created in open()
         this._pendingSents = {};
         this._entities = {};
+    }
+
+    /**
+     * Get events from a conversation that are
+     * older than `olderThan`
+     * @param olderThan A timestamp in millis
+     * @param eventsToFetch Optional; number of chat
+     *  events to fetch (can be a small number like 1
+     *  if you just want metadata, but CANNOT be zero)
+     */
+    getConversation(convId, olderThan, eventsToFetch=50) {
+        const includeMeta = true;
+        this.client.getconversation(convId, olderThan, eventsToFetch, includeMeta)
+        .done(resp => {
+            if (!resp.conversation_state) {
+                console.warn(`ERROR: getConversation(${convId}, ${olderThan})`, resp);
+                return;
+            }
+
+            var conv = resp.conversation_state;
+            console.log(` >> CONV ${JSON.stringify(conv, null, ' ')}`);
+            this.emit('got-conversation', conv.conversation_id.id, conv);
+        }, e => {
+            console.warn(`ERROR: getConversation(${convId}, ${olderThan})`, e);
+        });
     }
 
     getEntities(ids) {
@@ -362,7 +388,7 @@ ConnectionManager.GLOBAL_EVENTS = [
     'got-entities',
 ];
 ConnectionManager.CHAT_EVENTS = [
-    // events only the friends window wants
+    // events only the friends window 
     // and a specific chat want. the first
     // argument of the event MUST be the chat id,
     // and the rest will be passed along
@@ -371,6 +397,12 @@ ConnectionManager.CHAT_EVENTS = [
     'sent',
     'typing',
     'watermark',
+];
+ConnectionManager.CHAT_ONLY_EVENTS = [
+    // events only a specific chat want.
+    // works like CHAT_EVENTS, but does not
+    // get delivered to the friends window
+    'got-conversation',
 ];
 
 module.exports = ConnectionManager;

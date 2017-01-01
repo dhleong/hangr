@@ -153,6 +153,22 @@
            [(fill-members people conv) msg]))})))
 
 ;;
+;; When scrolling back to older events in a conv
+(reg-event-fx
+  :scrollback
+  [(conv-path) trim-v]
+  (fn [{:keys [db]} [conv-id max-events]]
+    (let [conv db]
+      {:ipc [:get-conversation 
+             (:id conv) 
+             (-> conv
+                 :events
+                 first
+                 :timestamp
+                 (/ 1000))
+             max-events]})))
+
+;;
 ;; Update a conversation. This may trigger
 ;;  a fetch of people information
 (reg-event-fx

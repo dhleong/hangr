@@ -39,6 +39,10 @@ class IpcHandler {
      *  before being registered in attach()
      */
 
+    get_conversation(e, id, olderThan, eventsToFetch) {
+        this.connMan.getConversation(id, olderThan, eventsToFetch);
+    }
+
     get_entities(e, ids) {
         this.connMan.getEntities(ids);
     }

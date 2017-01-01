@@ -176,6 +176,7 @@ app.on('ready', () => {
     }
 
     // forward events to the client
+    // TODO: this could be cleaner:
     ConnectionManager.GLOBAL_EVENTS.forEach(event => {
         connMan.forwardEvent(event, dockManager.dispatch.bind(dockManager));
     });
@@ -183,6 +184,13 @@ app.on('ready', () => {
     ConnectionManager.CHAT_EVENTS.forEach(event => {
         connMan.forwardEvent(event, function(e, convId, ...args) {
             if (mainWindow) mainWindow.send(event, ...args);
+            var convWin = dockManager.findWithUrl(urlForConvId(convId));
+            if (convWin) convWin.send(event, ...args);
+        });
+    });
+
+    ConnectionManager.CHAT_ONLY_EVENTS.forEach(event => {
+        connMan.forwardEvent(event, function(e, convId, ...args) {
             var convWin = dockManager.findWithUrl(urlForConvId(convId));
             if (convWin) convWin.send(event, ...args);
         });

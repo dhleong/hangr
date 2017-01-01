@@ -27,6 +27,13 @@
                   (= "FOCUSED" (:status focus-event))
                   (:device focus-event)])))
 
+   :got-conversation
+   (fn on-conversation
+     [conv]
+     (let [conv (conv->clj conv)]
+       ;; TODO probably scrollback
+       (js/console.log  "-> conversation " conv)))
+
    :got-entities
    (fn on-entities
      [entities]
