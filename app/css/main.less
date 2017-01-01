@@ -247,7 +247,7 @@ ul#conversations {
     @composer-padding: 6pt;
     @composer-height: (@composer-inner-height + 2 * @composer-padding);
     @message-margin: 12pt;
-    @message-separation: 5pt;
+    @message-separation: 1pt;
 
     #events-container {
         display: block;
@@ -322,7 +322,7 @@ ul#conversations {
 
                 color: #999;
                 font-size: 8pt;
-                margin-top: -4px;
+                margin-bottom: (8 * @message-separation);
             }
 
             &.incoming {
