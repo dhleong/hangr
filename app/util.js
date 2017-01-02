@@ -16,3 +16,36 @@ module.exports.parsePresencePacket = function parsePresencePacket(packet) {
         available: content[1][1] !== 0,
     };
 };
+
+module.exports.throttle = function throttle(fn, periodMs) {
+    var state = {
+        periodStart: Date.now(),
+        token: null,
+    };
+
+    function throttled(...args) {
+        if (state.token) clearTimeout(state.token);
+        
+        var now = Date.now();
+        var leftInPeriod = periodMs - (now - state.periodStart);
+        if (leftInPeriod <= 0) {
+            // past period (or first call); call through
+            fn(...args);
+
+            state.periodStart = now;
+            state.token = null;
+        } else {
+            // in the period; set a timeout and re-execute at the end
+            state.token = setTimeout(
+                throttled.bind(throttled, ...args),
+                leftInPeriod);
+        }
+    }
+
+    throttled.clear = function() {
+        clearTimeout(state.token);
+        state.token = null;
+    };
+
+    return throttled;
+};

@@ -7,10 +7,11 @@
 'use strict';
 
 const EventEmitter = require('events'),
-      {BrowserWindow} = require('electron'),
+      electron = require('electron'),
+      {BrowserWindow} = electron,
       Client = require('hangupsjs'),
       Promise = require('promise'),
-      {parsePresencePacket} = require('./util'),
+      {parsePresencePacket, throttle} = require('./util'),
     
       INITIAL_BACKOFF = 1000;
 
@@ -25,6 +26,10 @@ const CREDS = () => {
         }
     };
 };
+
+function log(...args) {
+    console.log("" + new Date(), ...args);
+}
 
 class AuthFetcher {
     fetch() {
@@ -71,6 +76,11 @@ class ConnectionManager extends EventEmitter {
         this.client = null; // created in open()
         this._pendingSents = {};
         this._entities = {};
+
+        const activeDuration = 5 * 60;
+        this._setActiveThrottled = throttle(
+            this._setActive.bind(this, true, activeDuration),
+            activeDuration * 1000);
     }
 
     /**
@@ -167,10 +177,11 @@ class ConnectionManager extends EventEmitter {
 
         var client = this.client = new Client();
         client.on('connect_failed', () => {
-            console.log("connection: failed; reconnecting after", this._backoff);
+            log("conn: failed; reconnecting after", this._backoff);
             setTimeout(this._reconnect.bind(this), this._backoff);
-            this.emit('reconnecting in', this._backoff);
+            this.emit('reconnecting', this._backoff);
             this._backoff *= 2;
+            this._disableMonitoring();
         });
 
         client.on('chat_message', msg => {
@@ -319,6 +330,7 @@ class ConnectionManager extends EventEmitter {
         }, e => {
             console.warn(`ERROR: setFocus(${convId}, ${isFocused})`, e);
         });
+        this._setActiveThrottled();
     }
 
     /**
@@ -331,6 +343,7 @@ class ConnectionManager extends EventEmitter {
         .catch(e => {
             console.warn(`ERROR: setTyping(${convId}, ${status})`, e);
         });
+        this._setActiveThrottled();
     }
 
     _cachedConv(convId) {
@@ -379,7 +392,7 @@ class ConnectionManager extends EventEmitter {
     }
 
     _connected() {
-        console.log("conn: Connected!");
+        log("conn: Connected!");
         this.connected = true;
         this._backoff = INITIAL_BACKOFF;
         this.emit('connected');
@@ -393,12 +406,49 @@ class ConnectionManager extends EventEmitter {
             this.lastConversations = chats.conversation_state;
             this.emit('recent-conversations', this.lastConversations);
         }, e => console.warn("error: syncrecentconversations", e));
+
+        this._enableMonitoring();
+    }
+
+    _disableMonitoring() {
+        const {powerMonitor} = electron;
+        powerMonitor.removeAllListeners('suspend');
+        powerMonitor.removeAllListeners('resume');
+    }
+
+    _enableMonitoring() {
+        const {powerMonitor} = electron;
+        powerMonitor.on('suspend', () => {
+            log("SUSPEND");
+            this._setActiveThrottled.clear();
+            this._setActive(false);
+        });
+        powerMonitor.on('resume', () => {
+            log("RESUME");
+            this._setActiveThrottled();
+        });
+
+        this._setActive(true);
     }
 
     _error() {
         console.warn("conn: ERROR!", arguments);
     }
+
+    _setActive(isActive) {
+        this.client.setactiveclient(isActive, isActive ? 5 * 60 : 10)
+        .done(resp => {
+            if (resp.response_header.status !== 'OK') {
+                console.log("ERROR: setactive", resp);
+            } else {
+                log(`setActive(${isActive})`);
+            }
+        }, e => {
+            console.log("ERROR: setactive", e);
+        });
+    }
 }
+
 ConnectionManager.GLOBAL_EVENTS = [
     // events every window wants
     'connected', 
