@@ -148,24 +148,25 @@
 ;;  a fetch of people information
 (reg-event-fx
   :receive-msg
-  [inject-self (inject-db :people) 
+  [inject-self (inject-db :page) (inject-db :people) 
    conv?-scroll (conv-path)
    trim-v]
-  (fn [{:keys [db self people]} [conv-id msg]]
+  (fn [{:keys [db page people self]} [conv-id msg]]
     (let [conv db] ;; see conv-path
       {:db (update conv :events
                    concat [msg])
        :notify-chat!
-       (let [not-self? (not= (id->key (:sender_id msg))
-                             (:id self))
-             hangout? (:hangout_event msg)
-             unfocused? (not (:focused? conv))]
-         ; we can show the notification if we didn't init it
-         ; AND EITHER: it's a hangout call OR the chat is unfocused
-         (when (and not-self?
-                    (or hangout?
-                        unfocused?))
-           [(fill-members people conv) msg]))})))
+       (when (= [:friends] page)
+         (let [not-self? (not= (id->key (:sender_id msg))
+                               (:id self))
+               hangout? (:hangout_event msg)
+               unfocused? (not (:focused? conv))]
+           ; we can show the notification if we didn't init it
+           ; AND EITHER: it's a hangout call OR the chat is unfocused
+           (when (and not-self?
+                      (or hangout?
+                          unfocused?))
+             [(fill-members people conv) msg])))})))
 
 ;;
 ;; When scrolling back to older events in a conv
@@ -361,6 +362,12 @@
             (when (and (= :conv (first page))
                        (not= (:focused? db) focused?))
               [:set-focused! (second page) focused?]))}))
+
+(reg-event-db
+  :set-conv-focused
+  [(conv-path) trim-v]
+  (fn [conv [conv-id focused?]]
+    (assoc conv :focused? focused?)))
 
 ;; handle a local typing event
 (reg-event-fx

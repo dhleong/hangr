@@ -98,6 +98,9 @@ class IpcHandler {
         window.on('closed', () => {
             // unfocus
             this.connMan.setFocus(convId, false);
+
+            var mainWindow = this.getMainWindow();
+            if (mainWindow) mainWindow.send('set-focused!', convId, false);
         });
     }
 
@@ -114,6 +117,10 @@ class IpcHandler {
     set_focused$(e, convId, isFocused) {
         console.log(`Request: focus(${convId}, ${isFocused})`);
         this.connMan.setFocus(convId, isFocused);
+
+        // forward to the mainWindow so it can update friends list
+        var mainWindow = this.getMainWindow();
+        if (mainWindow) mainWindow.send('set-focused!', convId, isFocused);
     }
 
     set_typing$(e, convId, typingState) {

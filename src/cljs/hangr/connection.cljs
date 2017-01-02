@@ -69,6 +69,11 @@
      (let [ev (event->clj sent-msg-event)]
        (dispatch [:update-sent (-> ev :conversation_id :id) ev])))
 
+   ; NOTE: received in main window for better notification handling
+   :set-focused!
+   (fn [conv-id focused?]
+     (dispatch [:set-conv-focused conv-id focused?]))
+
    :typing
    (fn [typing-event]
      (let [ev (js->real-clj typing-event)
