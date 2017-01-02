@@ -37,7 +37,7 @@
    :got-entities
    (fn on-entities
      [entities]
-     (.log js/console "Got entities" entities)
+     (js/console.log  "Got entities" entities)
      (doseq [person (map entity->clj entities)]
        (dispatch [:update-person person])))
 

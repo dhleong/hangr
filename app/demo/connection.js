@@ -33,7 +33,7 @@ class DemoConnectionManager extends EventEmitter {
     }
 
     getEntities() {
-        // TODO
+        this.emit('got-entities', readJson('./data/entities.json'));
     }
 
     markRead() {}

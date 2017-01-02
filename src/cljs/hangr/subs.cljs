@@ -51,7 +51,6 @@
   :<- [::convs]
   :<- [:people]
   (fn [[self convs people] _]
-    (js/console.log "Convs" convs)
     (when (and self convs)
       (->> convs
            vals

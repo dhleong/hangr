@@ -1,0 +1,24 @@
+[
+    {
+        "id": {
+            "gaia_id": "itskaylee",
+            "chat_id": "itskaylee"
+        },
+        "properties": {
+            "display_name": "Its Kaylee!",
+            "first_name": "Kaylee",
+            "photo_url": "//i16.photobucket.com/albums/b33/miradarkstar/Kaylee%20Frye%20Costume/1138490637_kaylee.jpg"
+        }
+    },
+    {
+        "id": {
+            "gaia_id": "zoe",
+            "chat_id": "zoe"
+        },
+        "properties": {
+            "display_name": "Zoe Washburne",
+            "first_name": "Zoe",
+            "photo_url": "//cdn23.us1.fansshare.com/photos/ginatorres/firefly-serenity-gina-torres-dvdbash-1788333104.jpg"
+        }
+    }
+]
