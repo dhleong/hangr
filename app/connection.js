@@ -364,7 +364,6 @@ class ConnectionManager extends EventEmitter {
             return;
         }
 
-
         oldConv.conversation.read_state = newConv.conversation.read_state;
         oldConv.event = newConv.event.concat(oldConv.event);
     }

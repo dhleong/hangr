@@ -127,6 +127,13 @@ grunt.registerTask('cljsbuild-prod', function() {
   exec("lein do clean, with-profile production cljsbuild once");
 });
 
+grunt.registerTask('demo', function(async) {
+  var IsAsync = (async === "true");
+  grunt.log.writeln("\nLaunching demo version...");
+  var local_exe = exe[os];
+  exec(path.join(electron_path, local_exe) + " app demo", {async:IsAsync});
+});
+
 grunt.registerTask('launch', function(async) {
   var IsAsync = (async === "true");
   grunt.log.writeln("\nLaunching development version...");

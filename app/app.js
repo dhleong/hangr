@@ -8,10 +8,13 @@ const electron = require('electron'),
       {urlForConvId} = require('./util'),
       {IpcHandler} = require('./ipc'),
       {dockManager, DockedWindow} = require('./docked-window'),
-      ConnectionManager = require('./connection'),
+      isDemo = process.argv.length && 
+        process.argv[process.argv.length - 1] === 'demo',
+      ConnectionManager = isDemo 
+        ? require('./demo/connection') 
+        : require('./connection'),
     
       connMan = new ConnectionManager();
-
 
 const devConfigFile = __dirname + '/config.json';
 var devConfig = {};

@@ -56,6 +56,9 @@ class IpcHandler {
 
         // TODO automate this stuff:
         if (connMan.connected) {
+            // demo dev help:
+            if (connMan._refreshDemo) connMan._refreshDemo();
+            
             e.sender.send('connected');
             if (connMan.lastSelfInfo) {
                 e.sender.send('self-info', connMan.lastSelfInfo);
