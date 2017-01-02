@@ -145,6 +145,8 @@ function showMainWindow() {
         console.log('"Closing" main window');
         e.preventDefault();
         mainWindow.hide();
+
+        connMan.notifyActivity();
     });
     mainWindow.on('closed', () => {
         mainWindow = null;
@@ -219,6 +221,8 @@ app.on('ready', () => {
         } else {
             showMainWindow();
         }
+
+        connMan.notifyActivity();
     });
     systemTray.on('right-click', () => {
         systemTray.popUpContextMenu(trayMenu);

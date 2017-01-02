@@ -78,7 +78,7 @@ class ConnectionManager extends EventEmitter {
         this._entities = {};
 
         const activeDuration = 5 * 60;
-        this._setActiveThrottled = throttle(
+        this.notifyActivity = throttle(
             this._setActive.bind(this, true, activeDuration),
             activeDuration * 1000);
     }
@@ -330,7 +330,7 @@ class ConnectionManager extends EventEmitter {
         }, e => {
             console.warn(`ERROR: setFocus(${convId}, ${isFocused})`, e);
         });
-        this._setActiveThrottled();
+        this.notifyActivity();
     }
 
     /**
@@ -343,7 +343,7 @@ class ConnectionManager extends EventEmitter {
         .catch(e => {
             console.warn(`ERROR: setTyping(${convId}, ${status})`, e);
         });
-        this._setActiveThrottled();
+        this.notifyActivity();
     }
 
     _cachedConv(convId) {
@@ -420,12 +420,12 @@ class ConnectionManager extends EventEmitter {
         const {powerMonitor} = electron;
         powerMonitor.on('suspend', () => {
             log("SUSPEND");
-            this._setActiveThrottled.clear();
+            this._setActiveThrottled.clear(); // clear any pending call
             this._setActive(false);
         });
         powerMonitor.on('resume', () => {
             log("RESUME");
-            this._setActiveThrottled();
+            this.notifyActivity();
         });
 
         this._setActive(true);
