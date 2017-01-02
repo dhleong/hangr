@@ -5,6 +5,8 @@ hangr [![Build Status](http://img.shields.io/travis/dhleong/hangr.svg?style=flat
 
 ## What?
 
+![hangr-screenshot](https://cloud.githubusercontent.com/assets/816150/21584557/45b8f330-d07a-11e6-9f58-588cd6783070.png)
+
 Hangr is an unofficial, "native" app (using [Electron](http://electron.atom.io/)) for Google Hangouts
 that brings back the old Chrome extension UI with windows floating on the desktop, pinned to the bottom.
 
