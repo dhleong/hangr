@@ -91,8 +91,10 @@ class ConnectionManager extends EventEmitter {
             }
 
             var conv = resp.conversation_state;
-            console.log(` >> CONV ${JSON.stringify(conv, null, ' ')}`);
             this.emit('got-conversation', conv.conversation_id.id, conv);
+
+            // save read_states and insert new events
+            this._mergeConversation(conv);
         }, e => {
             console.warn(`ERROR: getConversation(${convId}, ${olderThan})`, e);
         });
@@ -346,6 +348,25 @@ class ConnectionManager extends EventEmitter {
         }
 
         conv.event.push(event);
+    }
+
+    /** 
+     * "Merge" newConv into any existing, cached conv
+     *  with the same id. In this case, that means
+     *  inserting newConv's `event` list and replacing
+     *  oldConv's read_state list with newConv's
+     */
+    _mergeConversation(newConv) {
+        var convId = newConv.conversation_id.id;
+        var oldConv = this._cachedConv(convId);
+        if (!oldConv) {
+            console.warn("Couldn't find conversation", convId);
+            return;
+        }
+
+
+        oldConv.conversation.read_state = newConv.conversation.read_state;
+        oldConv.event = newConv.event.concat(oldConv.event);
     }
 
     _reconnect() {

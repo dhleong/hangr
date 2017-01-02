@@ -129,6 +129,21 @@
     (assoc db :connecting? false)))
 
 ;;
+;; Receive scrollback for a conversation
+(reg-event-db
+  :insert-scrollback
+  [(conv-path) trim-v]
+  (fn [old-conv [new-conv]]
+    (-> old-conv
+        (update
+          :read-states
+          merge
+          (:read-states new-conv))
+        (update
+          :events
+          #(concat (:events new-conv) %)))))
+
+;;
 ;; Receive a new chat message. This may trigger
 ;;  a fetch of people information
 (reg-event-fx

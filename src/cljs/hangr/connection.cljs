@@ -31,8 +31,8 @@
    (fn on-conversation
      [conv]
      (let [conv (conv->clj conv)]
-       ;; TODO probably scrollback
-       (js/console.log  "-> conversation " conv)))
+       (js/console.log  "Got conversation " conv)
+       (dispatch [:insert-scrollback conv])))
 
    :got-entities
    (fn on-entities

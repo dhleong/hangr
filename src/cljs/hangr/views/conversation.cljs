@@ -12,6 +12,7 @@
             [hangr.util.people :refer [first-name]]
             [hangr.util.ui :refer [click-dispatch]]
             [hangr.util.conversation :refer [plus-photo-data scale-photo sms?]]
+            [hangr.views.infinite-scroll :refer [infinite-scroll]]
             [hangr.views.widgets :refer [avatar icon typing-indicator]]))
 
 ;; this is hax, measured with devtools; helps to prevent gross
@@ -234,6 +235,10 @@
             self @self
             member-map (:members conv)]
         [:ul#events
+         [infinite-scroll 
+          {:can-show-more? (-> conv :event_continuation_token)
+           :load-fn #(dispatch [:scrollback (:id conv)])
+           :scroll-getter #(.-parentNode (.-parentNode %))}]
          (for [event (:events conv)]
            (cond
              ; hangout event:
