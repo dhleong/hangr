@@ -282,8 +282,8 @@
 
 (reg-event-fx
   :mark-read!
-  [(inject-cofx :now) trim-v]
-  (fn [{:keys [db now]} [conv-id]]
+  [(inject-cofx :now) (inject-db :page) trim-v]
+  (fn [{:keys [db now page]} [conv-id]]
     (let [conv (-> db :convs (get conv-id))
           had-unread? (unread? conv)]
       (if had-unread?
@@ -297,9 +297,16 @@
            ; send request to mark read
            ; NOTE: the service expects timestamps in milliseconds.
            ; WHY does it return them in microseconds?!
-           :ipc [:mark-read! conv-id (/ now 1000)]
+           :ipc (when-not (= [:friends] page)
+                  [:mark-read! conv-id (-> conv
+                                        :events
+                                        last
+                                        :timestamp
+                                        long
+                                        (/ 1000))])
            ; check if we should update the unread
-           :check-unread (:convs updated-db)})
+           :check-unread (when (= [:friends] page)
+                           (:convs updated-db))})
         ;; no change
         {}))))
 
@@ -361,12 +368,13 @@
   :set-focused
   [trim-v]
   (fn [{:keys [db]} [focused?]]
-    {:db (assoc db :focused? focused?)
-     :ipc (let [page (:page db)]
-            (println "set-focused" page focused? (:focused? db))
-            (when (and (= :conv (first page))
+    (let [page (:page db)]
+      {:db (assoc db :focused? focused?)
+       :dispatch? (when (= :conv (first page))
+                    [:mark-read! (second page)])
+       :ipc (when (and (= :conv (first page))
                        (not= (:focused? db) focused?))
-              [:set-focused! (second page) focused?]))}))
+              [:set-focused! (second page) focused?])})))
 
 (reg-event-db
   :set-conv-focused

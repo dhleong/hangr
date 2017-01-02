@@ -23,6 +23,11 @@ class IpcHandler {
         });
     }
 
+    sendToMainWindow(...args) {
+        var mainWindow = this.getMainWindow();
+        if (mainWindow) mainWindow.send(...args);
+    }
+
     _handlers() {
         return Object.getOwnPropertyNames(Object.getPrototypeOf(this)).filter(name => {
             return name[0] !== '_' && 
@@ -49,6 +54,9 @@ class IpcHandler {
 
     mark_read$(e, convId, timestamp) {
         this.connMan.markRead(convId, timestamp);
+
+        // forward to the main window
+        this.sendToMainWindow('mark-read!', convId, timestamp);
     }
 
     request_status(e) {
@@ -102,16 +110,14 @@ class IpcHandler {
             // unfocus
             this.connMan.setFocus(convId, false);
 
-            var mainWindow = this.getMainWindow();
-            if (mainWindow) mainWindow.send('set-focused!', convId, false);
+            this.sendToMainWindow('set-focused!', convId, false);
         });
     }
 
     send(e, convId, imagePath, msg) {
         console.log(`Request: send(${convId}, ${imagePath}, ${JSON.stringify(msg)})`);
         // forward to the mainWindow so it can update friends list
-        var mainWindow = this.getMainWindow();
-        if (mainWindow) mainWindow.send('send', convId, imagePath, msg);
+        this.sendToMainWindow('send', convId, imagePath, msg);
 
         // do this last, because it modifies msg
         this.connMan.send(convId, imagePath, msg);
@@ -122,8 +128,7 @@ class IpcHandler {
         this.connMan.setFocus(convId, isFocused);
 
         // forward to the mainWindow so it can update friends list
-        var mainWindow = this.getMainWindow();
-        if (mainWindow) mainWindow.send('set-focused!', convId, isFocused);
+        this.sendToMainWindow('set-focused!', convId, isFocused);
     }
 
     set_typing$(e, convId, typingState) {

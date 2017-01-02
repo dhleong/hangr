@@ -41,6 +41,12 @@
      (doseq [person (map entity->clj entities)]
        (dispatch [:update-person person])))
 
+   :mark-read!
+   (fn on-mark-read!
+     [conv-id timestamp]
+     (js/console.log "Got mark-read!" conv-id timestamp)
+     (dispatch [:mark-read! conv-id timestamp]))
+
    :received
    (fn [received-msg-event]
      (.log js/console "Received" received-msg-event)
