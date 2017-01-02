@@ -7,7 +7,6 @@
             [cljs-time.core :refer [days minus now before? to-default-time-zone]]
             [cljs-time.coerce :refer [from-long]]
             [cljs-time.format :refer [formatter unparse]]
-            ;; [cljs-time.local :refer [to-local-date-time]]
             [hangr.util :refer [id->key]]
             [hangr.util.people :refer [first-name]]
             [hangr.util.ui :refer [click-dispatch]]
@@ -46,6 +45,16 @@
     #{".jpg" ".png" "jpeg"} ; TODO etc
     (string/lower-case 
       (subs path (- (count path) 4)))))
+
+(defn- in-call?
+  [conv]
+  (let [last-event (->> conv 
+                        :events 
+                        (remove :hangr-type)
+                        last)]
+    (contains?
+      #{"ONGOING_HANGOUT" "START_HANGOUT"}
+      (-> last-event :hangout_event :event_type))))
 
 (defn- sticker?
   "Returns truthy if the embed-item is a sticker"
@@ -314,6 +323,23 @@
      [:div.label 
       "Drop here to send!"]]))
 
+;; -- In-call overlay ---------------------------------------------------------
+
+(defn in-call-overlay
+  [id]
+  ; NOTE: we can do this in re-frame 0.9.0!
+  ; We should refactor other code (that "should have" been
+  ; using dynamic subscriptions) to use this syntax. How
+  ; we've been doing it is technically wrong, but is fine
+  ; because id never actually changes
+  (let [conv @(subscribe [:conv id])]
+    (when (in-call? conv)
+      ; TODO have a nice caret like the real client
+      ; pointing to the video icon
+      [:div.in-call
+       {:on-click (click-dispatch [:open-hangout id])}
+       "You're in this video call"])))
+
 ;; -- Pending image overlay ---------------------------------------------------
 
 (defn pending-image
@@ -379,6 +405,7 @@
               (focus!)))}
          [conversation-events id]]
         [pending-image id]
+        [in-call-overlay id]
         [composer id]])}))
 
 (defn conversation-title
@@ -407,11 +434,12 @@
 
 (defn conversation-header
   [id]
-  (let [conv (subscribe [:conv id])]
-    (fn []
-      [:div
-       [conversation-title id]
-       (when (not (sms? @conv))
-         [:span#video-call
-          {:on-click (click-dispatch [:create-hangout id])}
-          [icon :videocam]])])))
+  (let [conv @(subscribe [:conv id])]
+    [:div
+     [conversation-title id]
+     (when (not (sms? conv))
+       [:span#video-call
+        {:on-click (click-dispatch [:create-hangout id])
+         :class (when (in-call? conv)
+                  "live")}
+        [icon :videocam]])]))

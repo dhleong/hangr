@@ -6,6 +6,14 @@
 (def timestamp-min-separation
   (* 2 60 1000 1000))
 
+(defn event-timestamped?
+  "Return truthy if the event can have a timestamp"
+  [event]
+  (not
+    (contains?
+      #{"ONGOING_HANGOUT" "START_HANGOUT"}
+      (-> event :hangout_event :event_type))))
+
 (defn event-incoming?
   "Given the user's (:self) id and an event,
   return true if that event is incoming"
@@ -93,6 +101,7 @@
   [conv]
   (->> conv
        :events
+       (filter event-timestamped?)
        (map (fn [ev]
               (-> ev
                   (select-keys [:sender :timestamp :incoming?])

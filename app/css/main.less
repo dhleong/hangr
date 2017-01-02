@@ -2,6 +2,7 @@
 
 @message-bg-incoming: #f0f0f0;
 @read-indicator-avatar-size: 20px;
+@video-call-accent: #1D9C0D;
 
 // mixins
 
@@ -237,6 +238,10 @@ ul#conversations {
     padding: 6px 4px;
     border-radius: 4px;
 
+    &.live {
+        color: @video-call-accent;
+    }
+
     &:hover {
         background-color: lighten(@title-background-color, 10%);
     }
@@ -248,6 +253,18 @@ ul#conversations {
     @composer-height: (@composer-inner-height + 2 * @composer-padding);
     @message-margin: 12pt;
     @message-separation: 1pt;
+
+    .in-call {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: @video-call-accent;
+        color: #fff;
+        padding: 8px;
+        font-size: 10pt;
+        cursor: pointer;
+    }
 
     #events-container {
         display: block;
