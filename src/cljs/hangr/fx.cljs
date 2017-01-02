@@ -12,6 +12,16 @@
 (defonce ipc-renderer (.-ipcRenderer electron))
 (defonce shell (.-shell electron))
 
+;; -- Nullable dispatch -------------------------------------------------------
+;;
+
+(reg-fx
+  :dispatch?
+  (fn [args]
+    (when args
+      (dispatch args))))
+
+
 ;; -- IPC messaging -----------------------------------------------------------
 ;;
 

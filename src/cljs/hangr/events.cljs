@@ -148,11 +148,12 @@
 ;;  a fetch of people information
 (reg-event-fx
   :receive-msg
-  [inject-self (inject-db :page) (inject-db :people) 
+  [inject-self (inject-db :page) (inject-db :people) (inject-db :focused?)
    conv?-scroll (conv-path)
    trim-v]
-  (fn [{:keys [db page people self]} [conv-id msg]]
-    (let [conv db] ;; see conv-path
+  (fn [{:keys [db page people self focused?]} [conv-id msg]]
+    (let [conv db  ; see conv-path
+          win-focused? focused?] ; avoid confusion with unfocused? below
       {:db (update conv :events
                    concat [msg])
        :notify-chat!
@@ -166,7 +167,11 @@
            (when (and not-self?
                       (or hangout?
                           unfocused?))
-             [(fill-members people conv) msg])))})))
+             [(fill-members people conv) msg])))
+       :dispatch?
+       (when (and (= [:conv conv-id] page)
+                  win-focused?)
+         [:mark-read! conv-id])})))
 
 ;;
 ;; When scrolling back to older events in a conv
