@@ -28,7 +28,7 @@
   "props is a map with :can-show-more? & :load-fn keys"
   [props]
   (let [listener-fn (atom nil)
-        pre-load-scroll-height (atom nil)
+        pre-update-scroll-height (atom nil)
         scroll-getter (or (:scroll-getter props)
                           #(.-parentNode %))
         get-scroll-target (fn [this]
@@ -50,8 +50,6 @@
                               (when should-load-more?
                                 (println "loading more...")
                                 (detach-scroll-listener this)
-                                ; save scroll height so we can preserve scroll position
-                                (reset! pre-load-scroll-height (.-scrollHeight scroll-target))
                                 (load-fn)))))
         debounced-scroll-listener (debounce 200 scroll-listener)
         attach-scroll-listener (fn [this & [updated?]]
@@ -60,7 +58,7 @@
                                    (when updated?
                                      ; preserve scroll position
                                      (let [scroll-diff (- (.-scrollHeight scroll-target)
-                                                          @pre-load-scroll-height)]
+                                                          @pre-update-scroll-height)]
                                        (when (> scroll-diff 0)
                                          (set! (.-scrollTop scroll-target)
                                                (+ (.-scrollTop scroll-target)
@@ -74,6 +72,9 @@
       {:component-did-mount
        (fn [this]
          (attach-scroll-listener this))
+       :component-will-update
+       (fn [this _]
+         (reset! pre-update-scroll-height (.-scrollHeight (get-scroll-target this))))
        :component-did-update
        (fn [this _]
          (attach-scroll-listener this :updated))
