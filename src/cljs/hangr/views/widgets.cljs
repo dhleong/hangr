@@ -29,7 +29,9 @@
     (if avatar-url
       [:img.avatar
        (assoc opts
-              :src (str "http:" avatar-url))]
+              :src (str (when-not (string/starts-with? avatar-url "http") 
+                          "http:")
+                        avatar-url))]
       [:div.avatar
        opts
        (avatar-text user)])))
