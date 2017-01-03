@@ -420,7 +420,7 @@ class ConnectionManager extends EventEmitter {
         const {powerMonitor} = electron;
         powerMonitor.on('suspend', () => {
             log("SUSPEND");
-            this._setActiveThrottled.clear(); // clear any pending call
+            this.notifyActivity.clear(); // clear any pending call
             this._setActive(false);
         });
         powerMonitor.on('resume', () => {
