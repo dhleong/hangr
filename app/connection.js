@@ -7,13 +7,19 @@
 'use strict';
 
 const EventEmitter = require('events'),
-      electron = require('electron'),
-      {BrowserWindow} = electron,
       Client = require('hangupsjs'),
       Promise = require('promise'),
       {parsePresencePacket, throttle} = require('./util'),
     
       INITIAL_BACKOFF = 1000;
+
+var electron, BrowserWindow;
+try {
+    electron = require('electron'),
+    {BrowserWindow} = electron;
+} catch (e) {
+    // should be only in tests
+}
 
 // Current programmatic login workflow is described here
 // https://github.com/tdryer/hangups/issues/260#issuecomment-246578670
@@ -26,10 +32,6 @@ const CREDS = () => {
         }
     };
 };
-
-function log(...args) {
-    console.log("" + new Date(), ...args);
-}
 
 class AuthFetcher {
     fetch() {
@@ -81,6 +83,10 @@ class ConnectionManager extends EventEmitter {
         this.notifyActivity = throttle(
             this._setActive.bind(this, true, activeDuration),
             activeDuration * 1000);
+    }
+
+    log(...args) {
+        console.log("" + new Date(), ...args);
     }
 
     /**
@@ -159,7 +165,7 @@ class ConnectionManager extends EventEmitter {
             console.log(`gotEventsSince: ${JSON.stringify(result, null, ' ')}`);
             if (result.conversation_state) {
                 // update cache
-                result.conversation_state.forEach(this._mergeNewConversation);
+                result.conversation_state.forEach(this._mergeNewConversation.bind(this));
                 
                 this.emit('got-new-events', result.conversation_state);
             }
@@ -192,7 +198,7 @@ class ConnectionManager extends EventEmitter {
 
         var client = this.client = new Client();
         client.on('connect_failed', () => {
-            log("conn: failed; reconnecting after", this._backoff);
+            this.log("conn: failed; reconnecting after", this._backoff);
             setTimeout(this._reconnect.bind(this), this._backoff);
             this.emit('reconnecting', this._backoff);
             this._backoff *= 2;
@@ -429,7 +435,7 @@ class ConnectionManager extends EventEmitter {
     }
 
     _connected() {
-        log("conn: Connected!");
+        this.log("conn: Connected!");
         this.connected = true;
         this._backoff = INITIAL_BACKOFF;
         this.emit('connected');
@@ -454,21 +460,21 @@ class ConnectionManager extends EventEmitter {
     }
 
     _enableMonitoring() {
-        const {powerMonitor} = electron;
-
+        const powerMonitor = this._getPowerMonitor();
+        
         var self = this;
         var onReceiveWhileSuspended = function onReceiveWhileSuspended() {
             self._suspendedAt = Date.now();
         };
         powerMonitor.on('suspend', () => {
-            log("SUSPEND");
+            this.log("SUSPEND");
             this._suspendedAt = Date.now();
             this.notifyActivity.clear(); // clear any pending call
             this._setActive(false);
             this.on('received', onReceiveWhileSuspended);
         });
         powerMonitor.on('resume', () => {
-            log("RESUME");
+            this.log("RESUME");
             this.removeListener('received', onReceiveWhileSuspended);
             this.notifyActivity();
             if (this._suspendedAt) {
@@ -478,6 +484,11 @@ class ConnectionManager extends EventEmitter {
         });
 
         this._setActive(true);
+    }
+
+    _getPowerMonitor() {
+        const {powerMonitor} = electron;
+        return powerMonitor;
     }
 
     _error() {
@@ -490,7 +501,7 @@ class ConnectionManager extends EventEmitter {
             if (resp.response_header.status !== 'OK') {
                 console.log("ERROR: setactive", resp);
             } else {
-                log(`setActive(${isActive})`);
+                this.log(`setActive(${isActive})`);
             }
         }, e => {
             console.log("ERROR: setactive", e);
