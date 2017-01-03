@@ -8,6 +8,7 @@ chai.should();
 describe("handlerFnToName", () => {
     it("replaces _ with -", () => {
         handlerFnToName('get_entities').should.equal('get-entities');
+        handlerFnToName('get_events_since').should.equal('get-events-since');
     });
 
     it("replaces $ with !", () => {

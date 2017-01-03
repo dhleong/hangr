@@ -143,6 +143,25 @@
           :events
           #(concat (:events new-conv) %)))))
 
+(reg-event-fx
+  :append-new
+  [(conv-path) trim-v]
+  (fn [{:keys [db]} [new-conv]]
+    (let [old-conv db]
+      {:db (-> old-conv
+               (update
+                 :read-states
+                 merge
+                 (:read-states new-conv))
+               (assoc
+                 :self
+                 (:self new-conv)))
+       ;; TODO should we optimize this better?
+       :dispatch-n (map 
+                     (fn [ev]
+                       [:receive-msg ev])
+                     (:events new-conv))})))
+
 ;;
 ;; Receive a new chat message. This may trigger
 ;;  a fetch of people information

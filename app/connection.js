@@ -153,6 +153,21 @@ class ConnectionManager extends EventEmitter {
         });
     }
 
+    getEventsSince(timestampSince) {
+        this.client.syncallnewevents(timestampSince)
+        .done(result => {
+            console.log(`gotEventsSince: ${JSON.stringify(result, null, ' ')}`);
+            if (result.conversation_state) {
+                // update cache
+                result.conversation_state.forEach(this._mergeNewConversation);
+                
+                this.emit('got-new-events', result.conversation_state);
+            }
+        }, e => {
+            console.warn(`ERROR: getEventsSince(${timestampSince})`, e);
+        });
+    }
+
     markRead(convId, timestamp) {
         this.client.updatewatermark(convId, timestamp)
         .done(result => {
@@ -381,6 +396,28 @@ class ConnectionManager extends EventEmitter {
         oldConv.event = newConv.event.concat(oldConv.event);
     }
 
+    /**
+     * Merge "new" events into any cached conversation;
+     *  this differs from _mergeConversation in that
+     *  newConv will contain events received while
+     *  suspended or without net, so the events should
+     *  be appended, not inserted.
+     * TODO: simplify this stuff, possibly rename
+     */
+    _mergeNewConversation(newConv) {
+        var convId = newConv.conversation_id.id;
+        var oldConv = this._cachedConv(convId);
+        if (!oldConv) {
+            console.warn("Couldn't find conversation", convId);
+            return;
+        }
+
+        oldConv.conversation.read_state = newConv.conversation.read_state;
+        oldConv.conversation.self_conversation_state = 
+            newConv.conversation.self_conversation_state;
+        oldConv.event = oldConv.event.concat(newConv.event);
+    }
+
     _reconnect() {
         this.connected = false;
         this.lastConversations = null;
@@ -418,14 +455,26 @@ class ConnectionManager extends EventEmitter {
 
     _enableMonitoring() {
         const {powerMonitor} = electron;
+
+        var self = this;
+        var onReceiveWhileSuspended = function onReceiveWhileSuspended() {
+            self._suspendedAt = Date.now();
+        };
         powerMonitor.on('suspend', () => {
             log("SUSPEND");
+            this._suspendedAt = Date.now();
             this.notifyActivity.clear(); // clear any pending call
             this._setActive(false);
+            this.on('received', onReceiveWhileSuspended);
         });
         powerMonitor.on('resume', () => {
             log("RESUME");
+            this.removeListener('received', onReceiveWhileSuspended);
             this.notifyActivity();
+            if (this._suspendedAt) {
+                this.getEventsSince(this._suspendedAt);
+                this._suspendedAt = undefined;
+            }
         });
 
         this._setActive(true);
