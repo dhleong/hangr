@@ -89,6 +89,10 @@ class ConnectionManager extends EventEmitter {
         console.log("" + new Date(), ...args);
     }
 
+    now() {
+        return Date.now();
+    }
+
     /**
      * Get events from a conversation that are
      * older than `olderThan`
@@ -162,7 +166,7 @@ class ConnectionManager extends EventEmitter {
     getEventsSince(timestampSince) {
         this.client.syncallnewevents(timestampSince)
         .done(result => {
-            console.log(`gotEventsSince: ${JSON.stringify(result, null, ' ')}`);
+            this.log(`gotEventsSince: ${JSON.stringify(result, null, ' ')}`);
             if (result.conversation_state) {
                 // update cache
                 result.conversation_state.forEach(this._mergeNewConversation.bind(this));
@@ -197,6 +201,15 @@ class ConnectionManager extends EventEmitter {
         this._backoff = INITIAL_BACKOFF;
 
         var client = this.client = new Client();
+        this.bindToClient(client);
+
+
+        // go!
+        this._reconnect();
+    }
+
+    // NOTE: separated from open() for testing
+    bindToClient(client) {
         client.on('connect_failed', () => {
             this.log("conn: failed; reconnecting after", this._backoff);
             setTimeout(this._reconnect.bind(this), this._backoff);
@@ -213,7 +226,7 @@ class ConnectionManager extends EventEmitter {
                 return;
             }
             
-            console.log(`*** << ${JSON.stringify(msg, null, ' ')}`);
+            this.log(`*** << ${JSON.stringify(msg, null, ' ')}`);
             this._appendToConversation(msg.conversation_id.id, msg);
             this.emit('received', msg.conversation_id.id, msg);
         });
@@ -261,10 +274,6 @@ class ConnectionManager extends EventEmitter {
                 });
             }
         });
-
-
-        // go!
-        this._reconnect();
     }
 
     /**
@@ -464,11 +473,11 @@ class ConnectionManager extends EventEmitter {
         
         var self = this;
         var onReceiveWhileSuspended = function onReceiveWhileSuspended() {
-            self._suspendedAt = Date.now();
+            self._suspendedAt = this.now();
         };
         powerMonitor.on('suspend', () => {
             this.log("SUSPEND");
-            this._suspendedAt = Date.now();
+            this._suspendedAt = this.now();
             this.notifyActivity.clear(); // clear any pending call
             this._setActive(false);
             this.on('received', onReceiveWhileSuspended);

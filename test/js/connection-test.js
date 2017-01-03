@@ -16,10 +16,14 @@ describe("ConnectionManager", () => {
     var connMan;
     var powerMonitor;
     var emitted = [];
+    var now = 9001;
     beforeEach(() => {
+        emitted = [];
+        
         powerMonitor = new EventEmitter();
         connMan = new ConnectionManager();
         connMan.log = () => {}; // don't clutter
+        connMan.now = () => now;
 
         connMan.client = new FakeClient();
         connMan._getPowerMonitor = () => powerMonitor;
@@ -36,6 +40,7 @@ describe("ConnectionManager", () => {
             conversation_state: INITIAL_CONVERSATIONS
         };
 
+        connMan.bindToClient(connMan.client);
         connMan._connected();
 
         // sanity checks
@@ -53,8 +58,12 @@ describe("ConnectionManager", () => {
         ]);
         connMan.client.syncallnewevents = {conversation_state: [ newConv ]};
         powerMonitor.emit('suspend');
+
+        now = 10000; // time passes, before...
         powerMonitor.emit('resume');
 
+        // we should have sync'd with the time of suspend, 9001
+        connMan.client.should.have.called('syncallnewevents', 9001);
         emitted.should.have.length(1);
         emitted[0].should.deep.equal(['got-new-events', [newConv]]);
 
@@ -66,7 +75,21 @@ describe("ConnectionManager", () => {
         ]);
     });
 
-    it("handles events received while suspended");
+    it("handles events received while suspended", () => {
+        powerMonitor.emit('suspend');
+
+        now = 10000; // time passes, before...
+        connMan.client.emit('chat_message', {
+            conversation_id: {id: 'with-kaylee'},
+            self_event_state: {}
+        });
+
+        now = 11000; // and then... finally we resume
+        powerMonitor.emit('resume');
+
+        // we should sync "since the most recent message"
+        connMan.client.should.have.called('syncallnewevents', 10000);
+    });
 
 });
 
@@ -80,10 +103,13 @@ describe("ConnectionManager", () => {
  *  the next call of that function
  */
 function FakeClient() {
-    var pendingValues = {
-    };
+    var pendingValues = { };
+    var calls = { };
+    var events = new EventEmitter();
 
-    function callMethod(name) {
+    function callMethod(name, ...args) {
+        calls[name] = args;
+        
         const pendingValue = pendingValues[name];
         delete pendingValues[name];
         if (pendingValue) {
@@ -100,6 +126,22 @@ function FakeClient() {
 
         // NOTE: client "get"s are all for method calls
         get: function(target, prop) {
+            if (prop === 'should') {
+                // exception: 'should' assertions
+                return {
+                    have: {
+                        called: function(fnName, ...expectedArgs) {
+                            calls.should.contain.key(fnName);
+                            calls[fnName].should.deep.equal(expectedArgs);
+                        }
+                    }
+                };
+            }
+
+            if (events[prop]) {
+                return events[prop].bind(events);
+            }
+            
             return callMethod.bind(target, prop);
         },
 
