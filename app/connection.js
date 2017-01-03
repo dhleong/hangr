@@ -7,13 +7,19 @@
 'use strict';
 
 const EventEmitter = require('events'),
-      electron = require('electron'),
-      {BrowserWindow} = electron,
       Client = require('hangupsjs'),
       Promise = require('promise'),
       {parsePresencePacket, throttle} = require('./util'),
     
       INITIAL_BACKOFF = 1000;
+
+var electron, BrowserWindow;
+try {
+    electron = require('electron'),
+    {BrowserWindow} = electron;
+} catch (e) {
+    // should be only in tests
+}
 
 // Current programmatic login workflow is described here
 // https://github.com/tdryer/hangups/issues/260#issuecomment-246578670
@@ -26,10 +32,6 @@ const CREDS = () => {
         }
     };
 };
-
-function log(...args) {
-    console.log("" + new Date(), ...args);
-}
 
 class AuthFetcher {
     fetch() {
@@ -81,6 +83,14 @@ class ConnectionManager extends EventEmitter {
         this.notifyActivity = throttle(
             this._setActive.bind(this, true, activeDuration),
             activeDuration * 1000);
+    }
+
+    log(...args) {
+        console.log("" + new Date(), ...args);
+    }
+
+    now() {
+        return Date.now();
     }
 
     /**
@@ -153,6 +163,21 @@ class ConnectionManager extends EventEmitter {
         });
     }
 
+    getEventsSince(timestampSince) {
+        this.client.syncallnewevents(timestampSince)
+        .done(result => {
+            this.log(`gotEventsSince: ${JSON.stringify(result, null, ' ')}`);
+            if (result.conversation_state) {
+                // update cache
+                result.conversation_state.forEach(this._mergeNewConversation.bind(this));
+                
+                this.emit('got-new-events', result.conversation_state);
+            }
+        }, e => {
+            console.warn(`ERROR: getEventsSince(${timestampSince})`, e);
+        });
+    }
+
     markRead(convId, timestamp) {
         this.client.updatewatermark(convId, timestamp)
         .done(result => {
@@ -176,8 +201,17 @@ class ConnectionManager extends EventEmitter {
         this._backoff = INITIAL_BACKOFF;
 
         var client = this.client = new Client();
+        this.bindToClient(client);
+
+
+        // go!
+        this._reconnect();
+    }
+
+    // NOTE: separated from open() for testing
+    bindToClient(client) {
         client.on('connect_failed', () => {
-            log("conn: failed; reconnecting after", this._backoff);
+            this.log("conn: failed; reconnecting after", this._backoff);
             setTimeout(this._reconnect.bind(this), this._backoff);
             this.emit('reconnecting', this._backoff);
             this._backoff *= 2;
@@ -192,7 +226,7 @@ class ConnectionManager extends EventEmitter {
                 return;
             }
             
-            console.log(`*** << ${JSON.stringify(msg, null, ' ')}`);
+            this.log(`*** << ${JSON.stringify(msg, null, ' ')}`);
             this._appendToConversation(msg.conversation_id.id, msg);
             this.emit('received', msg.conversation_id.id, msg);
         });
@@ -240,10 +274,6 @@ class ConnectionManager extends EventEmitter {
                 });
             }
         });
-
-
-        // go!
-        this._reconnect();
     }
 
     /**
@@ -381,6 +411,28 @@ class ConnectionManager extends EventEmitter {
         oldConv.event = newConv.event.concat(oldConv.event);
     }
 
+    /**
+     * Merge "new" events into any cached conversation;
+     *  this differs from _mergeConversation in that
+     *  newConv will contain events received while
+     *  suspended or without net, so the events should
+     *  be appended, not inserted.
+     * TODO: simplify this stuff, possibly rename
+     */
+    _mergeNewConversation(newConv) {
+        var convId = newConv.conversation_id.id;
+        var oldConv = this._cachedConv(convId);
+        if (!oldConv) {
+            console.warn("Couldn't find conversation", convId);
+            return;
+        }
+
+        oldConv.conversation.read_state = newConv.conversation.read_state;
+        oldConv.conversation.self_conversation_state = 
+            newConv.conversation.self_conversation_state;
+        oldConv.event = oldConv.event.concat(newConv.event);
+    }
+
     _reconnect() {
         this.connected = false;
         this.lastConversations = null;
@@ -392,7 +444,7 @@ class ConnectionManager extends EventEmitter {
     }
 
     _connected() {
-        log("conn: Connected!");
+        this.log("conn: Connected!");
         this.connected = true;
         this._backoff = INITIAL_BACKOFF;
         this.emit('connected');
@@ -417,18 +469,35 @@ class ConnectionManager extends EventEmitter {
     }
 
     _enableMonitoring() {
-        const {powerMonitor} = electron;
+        const powerMonitor = this._getPowerMonitor();
+        
+        var self = this;
+        var onReceiveWhileSuspended = function onReceiveWhileSuspended() {
+            self._suspendedAt = this.now();
+        };
         powerMonitor.on('suspend', () => {
-            log("SUSPEND");
+            this.log("SUSPEND");
+            this._suspendedAt = this.now();
             this.notifyActivity.clear(); // clear any pending call
             this._setActive(false);
+            this.on('received', onReceiveWhileSuspended);
         });
         powerMonitor.on('resume', () => {
-            log("RESUME");
+            this.log("RESUME");
+            this.removeListener('received', onReceiveWhileSuspended);
             this.notifyActivity();
+            if (this._suspendedAt) {
+                this.getEventsSince(this._suspendedAt);
+                this._suspendedAt = undefined;
+            }
         });
 
         this._setActive(true);
+    }
+
+    _getPowerMonitor() {
+        const {powerMonitor} = electron;
+        return powerMonitor;
     }
 
     _error() {
@@ -441,7 +510,7 @@ class ConnectionManager extends EventEmitter {
             if (resp.response_header.status !== 'OK') {
                 console.log("ERROR: setactive", resp);
             } else {
-                log(`setActive(${isActive})`);
+                this.log(`setActive(${isActive})`);
             }
         }, e => {
             console.log("ERROR: setactive", e);

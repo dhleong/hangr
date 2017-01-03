@@ -37,9 +37,16 @@
    :got-entities
    (fn on-entities
      [entities]
-     (js/console.log  "Got entities" entities)
+     (js/console.log "Got entities" entities)
      (doseq [person (map entity->clj entities)]
        (dispatch [:update-person person])))
+
+   :got-new-events
+   (fn on-new-events
+     [conv]
+     (js/console.log "Got new events" conv)
+     (let [conv (conv->clj conv)]
+       (dispatch [:append-new conv])))
 
    :mark-read!
    (fn on-mark-read!
