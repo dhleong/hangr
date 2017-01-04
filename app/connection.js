@@ -525,6 +525,7 @@ ConnectionManager.GLOBAL_EVENTS = [
     'self-info',
     'recent-conversations',
     'got-entities',
+    'got-new-events',
 ];
 ConnectionManager.CHAT_EVENTS = [
     // events only the friends window 
