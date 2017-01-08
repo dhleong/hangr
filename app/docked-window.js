@@ -68,22 +68,20 @@ class DockManager {
         });
     }
 
-    dispatch(/* event, ...args */) {
-        var args = Array.from(arguments);
-        this._windows.forEach(window => {
-            window.send.apply(window, args);
+    dispatch(event, ...args) {
+        this._allOpenWindows().forEach(win => {
+            win.send(event, ...args);
         });
     }
 
     findActive() {
         var focused = BrowserWindow.getFocusedWindow();
-        return this._windows.find(win => {
-            return win.win === focused;
-        });
+        if (focused) return focused.__docked;
     }
 
     findWithUrl(url) {
-        return this._windows.find(win => {
+        return this._allOpenWindows()
+        .find(win => {
             return win.url === url;
         });
     }
@@ -111,6 +109,15 @@ class DockManager {
         }
 
         window.setPosition(x, y, !!animate);
+    }
+
+    /**
+     * Get all open DockedWindows, including
+     * ones that are currently hidden
+     */
+    _allOpenWindows() {
+        return BrowserWindow.getAllWindows()
+            .map(window => window.__docked);
     }
 
     _animateOut(window) {
@@ -178,6 +185,7 @@ class DockedWindow {
             alwaysOnTop: true,
             skipTaskBar: true,
         });
+        win.__docked = this;
 
         // and load the index.html of the app.
         win.loadURL('file://' + __dirname + '/index.html#' + url);
