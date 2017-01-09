@@ -248,7 +248,8 @@ ul#conversations {
 }
 #conversation {
     @composer-inner-height: 16pt;
-    @composer-font-size: 12pt;
+    @composer-font-size: 11pt;
+    @composer-placeholder-font-size: 12pt;
     @composer-padding: 6pt;
     @composer-height: (@composer-inner-height + 2 * @composer-padding);
     @message-margin: 12pt;
@@ -425,7 +426,6 @@ ul#conversations {
             font-size: @composer-font-size;
             min-height: @composer-inner-height;
             padding: @composer-padding;
-            width: 100%;
 
             color: @input-color;
 
@@ -433,6 +433,7 @@ ul#conversations {
             &:empty:before {
                 content: attr(placeholder);
                 color: lighten(@input-color, 50%);
+                font-size: @composer-placeholder-font-size;
             }
 
             // remove the ugly outline on osx
