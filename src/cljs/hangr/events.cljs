@@ -187,10 +187,12 @@
                       (or hangout?
                           unfocused?))
              [(fill-members people conv) msg])))
-       :dispatch?
-       (when (and (= [:conv conv-id] page)
-                  win-focused?)
-         [:mark-read! conv-id])})))
+       :dispatch-n?
+       [(when (and (= [:friends] page))
+          [:check-unread!])
+        (when (and (= [:conv conv-id] page)
+                   win-focused?)
+          [:mark-read! conv-id])]})))
 
 ;;
 ;; When scrolling back to older events in a conv
@@ -289,6 +291,17 @@
   :cancel-image!
   (fn [db]
     (assoc db :pending-image nil)))
+
+; event version of the :check-unread fx, which can
+; be dispatched from an event that doesn't have the full db
+(reg-event-fx
+  :check-unread!
+  [(inject-db :page) trim-v]
+  (fn [{:keys [db page]} _]
+    ; check if we should update the unread
+    {:check-unread (when (= [:friends] page)
+                     (:convs db))}))
+
 
 (reg-event-fx
   :create-hangout
@@ -417,13 +430,22 @@
         (assoc-in [user-id :typing]
                    status))))
 
-(reg-event-db
+(reg-event-fx
   :update-watermark
-  [(conv-path :read-states) trim-v]
-  (fn [read-states [conv-id sender-id latest-read-timestamp]]
-    (let [updated (assoc-in
-                    read-states
-                    [sender-id :latest-read-timestamp]
-                    latest-read-timestamp)]
-      (.log js/console "Updated: " sender-id updated)
-      updated)))
+  [(conv-path) trim-v]
+  (fn [{:keys [db]} [conv-id sender-id latest-read-timestamp]]
+    (let [conv db ;; see conv-path
+          updated (assoc-in
+                    conv
+                    [:read-states sender-id :latest-read-timestamp]
+                    latest-read-timestamp)
+          updated (if (= (-> conv :self :id)
+                         sender-id)
+                    (assoc-in
+                      updated
+                      [:self :latest-read-timestamp]
+                      latest-read-timestamp)
+                    updated)]
+      (js/console.log  "Updated: " sender-id updated)
+      {:db updated
+       :dispatch [:check-unread!]})))

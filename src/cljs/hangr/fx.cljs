@@ -21,6 +21,12 @@
     (when args
       (dispatch args))))
 
+(reg-fx
+  :dispatch-n?
+  (fn [args]
+    (doseq [event args]
+      (when event
+        (dispatch event)))))
 
 ;; -- IPC messaging -----------------------------------------------------------
 ;;

@@ -91,6 +91,34 @@ describe("ConnectionManager", () => {
         connMan.client.should.have.called('syncallnewevents', 10000);
     });
 
+    describe("Events:", () => {
+        it("`watermark` for other just updates cache", () => {
+            connMan.client.emit('watermark', {
+                conversation_id: {id: 'with-kaylee'},
+                participant_id: PID('itskaylee'),
+                latest_read_timestamp: 42
+            });
+
+            var cached = connMan._cachedConv('with-kaylee');
+            cached.conversation.self_conversation_state.self_read_state
+            .latest_read_timestamp.should.equal(0);
+
+            cached.conversation.read_state[0].last_read_timestamp
+            .should.equal(42);
+        });
+
+        it("`watermark` for self updates self_ cache", () => {
+            connMan.client.emit('watermark', {
+                conversation_id: {id: 'with-kaylee'},
+                participant_id: PID('mreynolds'),
+                latest_read_timestamp: 42
+            });
+
+            var cached = connMan._cachedConv('with-kaylee');
+            cached.conversation.self_conversation_state.self_read_state
+            .latest_read_timestamp.should.equal(42);
+        });
+    });
 });
 
 /**
@@ -153,6 +181,13 @@ function FakeClient() {
     return new Proxy({}, handler);
 }
 
+function PID(chat_id) {
+    return {
+        chat_id: chat_id,
+        gaia_id: chat_id
+    };
+}
+
 function Conv(id, events) {
     return {
         conversation_id: {
@@ -160,7 +195,19 @@ function Conv(id, events) {
         },
         event: events,
         conversation: {
-            read_state: []
+            read_state: [
+                {
+                    participant_id: PID('itskaylee'),
+                    last_read_timestamp: 0
+                }
+            ],
+
+            self_conversation_state: {
+                self_read_state: {
+                    latest_read_timestamp: 0,
+                    participant_id: PID("mreynolds")
+                }
+            }
         },
     };
 }

@@ -272,6 +272,11 @@ class ConnectionManager extends EventEmitter {
                         return true; // short-circuit some()
                     }
                 });
+
+                var selfReadState = cached.conversation.self_conversation_state.self_read_state;
+                if (selfReadState.participant_id.chat_id === msg.participant_id.chat_id) {
+                    selfReadState.latest_read_timestamp = msg.latest_read_timestamp;
+                }
             }
         });
     }
