@@ -4,7 +4,8 @@
   (:require [hangr.util :refer [js->real-clj id->key]]))
 
 (defonce notifier (js/require "node-notifier"))
-(defonce bundle-id (.-bundleId (js/require (str js/__dirname "/package.json"))))
+(defonce package-json (js/require (str js/__dirname "/package.json")))
+(defonce bundle-id (.-bundleId package-json))
 
 (defn notify!
   "Raise a native notification. Takes an options map
@@ -27,6 +28,7 @@
              (into {})
              clj->js)]
     (js/console.log "NOTIFY!" params)
+    (js/console.log "bundle-id:" bundle-id, "notifier:" notifier)
     (-> notifier
         (.notify 
           params

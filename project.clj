@@ -73,6 +73,8 @@
                                                                 :parallel-build true
                                                                 :cache-analysis false
                                                                 :closure-defines {"goog.DEBUG" false}
-                                                                :externs ["externs/misc.js"]
+                                                                :externs ["externs/misc.js"
+                                                                          "externs/node-notifier.js"
+                                                                          "externs/package.js"]
                                                                 :pretty-print false}
                                                      :source-paths ["env/prod/cljs"]}}}}})
