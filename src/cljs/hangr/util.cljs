@@ -1,6 +1,7 @@
 (ns ^{:author "Daniel Leong"
       :doc "util"}
-  hangr.util)
+  hangr.util
+  (:require [clojure.string :refer [split]]))
 
 (defn js->real-clj
   "Convenience"
@@ -20,7 +21,7 @@
   [map-id]
   (-> map-id
       name
-      (clojure.string/split "|")
+      (split "|")
       (as-> vals
         (zipmap [:chat_id :gaia_id]
                 vals))))
