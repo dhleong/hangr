@@ -3,6 +3,9 @@
 # Release script for Hangr
 #
 
+import os
+import sys
+import shutil
 from zipfile import ZipFile
 
 try:
@@ -30,6 +33,19 @@ def buildDefaultNotes(_):
     if bugFixes: contents += "Bug Fixes:\n" + bugFixes
     if msgs: contents += "\nNotes:\n" + msgs
     return contents.strip()
+
+def buildZipFile(zipPath, contents):
+    # TODO move this into hostage, maybe?
+    if "--dryrun" in sys.argv: return File(zipPath)
+
+    if os.path.isdir(contents):
+        if os.path.exists(zipPath):
+            os.remove(zipPath)
+        shutil.make_archive(zipPath.replace('.zip', ''), 'zip', contents)
+    else:
+        with ZipFile(zipPath, 'w') as zipObj:
+            zipObj.write(contents)
+    return File(zipPath)
 
 #
 # Globals
@@ -72,12 +88,27 @@ releaseNotes = notes.contents()
 # Do the actual build
 #
 
-# TODO build for all platforms?
-verify(Execute('grunt cljsbuild-prod prepare-release release-mac')).succeeds(silent=False)
+# TODO build for linux?
+verify(Execute('grunt cljsbuild-prod prepare-release release-mac release-win')).succeeds(silent=False)
 
 buildName = "hangr-v%s-pre" % version
 macFile = File("builds/%s/%s.dmg" % (buildName, buildName))
 verify(macFile).exists()
+
+winFolder = File("builds/%s/hangr-win32-x64" % (buildName))
+verify(winFolder).exists()
+
+# github doesn't allow .dmg directly
+print "Compressing mac build..."
+macZipPath = 'builds/hangr-macOS-%s.zip' % version
+macZipFile = buildZipFile(macZipPath, macFile.path)
+verify(macZipFile).exists()
+
+# release-win outputs a folder
+print "Compressing windows build..."
+winZipPath = 'builds/hangr-win-x64-%s.zip' % version
+winZipFile = buildZipFile(winZipPath, winFolder.path)
+verify(winZipFile).exists()
 
 #
 # Upload to github
@@ -91,17 +122,13 @@ verify(versionTag).push("origin")
 gitRelease = github.Release(version)
 verify(gitRelease).create(body=releaseNotes)
 
-# github doesn't allow .dmg directly
-print "Compressing mac build..."
-macZipPath = 'builds/macOS-%s.zip' % version
-with ZipFile(macZipPath, 'w') as macZip:
-    macZip.write(macFile.path)
-macZipFile = File(macZipPath)
-
 print "Uploading", macZipFile.path
-verify(macZipFile).exists()
 verify(gitRelease).uploadFile(
         macZipFile.path, 'application/zip')
+
+print "Uploading", winZipFile.path
+verify(gitRelease).uploadFile(
+        winZipFile.path, 'application/zip')
 
 #
 # Success! Now, do some bookkeeping
