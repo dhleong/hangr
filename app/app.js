@@ -2,18 +2,19 @@
 
 const electron = require('electron'),
       fs = require('fs-extra'),
+      path = require('path'),
       {app, dialog, ipcMain, Menu, Tray} = electron,
       packageJson = require(__dirname + '/package.json'),
 
       {urlForConvId} = require('./util'),
       {IpcHandler} = require('./ipc'),
       {dockManager, DockedWindow} = require('./docked-window'),
-      isDemo = process.argv.length && 
+      isDemo = process.argv.length &&
         process.argv[process.argv.length - 1] === 'demo',
-      ConnectionManager = isDemo 
-        ? require('./demo/connection') 
+      ConnectionManager = isDemo
+        ? require('./demo/connection')
         : require('./connection'),
-    
+
       connMan = new ConnectionManager();
 
 const devConfigFile = __dirname + '/config.json';
@@ -43,13 +44,26 @@ fs.ensureDirSync(app.getPath('userData'));
 
 /** cleanup before we can quit */
 function preQuit() {
-    mainWindow.removeAllListeners('close');
+    if (mainWindow) {
+        mainWindow.removeAllListeners('close');
+    }
 }
 
 function quit() {
     preQuit();
     mainWindow.close();
     app.quit();
+}
+
+function logout() {
+    connMan.logout().then(() => {
+        var cookiesFile = path.join(app.getPath('userData'), 'Cookies');
+        if (fs.existsSync(cookiesFile)) {
+            fs.unlinkSync(cookiesFile);
+        }
+
+        quit();
+    });
 }
 
 const versionString =
@@ -129,6 +143,11 @@ const menuTemplate = [fileMenu, editMenu, debugMenu, helpMenu];
 
 
 const trayContextMenu = [
+    {
+        label: 'Logout',
+        click: logout
+    },
+    { type: 'separator' },
     {
         label: 'Quit',
         click: quit

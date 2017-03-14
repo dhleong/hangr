@@ -10,7 +10,7 @@ const EventEmitter = require('events'),
       Client = require('hangupsjs'),
       Promise = require('promise'),
       {parsePresencePacket, throttle} = require('./util'),
-    
+
       INITIAL_BACKOFF = 1000;
 
 var electron, BrowserWindow;
@@ -70,7 +70,7 @@ class AuthFetcher {
 }
 
 class ConnectionManager extends EventEmitter {
-    
+
     constructor() {
         super();
 
@@ -91,6 +91,10 @@ class ConnectionManager extends EventEmitter {
 
     now() {
         return Date.now();
+    }
+
+    logout() {
+        return this.client.logout();
     }
 
     /**
@@ -225,7 +229,7 @@ class ConnectionManager extends EventEmitter {
                 delete this._pendingSents[clientGeneratedId]; // cleanup
                 return;
             }
-            
+
             this.log(`*** << ${JSON.stringify(msg, null, ' ')}`);
             this._appendToConversation(msg.conversation_id.id, msg);
             this.emit('received', msg.conversation_id.id, msg);
