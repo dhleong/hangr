@@ -11,7 +11,9 @@ const EventEmitter = require('events'),
       Promise = require('promise'),
       {parsePresencePacket, throttle} = require('./util'),
 
-      INITIAL_BACKOFF = 1000;
+      INITIAL_BACKOFF = 1000,
+
+      ERROR_NOT_LOGGEDIN = "No oauth token";
 
 var electron, BrowserWindow;
 try {
@@ -50,7 +52,7 @@ class AuthFetcher {
                 session.cookies.get({}, (err, cookies) => {
                     if (err) return reject(err);
 
-                    var found = cookies.some(cookie => {
+                    cookies.some(cookie => {
                         if (cookie.name === 'oauth_code') {
                             console.log('login: auth success!');
                             fulfill(cookie.value);
@@ -59,10 +61,13 @@ class AuthFetcher {
                         }
                     });
 
-                    if (!found) {
-                        console.log('login: no oauth token');
-                        reject("No oauth token");
-                    }
+                    // FIXME: right now this happens when we first
+                    // open the login window. We probably need to
+                    // fix the url in the `if` above to be more selective
+                    // if (!found) {
+                    //     console.log('login: no oauth token');
+                    //     reject(ERROR_NOT_LOGGEDIN);
+                    // }
                 });
             });
         });
@@ -214,7 +219,12 @@ class ConnectionManager extends EventEmitter {
 
     // NOTE: separated from open() for testing
     bindToClient(client) {
-        client.on('connect_failed', () => {
+        client.on('connect_failed', reason => {
+            if (reason === ERROR_NOT_LOGGEDIN) {
+                this.log("conn: failed; not logged in");
+                return;
+            }
+
             this.log("conn: failed; reconnecting after", this._backoff);
             setTimeout(this._reconnect.bind(this), this._backoff);
             this.emit('reconnecting', this._backoff);
@@ -447,7 +457,7 @@ class ConnectionManager extends EventEmitter {
         this.lastConversations = null;
         this.lastSelfInfo = null;
         this.client.connect(CREDS).done(
-            this._connected.bind(this), 
+            this._connected.bind(this),
             this._error.bind(this)
         );
     }
@@ -509,8 +519,8 @@ class ConnectionManager extends EventEmitter {
         return powerMonitor;
     }
 
-    _error() {
-        console.warn("conn: ERROR!", arguments);
+    _error(err) {
+        console.warn("conn: ERROR!", err);
     }
 
     _setActive(isActive) {
