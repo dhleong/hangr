@@ -53,6 +53,7 @@ class IpcHandler {
     }
 
     mark_read$(e, convId, timestamp) {
+        console.log(`Request: markRead(${convId})`);
         this.connMan.markRead(convId, timestamp);
 
         // forward to the main window

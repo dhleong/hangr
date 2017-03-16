@@ -329,13 +329,12 @@
            ; send request to mark read
            ; NOTE: the service expects timestamps in milliseconds.
            ; WHY does it return them in microseconds?!
-           :ipc (when-not (= [:friends] page)
-                  [:mark-read! conv-id (-> conv
-                                        :events
-                                        last
-                                        :timestamp
-                                        long
-                                        (/ 1000))])
+           :ipc [:mark-read! conv-id (-> conv
+                                         :events
+                                         last
+                                         :timestamp
+                                         long
+                                         (/ 1000))]
            ; check if we should update the unread
            :check-unread (when (= [:friends] page)
                            (:convs updated-db))})
