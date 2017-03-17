@@ -18,19 +18,32 @@ except ImportError:
     print "!! A $GITHUB_TOKEN env variable will also work."
     exit(1)
 
+#
+# Globals
+#
+
+notes = File(".last-release-notes")
+latestTag = git.Tag("latest-release")
 
 def buildDefaultNotes(_):
     logParams = {
             'path': "latest-release..HEAD",
-            'grep': ["#bugfix", "#fix", "Fix"],
+            'grep': ["Fix #", "Fixes #", "Closes #"],
             'pretty': "format:- %s"}
-
-    bugFixes = git.Log(**logParams).output()
     logParams["invertGrep"] = True
     msgs = git.Log(**logParams).output()
 
     contents = ''
-    if bugFixes: contents += "Bug Fixes:\n" + bugFixes
+
+    lastReleaseDate = latestTag.get_created_date()
+    closedIssues = github.find_issues(state='closed', since=lastReleaseDate)
+    if closedIssues:
+        contents += "Closed Issues:\n"
+        for issue in closedIssues:
+            contents += "- {title} (#{number})\n".format(
+                    number=issue.number,
+                    title=issue.title)
+
     if msgs: contents += "\nNotes:\n" + msgs
     return contents.strip()
 
@@ -46,13 +59,6 @@ def buildZipFile(zipPath, contents):
         with ZipFile(zipPath, 'w') as zipObj:
             zipObj.write(contents)
     return File(zipPath)
-
-#
-# Globals
-#
-
-notes = File(".last-release-notes")
-latestTag = git.Tag("latest-release")
 
 #
 # Verify
