@@ -59,13 +59,13 @@
      (.log js/console "Received" received-msg-event)
      (let [ev (event->clj received-msg-event)]
        (dispatch [:receive-msg (-> ev :conversation_id :id) ev])))
-   
+
    :recent-conversations
    (fn [convs]
      (.log js/console "Got conversations" convs)
      (doseq [conv (map conv->clj convs)]
        (dispatch [:update-conv conv])))
-   
+
    :self-info
    (fn [info]
      (.log js/console "Got self info" info)
@@ -75,7 +75,7 @@
    (fn [conv-id image sending-msg-event]
      (.log js/console "Sending..." sending-msg-event)
      (dispatch [:sending-msg conv-id image (js->real-clj sending-msg-event)]))
-   
+
    :sent
    (fn [sent-msg-event]
      (.log js/console "Sent" sent-msg-event)
@@ -98,7 +98,7 @@
                   conv-id
                   user-id
                   status])))
-   
+
    :watermark
    (fn [watermark-event]
      (.log js/console "Watermark" watermark-event)

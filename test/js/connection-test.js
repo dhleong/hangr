@@ -92,6 +92,30 @@ describe("ConnectionManager", () => {
     });
 
     describe("Events:", () => {
+        it("`client_conversation` *after* chat_message for new conversation emits recent-conversations", () => {
+            var msg, conv;
+            connMan.client.emit('chat_message', (msg = {
+                conversation_id: {id: 'with-zoe'},
+                self_event_state: {}
+            }));
+
+            connMan.client.emit('client_conversation', (conv = {
+                conversation_id: {id: 'with-zoe'},
+                read_state: { }
+            }));
+
+            emitted.should.have.length(2);
+            emitted[0].should.deep.equal(['recent-conversations', [
+                {
+                    conversation_id: conv.conversation_id,
+                    conversation: conv,
+                    event: [ ]
+                }
+            ]]);
+
+            emitted[1].should.deep.equal(['received', 'with-zoe', msg]);
+        });
+
         it("`watermark` for other just updates cache", () => {
             connMan.client.emit('watermark', {
                 conversation_id: {id: 'with-kaylee'},

@@ -179,7 +179,7 @@ class ConnectionManager extends EventEmitter {
             if (result.conversation_state) {
                 // update cache
                 result.conversation_state.forEach(this._mergeNewConversation.bind(this));
-                
+
                 this.emit('got-new-events', result.conversation_state);
             }
         }, e => {
@@ -232,6 +232,39 @@ class ConnectionManager extends EventEmitter {
             this._disableMonitoring();
         });
 
+        client.on('client_conversation', msg => {
+            var cached = this._cachedConv(msg.conversation_id.id);
+            if (cached) {
+                if (!cached.conversation) {
+                    // we had some pending messages; pop off the most recent
+                    // so we can send it as "received" and trigger a notification
+                    cached.conversation = msg;
+                    var received = cached.event.splice(-1, 1)[0];
+
+                    // do the json stringify-parse dance to make sure
+                    // clients don't receive the version with the event
+                    // pushed back on, done below
+                    this.emit('recent-conversations',
+                        JSON.parse(JSON.stringify([cached])));
+
+                    this.emit('received', msg.conversation_id.id, received);
+                    cached.event.push(received);
+                } else {
+                    // TODO do we need to update meta or something?
+                    console.log('*** client_conversation', msg);
+                }
+            } else {
+                // totally new; save the data
+                console.log('!!! client_conversation', msg);
+                var conversation = {
+                    conversation: msg,
+                    conversation_id: msg.conversation_id,
+                    event: [],
+                };
+                this.lastConversations.push(conversation);
+            }
+        });
+
         client.on('chat_message', msg => {
             var clientGeneratedId = msg.self_event_state.client_generated_id;
             if (this._pendingSents[clientGeneratedId]) {
@@ -241,8 +274,15 @@ class ConnectionManager extends EventEmitter {
             }
 
             this.log(`*** << ${JSON.stringify(msg, null, ' ')}`);
-            this._appendToConversation(msg.conversation_id.id, msg);
-            this.emit('received', msg.conversation_id.id, msg);
+            if (this._appendToConversation(msg.conversation_id.id, msg)) {
+                this.emit('received', msg.conversation_id.id, msg);
+            } else if (this.lastConversations) {
+                // store as pending; we should get a client_conversation soon
+                this.lastConversations.push({
+                    conversation_id: msg.conversation_id,
+                    event: [msg]
+                });
+            }
         });
 
         client.on('hangout_event', msg => {
@@ -397,19 +437,22 @@ class ConnectionManager extends EventEmitter {
 
     _cachedConv(convId) {
         if (!this.lastConversations) return;
-        return this.lastConversations.find(conv => 
-                (conv.conversation_id && conv.conversation_id.id === convId) || 
-                (conv.conversation && conv.conversation.conversation_id.id === convId));
+        return this.lastConversations.find(conv =>
+                (conv.conversation_id && conv.conversation_id.id === convId) ||
+                (conv.conversation
+                    && conv.conversation.conversation_id
+                    && conv.conversation.conversation_id.id === convId));
     }
 
     _appendToConversation(convId, event) {
         var conv = this._cachedConv(convId);
         if (!conv) {
-            console.warn("Couldn't find conversation", convId);
-            return;
+            console.warn("_appendTo: Couldn't find conversation", convId);
+            return false;
         }
 
         conv.event.push(event);
+        return true;
     }
 
     /** 
@@ -422,7 +465,7 @@ class ConnectionManager extends EventEmitter {
         var convId = newConv.conversation_id.id;
         var oldConv = this._cachedConv(convId);
         if (!oldConv) {
-            console.warn("Couldn't find conversation", convId);
+            console.warn("_merge: Couldn't find conversation", convId);
             return;
         }
 
@@ -442,7 +485,7 @@ class ConnectionManager extends EventEmitter {
         var convId = newConv.conversation_id.id;
         var oldConv = this._cachedConv(convId);
         if (!oldConv) {
-            console.warn("Couldn't find conversation", convId);
+            console.warn("_mergeNew: Couldn't find conversation", convId);
             return;
         }
 
@@ -472,7 +515,7 @@ class ConnectionManager extends EventEmitter {
             this.lastSelfInfo = selfInfo;
             this.emit('self-info', this.lastSelfInfo);
         }, e => console.warn("error: getselfinfo", e));
-        
+
         this.client.syncrecentconversations().then(chats => {
             this.lastConversations = chats.conversation_state;
             this.emit('recent-conversations', this.lastConversations);
