@@ -24,7 +24,7 @@ except ImportError:
 #
 
 notes = File(".last-release-notes")
-latestTag = git.Tag("latest-release")
+latestTag = git.Tag.latest()
 
 def formatIssue(issue):
     return "- {title} (#{number})\n".format(
@@ -45,7 +45,7 @@ def buildLabeled(labelsToTitles):
 
 def buildDefaultNotes(_):
     logParams = {
-            'path': "latest-release..HEAD",
+            'path': latestTag.name + "..HEAD",
             'grep': ["Fix #", "Fixes #", "Closes #"],
             'pretty': "format:- %s"}
     logParams["invertGrep"] = True
@@ -171,14 +171,7 @@ verify(gitRelease).uploadFile(
         winZipFile.path, 'application/zip')
 
 #
-# Success! Now, do some bookkeeping
-#
-
-verify(latestTag).create(force=True)
-verify(latestTag).push("origin", force=True)
-
-#
-# cleanup and done!
+# Success! Now, just cleanup and we're done!
 #
 
 notes.delete()
