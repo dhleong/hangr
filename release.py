@@ -6,6 +6,7 @@
 import os
 import sys
 import shutil
+from collections import OrderedDict
 from zipfile import ZipFile
 
 try:
@@ -25,6 +26,23 @@ except ImportError:
 notes = File(".last-release-notes")
 latestTag = git.Tag("latest-release")
 
+def formatIssue(issue):
+    return "- {title} (#{number})\n".format(
+            number=issue.number,
+            title=issue.title)
+
+def buildLabeled(labelsToTitles):
+    """Given a set of (label, title) tuples, produces an
+    OrderedDict whose keys are `label`, and whose values are
+    dictionaries containing 'title' -> `title`, and
+    'content' -> string. The iteration order of the dictionary
+    will preserve the ordering of the provided tuples
+    """
+    result = OrderedDict()
+    for k, v in labelsToTitles:
+        result[k] = {'title': v, 'content': ''}
+    return result
+
 def buildDefaultNotes(_):
     logParams = {
             'path': "latest-release..HEAD",
@@ -37,14 +55,30 @@ def buildDefaultNotes(_):
 
     lastReleaseDate = latestTag.get_created_date()
     closedIssues = github.find_issues(state='closed', since=lastReleaseDate)
-    if closedIssues:
-        contents += "Closed Issues:\n"
-        for issue in closedIssues:
-            contents += "- {title} (#{number})\n".format(
-                    number=issue.number,
-                    title=issue.title)
 
-    if msgs: contents += "\nNotes:\n" + msgs
+    labeled = buildLabeled([
+        ['feature', "New Features"],
+        ['enhancement', "Enhancements"],
+        ['bug', "Bug Fixes"],
+        ['_default', "Other resolved tickets"],
+    ])
+
+    if closedIssues:
+        for issue in closedIssues:
+            found = False
+            for label in labeled.iterkeys():
+                if label in issue.labels:
+                    labeled[label]['content'] += formatIssue(issue)
+                    found = True
+                    break
+            if not found:
+                labeled['_default']['content'] += formatIssue(issue)
+
+    for labeledIssueInfo in labeled.itervalues():
+        if labeledIssueInfo['content']:
+            contents += "\n**{title}**:\n{content}".format(**labeledIssueInfo)
+
+    if msgs: contents += "\n**Notes**:\n" + msgs
     return contents.strip()
 
 def buildZipFile(zipPath, contents):
@@ -76,7 +110,7 @@ verify(versionTag.exists())\
 # Make sure all the tests pass
 #
 
-verify(Execute("scripts/test.sh").succeeds(silent=False)).orElse(die())
+verify(Execute("scripts/test.sh")).succeeds(silent=False).orElse(die())
 
 #
 # Build the release notes
