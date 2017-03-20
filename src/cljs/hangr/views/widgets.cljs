@@ -45,9 +45,12 @@
         class-offset (.indexOf spec ".")
         classes (when (not= -1 class-offset)
                   (subs spec class-offset))
-        icon-name (if (not= -1 class-offset)
-                    (subs spec 0 class-offset)
-                    spec)]
+        icon-name (string/replace
+                    (if (not= -1 class-offset)
+                      (subs spec 0 class-offset)
+                      spec)
+                    #"-"
+                    "_")]
     [(keyword (str "i.material-icons" classes)) icon-name]))
 
 (defn typing-indicator

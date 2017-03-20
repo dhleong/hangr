@@ -438,7 +438,7 @@
     [:div
      [conversation-title id]
      (when (not (sms? conv))
-       [:span#video-call
+       [:span#video-call.badge
         {:on-click (click-dispatch [:create-hangout id])
          :class (when (in-call? conv)
                   "live")}

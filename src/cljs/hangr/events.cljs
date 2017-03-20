@@ -114,9 +114,10 @@
     ;; if possible
     (let [copy-source (or db
                           default-value)]
-      (assoc default-value
-             :page (:page copy-source)
-             :people (:people copy-source)))))
+      (merge default-value
+             (select-keys copy-source
+                          [:page :people
+                           :latest-version :latest-version-notes])))))
 
 (reg-event-fx
   :navigate
@@ -356,10 +357,13 @@
                   :latest-version new-version
                   :latest-version-notes release-notes)
        :notify! {:title "New version available!"
-                 :message (str "Click to download " new-version)
-                 :wait? true
+                 :message (str "Click to download " new-version
+                               "\n"
+                               release-notes)
                  :actions "Download"
                  :close-label "Ignore"
+                 :wait? true
+                 :timeout (* 24 3600) ; stick around for a while
                  :on-click
                  (fn []
                    (dispatch [:open-external

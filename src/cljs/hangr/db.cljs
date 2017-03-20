@@ -9,4 +9,8 @@
    :self nil
    :convs nil
    :focused? false
-   :pending-image nil})
+   :pending-image nil
+
+   ; update checking:
+   :latest-version nil
+   :latest-version-notes nil})
