@@ -496,6 +496,7 @@ class ConnectionManager extends EventEmitter {
     }
 
     _reconnect() {
+        this.log("conn: Reconnect...");
         this.connected = false;
         this.lastConversations = null;
         this.lastSelfInfo = null;
