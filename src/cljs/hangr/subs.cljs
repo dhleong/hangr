@@ -12,9 +12,10 @@
 
 (reg-sub :connecting? :connecting?)
 (reg-sub :focused? :focused?)
-(reg-sub :self :self) 
-(reg-sub :pending-image :pending-image) 
-(reg-sub :people :people) 
+(reg-sub :latest-version :latest-version)
+(reg-sub :self :self)
+(reg-sub :pending-image :pending-image)
+(reg-sub :people :people)
 
 ;; -- Internal subscriptions --------------------------------------------------
 ;; Note the use of namespaced keywords to get the raw field. Actual

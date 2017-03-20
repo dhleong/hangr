@@ -11,7 +11,8 @@
     [hangr.db :refer [default-value]]
     [hangr.util :refer [key->id id->key]]
     [hangr.util.conversation :refer [fill-members unread?]]
-    [hangr.util.msg :refer [html->msg msg->event]]))
+    [hangr.util.msg :refer [html->msg msg->event]]
+    [hangr.util.updates :refer [latest-version-download-url]]))
 
 ;; -- Coeffects ---------------------------------------------------------------
 ;;
@@ -113,15 +114,17 @@
     ;; if possible
     (let [copy-source (or db
                           default-value)]
-      (assoc default-value
-             :page (:page copy-source)
-             :people (:people copy-source)))))
+      (merge default-value
+             (select-keys copy-source
+                          [:page :people
+                           :latest-version :latest-version-notes])))))
 
-(reg-event-db
+(reg-event-fx
   :navigate
   [trim-v]
-  (fn [db page]
-    (assoc db :page page)))
+  (fn [{:keys [db]} page]
+    {:db (assoc db :page page)
+     :reset-update-checker! (= [:friends] page)}))
 
 (reg-event-db
   :connected
@@ -340,6 +343,31 @@
                            (:convs updated-db))})
         ;; no change
         {}))))
+
+(reg-event-fx
+  :set-new-version!
+  [trim-v]
+  (fn [{:keys [db]} [new-version release-notes]]
+    (println "latest known version" (:latest-version db)
+             "vs" new-version)
+    ; only notify once
+    (when (not= (:latest-version db)
+                new-version)
+      {:db (assoc db
+                  :latest-version new-version
+                  :latest-version-notes release-notes)
+       :notify! {:title "New version available!"
+                 :message (str "Click to download " new-version
+                               "\n"
+                               release-notes)
+                 :actions "Download"
+                 :close-label "Ignore"
+                 :wait? true
+                 :timeout (* 24 3600) ; stick around for a while
+                 :on-click
+                 (fn []
+                   (dispatch [:open-external
+                              latest-version-download-url]))}})))
 
 (reg-event-fx
   :open-external

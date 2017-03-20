@@ -88,6 +88,18 @@ body {
     left: 0;
     top: 0;
     right: 0;
+
+    .badge {
+        cursor: pointer; // NOTE: doesn't work on OSX here...
+        margin-left: 2px;
+        margin-right: -4px;
+        padding: 6px 4px;
+        border-radius: 4px;
+
+        &:hover {
+            background-color: lighten(@title-background-color, 10%);
+        }
+    }
 }
 
 #app-container {
@@ -232,18 +244,8 @@ ul#conversations {
 // Conversation/chat list
 //
 #video-call {
-    cursor: pointer; // NOTE: doesn't work on OSX here...
-    margin-left: 2px;
-    margin-right: -4px;
-    padding: 6px 4px;
-    border-radius: 4px;
-
     &.live {
         color: @video-call-accent;
-    }
-
-    &:hover {
-        background-color: lighten(@title-background-color, 10%);
     }
 }
 #conversation {

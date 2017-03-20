@@ -6,7 +6,8 @@
             [goog.fx.dom :refer [Scroll]]
             [hangr.util :refer [key->id]]
             [hangr.util.conversation :refer [unread?]]
-            [hangr.util.notification :refer [notify! conv-msg->title msg->notif]]))
+            [hangr.util.notification :refer [notify! conv-msg->title msg->notif]]
+            [hangr.util.updates :refer [check-update!]]))
 
 (defonce electron (js/require "electron"))
 (defonce ipc-renderer (.-ipcRenderer electron))
@@ -69,6 +70,28 @@
                   #(ipc! :set-unread! any-unread)
                   set-unread-delay))))))
 
+;; -- Check for app updates ---------------------------------------------------
+;;
+
+; runs once every 24 hours
+(defonce check-update-timer (atom nil))
+(def check-update-delay (* 24 3600 1000))
+
+(reg-fx
+  :reset-update-checker!
+  (fn [running?]
+    (when-not running?
+      (when-let [timer @check-update-timer]
+        (println "Clear old update checker")
+        (js/clearInterval timer)
+        (reset! check-update-timer nil)))
+    (when running?
+      (println "Start update check")
+      (reset! check-update-timer
+              (js/setInterval
+                check-update!
+                check-update-delay)))))
+
 ;; -- Get Entities ------------------------------------------------------------
 ;;
 
@@ -102,6 +125,14 @@
   :open-external
   (fn [url]
     (.openExternal shell url)))
+
+;; -- General Notification ----------------------------------------------------
+;;
+
+(reg-fx
+  :notify!
+  (fn [opts]
+    (apply notify! (flatten (seq opts)))))
 
 ;; -- Chat Notification -------------------------------------------------------
 ;;

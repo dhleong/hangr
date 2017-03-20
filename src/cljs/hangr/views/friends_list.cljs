@@ -5,8 +5,10 @@
             [re-frame.core :refer [subscribe dispatch]]
             [hangr.util.conversation :refer [plus-photo-data unread?]]
             [hangr.util.notification :refer [msg->notif]]
+            [hangr.util.ui :refer [click-dispatch]]
+            [hangr.util.updates :refer [latest-version-download-url]]
             [hangr.views.conversation :refer [conversation-title]]
-            [hangr.views.widgets :refer [avatar]]))
+            [hangr.views.widgets :refer [avatar icon]]))
 
 (def *nbsp* "\u00a0")
 
@@ -103,3 +105,13 @@
           ;; nothing :(
           [:div "No conversations"])))))
 
+(defn friends-header
+  []
+  (let [latest-version @(subscribe [:latest-version])]
+    [:div
+     [:span "Hangr"]
+     (when latest-version
+       [:span#update-available.badge
+        {:on-click (click-dispatch
+                     [:open-external latest-version-download-url])}
+        [icon :wb-sunny]])]))
