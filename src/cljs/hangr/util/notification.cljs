@@ -12,6 +12,7 @@
   and, optionally, a callback that's called when the
   user provides a text reply to the notification (macOS only)."
   [& {:keys [title message icon reply? timeout wait?
+             close-label actions
              on-reply on-click]
       :or {timeout 20}}] ;; so terminal-notifier doesn't linger if ignored
   {:pre [(string? title)
@@ -23,6 +24,8 @@
               :reply reply?
               :wait wait?
               :timeout timeout
+              :closeLabel close-label
+              :actions actions
               :sender bundle-id}
              (filter second)
              (into {})

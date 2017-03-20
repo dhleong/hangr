@@ -6,7 +6,7 @@
             [re-frame.core :refer [subscribe dispatch]]
             [hangr.util.notification :refer [msg->notif]]
             [hangr.views.conversation :refer [conversation conversation-header]]
-            [hangr.views.friends-list :refer [friends-list]]))
+            [hangr.views.friends-list :refer [friends-list friends-header]]))
 
 ;; -- Loading Spinner ---------------------------------------------------------
 
@@ -33,9 +33,10 @@
         [:div
          {:class (when-not @focused?
                    "unfocused")}
-         [:div#title 
+         [:div#title
           (case page
             :conv [conversation-header arg]
+            :friends [friends-header]
             "Hangr")]
          [:div#app-container
           (case page

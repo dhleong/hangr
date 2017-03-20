@@ -103,3 +103,6 @@
           ;; nothing :(
           [:div "No conversations"])))))
 
+(defn friends-header
+  []
+  [:span "Hangr"])

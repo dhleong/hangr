@@ -9,3 +9,4 @@ END_NODE_INCLUDE
 var packageJson = {};
 
 packageJson.bundleId;
+packageJson.version;
