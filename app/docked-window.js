@@ -160,8 +160,7 @@ const Manager = new DockManager();
 const DELEGATED_METHODS = [
     'on', 'once', 'removeListener', 'removeAllListeners',
     'close', 'focus', 'hide', 'show',
-    'getURL', 'setPosition', 
-    'openDevTools', 'toggleDevTools',
+    'getURL', 'setPosition',
 ];
 class DockedWindow {
     constructor(url = '/') {
@@ -207,10 +206,22 @@ class DockedWindow {
         return WindowDimens.w;
     }
 
+    openDevTools() {
+        this.win.webContents.openDevTools({mode: 'detach'});
+    }
+
     /** Shortcut to send an IPC event to the browser */
     send(/* event, ... args */) {
         var contents = this.win.webContents;
         contents.send.apply(contents, Array.from(arguments));
+    }
+
+    toggleDevTools() {
+        if (!this.win.webContents.isDevToolsOpened()) {
+            this.openDevTools();
+        } else {
+            this.win.webContents.closeDevTools();
+        }
     }
 }
 
