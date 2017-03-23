@@ -285,6 +285,13 @@ class ConnectionManager extends EventEmitter {
             }
         });
 
+        client.on('delete', msg => {
+            var id = msg[0][0];
+            console.log(`*** <<D ${JSON.stringify(msg)} -> ${id}`);
+            // TODO delete from cache
+            this.emit('delete', id, id);
+        });
+
         client.on('hangout_event', msg => {
             console.log(`*** <<H ${JSON.stringify(msg, null, ' ')}`);
             this._appendToConversation(msg.conversation_id.id, msg);
@@ -595,6 +602,7 @@ ConnectionManager.CHAT_EVENTS = [
     // and a specific chat want. the first
     // argument of the event MUST be the chat id,
     // and the rest will be passed along
+    'delete',
     'focus',
     'received',
     'sent',

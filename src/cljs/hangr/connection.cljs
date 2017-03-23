@@ -16,6 +16,12 @@
      (println "Connected!")
      (dispatch [:connected]))
 
+   :delete
+   (fn on-delete
+     [conv-id]
+     (println "DELETE" conv-id)
+     (dispatch [:delete! conv-id]))
+
    :focus
    (fn on-focus
      [js-focus-event]

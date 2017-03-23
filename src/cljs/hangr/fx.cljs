@@ -92,6 +92,15 @@
                 check-update!
                 check-update-delay)))))
 
+;; -- Close the window --------------------------------------------------------
+;;
+
+(reg-fx
+  :close-window!
+  (fn [do-close?]
+    (when do-close?
+      (js/window.close))))
+
 ;; -- Get Entities ------------------------------------------------------------
 ;;
 

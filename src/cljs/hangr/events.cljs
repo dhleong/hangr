@@ -165,6 +165,17 @@
                        [:receive-msg ev])
                      (:events new-conv))})))
 
+(reg-event-fx
+  :delete!
+  [(inject-db :page) trim-v]
+  (fn [{:keys [db page]} [conv-id]]
+    {:db (update db
+                 :convs
+                 dissoc
+                 conv-id)
+     ; if we're the window for the conv that was deleted, close.
+     :close-window! (= [:conv conv-id] page)}))
+
 ;;
 ;; Receive a new chat message. This may trigger
 ;;  a fetch of people information
