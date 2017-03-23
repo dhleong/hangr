@@ -24,7 +24,7 @@ var exe = {
 };
 
 var electron_path = "electron";
-var electron_version = "1.4.12";
+var electron_version = "1.6.2";
 
 var packageJson = require(__dirname + '/package.json');
 
