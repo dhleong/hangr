@@ -29,10 +29,10 @@
   [js-conv]
   (-> js-conv
       js->real-clj
-      (as-> c 
-        (assoc c 
+      (as-> c
+        (assoc c
                ;; let the right id in
-               :id 
+               :id
                (or (-> c :conversation_id :id)
                    (-> c :conversation :conversation_id :id))
                ;
