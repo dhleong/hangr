@@ -35,6 +35,12 @@
                :id 
                (or (-> c :conversation_id :id)
                    (-> c :conversation :conversation_id :id))
+               ;
+               :archived? (= ["ARCHIVED_VIEW"]
+                             (-> c
+                                 :conversation
+                                 :self_conversation_state
+                                 :view))
                ;; create a nice map of members (participants)
                :members
                (->> c

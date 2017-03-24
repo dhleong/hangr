@@ -229,10 +229,10 @@
 ;;  a fetch of people information
 (reg-event-fx
   :update-conv
-  [conv?-scroll trim-v]
-  (fn [{:keys [db]} [conv]]
+  [(inject-db :page) conv?-scroll trim-v]
+  (fn [{:keys [db page]} [conv]]
     (let [updated-db
-          (assoc-in db 
+          (assoc-in db
                     [:convs (:id conv)]
                     conv)]
       {:db updated-db
@@ -243,8 +243,12 @@
                             keys
                             (remove id-known?)
                             seq))
-       :check-unread (when (= :friends (first (:page db)))
-                       (:convs updated-db))})))
+       :check-unread (when (= :friends (first page))
+                       (:convs updated-db))
+       ; if we're the chat window for this conv and it was just
+       ; archived, close ourselves
+       :close-window! (when (= [:conv (:id conv)] page)
+                        (:archived? conv))})))
 
 ;;
 ;; Update focus status

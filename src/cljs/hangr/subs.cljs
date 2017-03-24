@@ -61,8 +61,10 @@
                (contains?
                  (set (keys (:members conv)))
                  (:id self))))
+           ;; ... or that are archived
+           (remove :archived?)
            ;; sort with most recent first
-           (sort-by 
+           (sort-by
              (fn [conv]
                (long (-> conv :events last :timestamp)))
              ;; compare in reverse order (higher timestamps first)

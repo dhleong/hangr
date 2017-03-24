@@ -252,6 +252,10 @@ class ConnectionManager extends EventEmitter {
                 } else {
                     // TODO do we need to update meta or something?
                     console.log('*** client_conversation', msg);
+                    cached.conversation = msg;
+
+                    // notify
+                    this.emit('recent-conversations', [cached]);
                 }
             } else {
                 // totally new; save the data
