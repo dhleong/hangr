@@ -183,6 +183,24 @@
                 ""
                 ""
                 "url"]}}))))
+  (testing "Medium protobuf-like"
+    (is (= {:url "url"
+            :thumbnail
+            {:image_url "thumb"
+             :url "thumb-url"
+             :width_px 42
+             :height_px 9001}}
+           (plus-photo-data
+             {:type_ [249]
+              :data
+              {:12345
+               [["thumb-url" nil nil "thumb" nil nil nil nil nil 42 9001]
+                "12345" "6789" "12345" nil
+                "thumb" nil nil nil "url" nil nil 1 
+                ["BABEL_UNIQUE_ID_12345"
+                 "BABEL_STREAM_ID"
+                 "shared_group_1234"]]
+               }}))))
   (testing "Small protobuf-like"
     (is (= {:url "url"
             :thumbnail

@@ -151,7 +151,9 @@
         ; wacky, protobuf-like version:
         (when (= [249] (-> embed-item :type_))
           (let [data (-> embed-item :data vals first)
-                thumbnail-raw (first data)
+                thumbnail-raw (->> data
+                                   first
+                                   (remove nil?))
                 has-thumb-url? (> (count thumbnail-raw) 3)
                 thumbnail-url (when has-thumb-url?
                                 (-> thumbnail-raw (nth 0)))
@@ -161,7 +163,8 @@
                 thumbnail-image (-> thumbnail-raw (nth 0))
                 thumbnail-width (-> thumbnail-raw (nth 1))
                 thumbnail-height (-> thumbnail-raw (nth 2))
-                url (-> data (nth 4))]
+                url (or (-> data (nth 4))
+                        (-> data (nth 9)))]
             (when (nil? thumbnail-height)
               (js/console.warn "NO thumbnail dimens for " data))
             {:url url
