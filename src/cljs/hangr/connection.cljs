@@ -49,10 +49,11 @@
 
    :got-new-events
    (fn on-new-events
-     [conv]
-     (js/console.log "Got new events" conv)
-     (let [conv (conv->clj conv)]
-       (dispatch [:append-new conv])))
+     [convs]
+     (js/console.log "Got new events" convs)
+     (doseq [conv convs]
+       (let [conv (conv->clj conv)]
+         (dispatch [:append-new conv]))))
 
    :mark-read!
    (fn on-mark-read!
