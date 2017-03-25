@@ -8,6 +8,7 @@ electron.on = function() {};
 electron.send = function() {};
 electron.remote = function() {};
 electron.require = function() {};
+electron.shell = function() {};
 electron.buildFromTemplate = function() {};
 electron.popup = function() {};
 electron.getCurrentWindow = function() {};
@@ -19,6 +20,7 @@ electron.getPath = function() {};
 electron.showSaveDialog = function() {};
 electron.showOpenDialog = function() {};
 
-var process = {
-    platform: {}
-};
+electron.shell.openExternal = function() {};
+
+var process = {};
+process.platform = {};
