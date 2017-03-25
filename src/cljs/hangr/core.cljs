@@ -22,6 +22,7 @@
 ;; -- Routes and History ------------------------------------------------------
 
 (defroute "/" [] (dispatch [:navigate :friends]))
+(defroute "/about" [] (dispatch [:navigate :about]))
 (defroute "/c/:conv-id" [conv-id] (dispatch [:navigate :conv conv-id]))
 
 (def history

@@ -3,8 +3,8 @@
 const electron = require('electron'),
       fs = require('fs-extra'),
       path = require('path'),
-      {app, dialog, ipcMain, Menu, Tray} = electron,
-      packageJson = require(__dirname + '/package.json'),
+      {app, BrowserWindow, ipcMain, Menu, Tray} = electron,
+      // packageJson = require(__dirname + '/package.json'),
 
       {urlForConvId} = require('./util'),
       {IpcHandler} = require('./ipc'),
@@ -66,17 +66,33 @@ function logout() {
     });
 }
 
-const versionString =
-    `Version   ${packageJson.version}\n` +
-    `Date      ${packageJson['build-date']}\n` +
-    `Commit    ${packageJson['build-commit']}`;
+// const versionString =
+//     `Version   ${packageJson.version}\n` +
+//     `Date      ${packageJson['build-date']}\n` +
+//     `Commit    ${packageJson['build-commit']}`;
 
 function showVersion() {
-    dialog.showMessageBox({
-        type: "info",
-        title: "Version",
-        buttons: ["OK"],
-        message: versionString
+    // dialog.showMessageBox({
+    //     type: "info",
+    //     title: "Version",
+    //     buttons: ["OK"],
+    //     message: versionString
+    // });
+
+    var win = new BrowserWindow({
+        width: 400,
+        height: 320,
+        center: true,
+        resizable: false,
+        minimizable: false,
+        maximizable: false,
+        fullscreenable: false,
+        title: "About Hangr",
+        show: false,
+    });
+    win.loadURL(`file://${__dirname}/index.html#/about`);
+    win.once('ready-to-show', () => {
+        win.show();
     });
 }
 
@@ -143,6 +159,11 @@ const menuTemplate = [fileMenu, editMenu, debugMenu, helpMenu];
 
 
 const trayContextMenu = [
+    {
+        label: 'About Hangr',
+        click: showVersion
+    },
+    { type: 'separator' },
     {
         label: 'Logout',
         click: logout

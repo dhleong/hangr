@@ -19,8 +19,10 @@
                              :json true}))
 
 (defn check-update!
-  "Check for updates"
-  []
+  "Check for updates. If :force? true is provided,
+  we will update the 'new verson' in app-db even if it's not
+  actually newer than ours. This is mostly for testing."
+  [& {:keys [force?]}]
   (.get request
         update-check-options
         (fn [err resp body]
@@ -33,8 +35,9 @@
                 (let [new-version (:tag_name info)
                       release-notes (:body info)]
                   (try
-                    (when (.gt semver
-                               new-version current-version)
+                    (when (or force?
+                              (.gt semver
+                                   new-version current-version))
                       (dispatch [:set-new-version! new-version release-notes]))
                     (catch js/Object e
                       (js/console.warn "Failed to compare new version "
