@@ -3,8 +3,8 @@
 const electron = require('electron'),
       fs = require('fs-extra'),
       path = require('path'),
-      {app, dialog, ipcMain, Menu, Tray} = electron,
-      packageJson = require(__dirname + '/package.json'),
+      {app, BrowserWindow, ipcMain, Menu, Tray} = electron,
+      // packageJson = require(__dirname + '/package.json'),
 
       {urlForConvId} = require('./util'),
       {IpcHandler} = require('./ipc'),
@@ -31,6 +31,7 @@ const trayIcons = {
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the javascript object is GCed.
 var mainWindow = null;
+var aboutWindow = null;
 var systemTray = null;
 
 // make sure app.getDataPath() exists
@@ -66,17 +67,37 @@ function logout() {
     });
 }
 
-const versionString =
-    `Version   ${packageJson.version}\n` +
-    `Date      ${packageJson['build-date']}\n` +
-    `Commit    ${packageJson['build-commit']}`;
+function showAbout() {
+    if (aboutWindow) {
+        aboutWindow.show();
+        return;
+    }
 
-function showVersion() {
-    dialog.showMessageBox({
-        type: "info",
-        title: "Version",
-        buttons: ["OK"],
-        message: versionString
+    var win = new BrowserWindow({
+        width: 400,
+        height: 320,
+        center: true,
+        resizable: false,
+        minimizable: false,
+        maximizable: false,
+        fullscreenable: false,
+        title: "About Hangr",
+        show: false,
+    });
+    aboutWindow = win;
+
+    // some hacks for a smoother ux:
+    var url = `file://${__dirname}/index.html#/about`;
+    if (ipcHandler.latestVersion) {
+        url += `?latest=${ipcHandler.latestVersion}`;
+    }
+
+    win.loadURL(url);
+    win.once('ready-to-show', () => {
+        win.show();
+    });
+    win.once('closed', () => {
+        aboutWindow = null;
     });
 }
 
@@ -118,8 +139,8 @@ const helpMenu = {
     label: 'Help',
     submenu: [
         {
-            label: 'Version',
-            click: showVersion
+            label: 'About Hangr',
+            click: showAbout
         }
     ]
 };
@@ -143,6 +164,11 @@ const menuTemplate = [fileMenu, editMenu, debugMenu, helpMenu];
 
 
 const trayContextMenu = [
+    {
+        label: 'About Hangr',
+        click: showAbout
+    },
+    { type: 'separator' },
     {
         label: 'Logout',
         click: logout
@@ -176,7 +202,8 @@ function showMainWindow() {
 // Register IPC Calls from the Renderers
 //------------------------------------------------------------------------------
 
-const ipcHandler = new IpcHandler(trayIcons, dockManager, connMan, 
+const ipcHandler = new IpcHandler(trayIcons, dockManager, connMan,
+    showAbout,
     () => systemTray,
     () => mainWindow);
 ipcHandler.attach(ipcMain);

@@ -141,7 +141,8 @@
 (reg-fx
   :notify!
   (fn [opts]
-    (apply notify! (flatten (seq opts)))))
+    (when opts
+      (apply notify! (flatten (seq opts))))))
 
 ;; -- Chat Notification -------------------------------------------------------
 ;;

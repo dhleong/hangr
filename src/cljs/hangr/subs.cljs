@@ -13,6 +13,7 @@
 (reg-sub :connecting? :connecting?)
 (reg-sub :focused? :focused?)
 (reg-sub :latest-version :latest-version)
+(reg-sub :latest-version-notes :latest-version-notes)
 (reg-sub :self :self)
 (reg-sub :pending-image :pending-image)
 (reg-sub :people :people)
@@ -40,7 +41,9 @@
       (and (= :friends (first page)) connecting?) 
       [:connecting]
       ; still loading core data; override the page
-      (or (nil? self) (nil? convs))
+      ; (if it's not :about)
+      (and (not= [:about] page)
+           (or (nil? self) (nil? convs)))
       [:loading]
       ; ready to go!
       :else 

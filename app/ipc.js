@@ -8,11 +8,13 @@ function handlerFnToName(fnName) {
 }
 
 class IpcHandler {
-    constructor(trayIcons, dockManager, connMan, 
+    constructor(trayIcons, dockManager, connMan,
+            showAbout,
             systemTrayFetcher, mainWindowFetcher) {
         this.trayIcons = trayIcons;
         this.dockManager = dockManager;
         this.connMan = connMan;
+        this.showAbout = showAbout;
         this.getSystemTray = systemTrayFetcher;
         this.getMainWindow = mainWindowFetcher;
     }
@@ -67,7 +69,7 @@ class IpcHandler {
         if (connMan.connected) {
             // demo dev help:
             if (connMan._refreshDemo) connMan._refreshDemo();
-            
+
             e.sender.send('connected');
             if (connMan.lastSelfInfo) {
                 e.sender.send('self-info', connMan.lastSelfInfo);
@@ -94,6 +96,11 @@ class IpcHandler {
             }
         } else {
             e.sender.send('reconnecting');
+        }
+
+        if (this.latestVersion) {
+            e.sender.send('set-new-version!',
+                this.latestVersion, this.latestVersionNotes);
         }
     }
 
@@ -132,6 +139,11 @@ class IpcHandler {
         this._sendToMainWindow('set-focused!', convId, isFocused);
     }
 
+    set_new_version$(e, version, releaseNotes) {
+        this.latestVersion = version;
+        this.latestVersionNotes = releaseNotes;
+    }
+
     set_typing$(e, convId, typingState) {
         this.connMan.setTyping(convId, typingState);
     }
@@ -140,6 +152,10 @@ class IpcHandler {
         // mainWindow controls unread status
         this.getSystemTray().setImage(
             anyUnread ? this.trayIcons.dark : this.trayIcons.light);
+    }
+
+    show_about$() {
+        this.showAbout();
     }
 }
 

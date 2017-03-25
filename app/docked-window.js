@@ -76,7 +76,9 @@ class DockManager {
 
     findActive() {
         var focused = BrowserWindow.getFocusedWindow();
-        if (focused) return focused.__docked;
+        if (!focused) return;
+
+        return focused.__docked || focused;
     }
 
     findWithUrl(url) {
@@ -117,6 +119,7 @@ class DockManager {
      */
     _allOpenWindows() {
         return BrowserWindow.getAllWindows()
+            .filter(window => window.__docked)
             .map(window => window.__docked);
     }
 

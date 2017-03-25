@@ -93,6 +93,13 @@
    (fn [conv-id focused?]
      (dispatch [:set-conv-focused conv-id focused?]))
 
+   :set-new-version!
+   (fn [latest-version latest-version-notes]
+     (js/console.log "Got latest version " latest-version)
+     (dispatch [:set-new-version!
+                latest-version
+                latest-version-notes]))
+
    :typing
    (fn [typing-event]
      (let [ev (js->real-clj typing-event)

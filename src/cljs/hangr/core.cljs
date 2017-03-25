@@ -22,6 +22,10 @@
 ;; -- Routes and History ------------------------------------------------------
 
 (defroute "/" [] (dispatch [:navigate :friends]))
+(defroute "/about" {latest :query-params}
+  (when latest
+    (dispatch [:set-new-version! latest nil]))
+  (dispatch [:navigate :about]))
 (defroute "/c/:conv-id" [conv-id] (dispatch [:navigate :conv conv-id]))
 
 (def history

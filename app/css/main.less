@@ -24,6 +24,7 @@
 .unselectable() {
     -webkit-user-select: none;
     user-select: none;
+    cursor: default;
 }
 
 .avatar(@avatar-size) {
@@ -57,6 +58,7 @@ body {
 
 .material-icons {
     vertical-align: middle;
+    max-width: 32px;
 }
 
 // singleton elements
@@ -104,7 +106,7 @@ body {
 
 #app-container {
     .roboto();
-    
+
     position: absolute;
     top: ((2 * @title-padding-vert) + @title-height + @title-border-bottom);
     left: 0;
@@ -213,8 +215,8 @@ ul#conversations {
 
         .name {
             .roboto-condensed();
-            
-            font-size: 12pt; 
+
+            font-size: 12pt;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -453,7 +455,7 @@ ul#conversations {
 
         .pending-image {
             padding: 4px;
-            
+
             background-color: #fff;
 
             .delete-button {
@@ -604,3 +606,88 @@ ul#conversations {
         opacity: 1;
     }
 }
+
+//
+// About page
+//
+
+#about-container {
+    .roboto();
+
+    position: absolute;
+    display: flex;
+    flex-flow: column;
+    width: 100%;
+    height: 100%;
+
+    text-align: center;
+
+    .title {
+        .unselectable();
+
+        font-size: 20pt;
+        padding-top: 16px;
+        padding-bottom: 8px;
+    }
+
+    .version {
+        font-size: 9pt;
+        padding-bottom: 8px;
+    }
+
+    .update-notification {
+        .unselectable();
+
+        flex: 1 0 auto; // fill the rest
+        background-color: #fafafa;
+        border-top: 1px solid #c0c0c0;
+        margin-top: 16px;
+        padding-top: 12px;
+
+        .header {
+            font-size: 12pt;
+
+            &.clickable {
+                cursor: pointer;
+                display: block;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+
+            .label {
+                padding-left: 0.5em;
+            }
+
+            .click-to-download {
+                font-size: 70%;
+            }
+        }
+
+        .whats-new {
+            .header {
+                text-align: center;
+                padding-bottom: 4px;
+            }
+
+            ul {
+                padding: 0 16px;
+                margin: 4px 8px;
+            }
+
+            b {
+                font-weight: bold;
+                font-size: 102%;
+            }
+
+            font-size: 9pt;
+            text-align: left;
+            padding-top: 12px;
+            padding-left: 32px;
+            padding-right: 32px;
+            padding-bottom: 16px;
+        }
+    }
+}
+
