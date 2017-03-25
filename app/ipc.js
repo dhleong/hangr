@@ -67,7 +67,7 @@ class IpcHandler {
         if (connMan.connected) {
             // demo dev help:
             if (connMan._refreshDemo) connMan._refreshDemo();
-            
+
             e.sender.send('connected');
             if (connMan.lastSelfInfo) {
                 e.sender.send('self-info', connMan.lastSelfInfo);
@@ -94,6 +94,11 @@ class IpcHandler {
             }
         } else {
             e.sender.send('reconnecting');
+        }
+
+        if (this.latestVersion) {
+            e.sender.send('set-new-version!',
+                this.latestVersion, this.latestVersionNotes);
         }
     }
 
@@ -130,6 +135,11 @@ class IpcHandler {
 
         // forward to the mainWindow so it can update friends list
         this._sendToMainWindow('set-focused!', convId, isFocused);
+    }
+
+    set_new_version$(e, version, releaseNotes) {
+        this.latestVersion = version;
+        this.latestVersionNotes = releaseNotes;
     }
 
     set_typing$(e, convId, typingState) {

@@ -66,19 +66,7 @@ function logout() {
     });
 }
 
-// const versionString =
-//     `Version   ${packageJson.version}\n` +
-//     `Date      ${packageJson['build-date']}\n` +
-//     `Commit    ${packageJson['build-commit']}`;
-
-function showVersion() {
-    // dialog.showMessageBox({
-    //     type: "info",
-    //     title: "Version",
-    //     buttons: ["OK"],
-    //     message: versionString
-    // });
-
+function showAbout() {
     var win = new BrowserWindow({
         width: 400,
         height: 320,
@@ -90,7 +78,14 @@ function showVersion() {
         title: "About Hangr",
         show: false,
     });
-    win.loadURL(`file://${__dirname}/index.html#/about`);
+
+    // some hacks for a smoother ux:
+    var url = `file://${__dirname}/index.html#/about`;
+    if (ipcHandler.latestVersion) {
+        url += `?latest=${ipcHandler.latestVersion}`;
+    }
+
+    win.loadURL(url);
     win.once('ready-to-show', () => {
         win.show();
     });
@@ -134,8 +129,8 @@ const helpMenu = {
     label: 'Help',
     submenu: [
         {
-            label: 'Version',
-            click: showVersion
+            label: 'About Hangr',
+            click: showAbout
         }
     ]
 };
@@ -161,7 +156,7 @@ const menuTemplate = [fileMenu, editMenu, debugMenu, helpMenu];
 const trayContextMenu = [
     {
         label: 'About Hangr',
-        click: showVersion
+        click: showAbout
     },
     { type: 'separator' },
     {

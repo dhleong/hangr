@@ -361,28 +361,33 @@
 
 (reg-event-fx
   :set-new-version!
-  [trim-v]
-  (fn [{:keys [db]} [new-version release-notes]]
+  [(inject-db :page) trim-v]
+  (fn [{:keys [db page]} [new-version release-notes]]
     (println "latest known version" (:latest-version db)
              "vs" new-version)
     ; only notify once
-    (when (not= (:latest-version db)
-                new-version)
+    (let [new? (not= (:latest-version db)
+                     new-version)
+          notify? (and new?
+                       (= [:friends] page))]
       {:db (assoc db
                   :latest-version new-version
                   :latest-version-notes release-notes)
-       :notify! {:title "New version available!"
-                 :message (str "Click to download " new-version
-                               "\n"
-                               release-notes)
-                 :actions "Download"
-                 :close-label "Ignore"
-                 :wait? true
-                 :timeout (* 24 3600) ; stick around for a while
-                 :on-click
-                 (fn []
-                   (dispatch [:open-external
-                              latest-version-download-url]))}})))
+       :ipc (when notify?
+              [:set-new-version! new-version release-notes])
+       :notify! (when notify?
+                  {:title "New version available!"
+                   :message (str "Click to download " new-version
+                                 "\n"
+                                 release-notes)
+                   :actions "Download"
+                   :close-label "Ignore"
+                   :wait? true
+                   :timeout (* 24 3600) ; stick around for a while
+                   :on-click
+                   (fn []
+                     (dispatch [:open-external
+                                latest-version-download-url]))})})))
 
 (reg-event-fx
   :open-external
