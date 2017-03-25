@@ -462,6 +462,13 @@
     (assoc conv :focused? focused?)))
 
 (reg-event-fx
+  :set-online!
+  [(inject-db :page) trim-v]
+  (fn [{:keys [page]} [online?]]
+    (when (= [:friends] page)
+      {:ipc [:set-online! online?]})))
+
+(reg-event-fx
   :show-about!
   (fn [_ _]
     {:ipc [:show-about!]}))

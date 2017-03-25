@@ -144,6 +144,10 @@ class IpcHandler {
         this.latestVersionNotes = releaseNotes;
     }
 
+    set_online$(e, isOnline) {
+        this.connMan.setSystemOnlineState(isOnline);
+    }
+
     set_typing$(e, convId, typingState) {
         this.connMan.setTyping(convId, typingState);
     }

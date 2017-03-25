@@ -12,6 +12,7 @@ const EventEmitter = require('events'),
       {parsePresencePacket, throttle} = require('./util'),
 
       INITIAL_BACKOFF = 1000,
+      MAX_BACKOFF = 16000,
 
       ERROR_NOT_LOGGEDIN = "No oauth token";
 
@@ -96,6 +97,13 @@ class ConnectionManager extends EventEmitter {
 
     now() {
         return Date.now();
+    }
+
+    close() {
+        this.log("conn: close()");
+        this.client.disconnect();
+        this.client = null;
+        this.emit('reconnecting', -1);
     }
 
     logout() {
@@ -212,7 +220,6 @@ class ConnectionManager extends EventEmitter {
         var client = this.client = new Client();
         this.bindToClient(client);
 
-
         // go!
         this._reconnect();
     }
@@ -229,6 +236,9 @@ class ConnectionManager extends EventEmitter {
             setTimeout(this._reconnect.bind(this), this._backoff);
             this.emit('reconnecting', this._backoff);
             this._backoff *= 2;
+            if (this._backoff > MAX_BACKOFF) {
+                this._backoff = MAX_BACKOFF;
+            }
             this._disableMonitoring();
         });
 
@@ -433,6 +443,16 @@ class ConnectionManager extends EventEmitter {
         this.notifyActivity();
     }
 
+    setSystemOnlineState(isOnline) {
+        this.log("online <-", isOnline);
+
+        if (!isOnline && this.client) {
+            this.close();
+        } else if (isOnline && !this.client) {
+            this.open();
+        }
+    }
+
     /**
      * Set typingState for a conversation
      * @param typingState One of "typing," "paused," or "stopped"
@@ -594,7 +614,7 @@ class ConnectionManager extends EventEmitter {
 
 ConnectionManager.GLOBAL_EVENTS = [
     // events every window wants
-    'connected', 
+    'connected',
     'reconnecting',
     'self-info',
     'recent-conversations',

@@ -34,6 +34,12 @@
                    (fn [event] (secretary/dispatch! (.-token event))))
     (.setEnabled true)))
 
+;; -- Online/Offline tracking -------------------------------------------------
+
+(defn update-online-status
+  []
+  (dispatch [:set-online! js/navigator.onLine]))
+
 ;; -- Mount and init ----------------------------------------------------------
 
 (defn mount-root
@@ -52,10 +58,12 @@
 (defn init!
   []
   ; track window focused-ness
-  (set! (.-onfocus js/window) 
+  (set! (.-onfocus js/window)
         #(dispatch [:set-focused true]))
-  (set! (.-onblur js/window) 
+  (set! (.-onblur js/window)
         #(dispatch [:set-focused false]))
+  (js/window.addEventListener "online" update-online-status)
+  (js/window.addEventListener "offline" update-online-status)
   ; init db state + start rendering
   (mount-root)
   ; initialize focused state
