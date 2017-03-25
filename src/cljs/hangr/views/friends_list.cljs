@@ -112,6 +112,5 @@
      [:span "Hangr"]
      (when latest-version
        [:span#update-available.badge
-        {:on-click (click-dispatch
-                     [:open-external latest-version-download-url])}
+        {:on-click (click-dispatch [:show-about!])}
         [icon :wb-sunny]])]))

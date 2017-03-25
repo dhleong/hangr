@@ -461,6 +461,11 @@
   (fn [conv [conv-id focused?]]
     (assoc conv :focused? focused?)))
 
+(reg-event-fx
+  :show-about!
+  (fn [_ _]
+    {:ipc [:show-about!]}))
+
 ;; handle a local typing event
 (reg-event-fx
   :typing!

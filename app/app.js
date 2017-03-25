@@ -31,6 +31,7 @@ const trayIcons = {
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the javascript object is GCed.
 var mainWindow = null;
+var aboutWindow = null;
 var systemTray = null;
 
 // make sure app.getDataPath() exists
@@ -67,6 +68,11 @@ function logout() {
 }
 
 function showAbout() {
+    if (aboutWindow) {
+        aboutWindow.show();
+        return;
+    }
+
     var win = new BrowserWindow({
         width: 400,
         height: 320,
@@ -78,6 +84,7 @@ function showAbout() {
         title: "About Hangr",
         show: false,
     });
+    aboutWindow = win;
 
     // some hacks for a smoother ux:
     var url = `file://${__dirname}/index.html#/about`;
@@ -88,6 +95,9 @@ function showAbout() {
     win.loadURL(url);
     win.once('ready-to-show', () => {
         win.show();
+    });
+    win.once('closed', () => {
+        aboutWindow = null;
     });
 }
 
@@ -192,7 +202,8 @@ function showMainWindow() {
 // Register IPC Calls from the Renderers
 //------------------------------------------------------------------------------
 
-const ipcHandler = new IpcHandler(trayIcons, dockManager, connMan, 
+const ipcHandler = new IpcHandler(trayIcons, dockManager, connMan,
+    showAbout,
     () => systemTray,
     () => mainWindow);
 ipcHandler.attach(ipcMain);

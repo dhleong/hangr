@@ -8,11 +8,13 @@ function handlerFnToName(fnName) {
 }
 
 class IpcHandler {
-    constructor(trayIcons, dockManager, connMan, 
+    constructor(trayIcons, dockManager, connMan,
+            showAbout,
             systemTrayFetcher, mainWindowFetcher) {
         this.trayIcons = trayIcons;
         this.dockManager = dockManager;
         this.connMan = connMan;
+        this.showAbout = showAbout;
         this.getSystemTray = systemTrayFetcher;
         this.getMainWindow = mainWindowFetcher;
     }
@@ -150,6 +152,10 @@ class IpcHandler {
         // mainWindow controls unread status
         this.getSystemTray().setImage(
             anyUnread ? this.trayIcons.dark : this.trayIcons.light);
+    }
+
+    show_about$() {
+        this.showAbout();
     }
 }
 
