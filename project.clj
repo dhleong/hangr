@@ -1,4 +1,4 @@
-(defproject hangr "0.4.0-alpha"
+(defproject hangr "0.5.0-alpha"
   :description "Hangouts, the way it was meant to be"
   :url "http://github.com/dhleong/hangr"
   :license {:name "Eclipse Public License"
@@ -27,7 +27,7 @@
                                         :optimizations :none
                                         :pretty-print  true
                                         :cache-analysis true}}}
-              
+
               :test-commands
               {"frontend" ["lein" "doo" "node" "once"]}}
 
