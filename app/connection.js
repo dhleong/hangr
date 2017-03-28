@@ -430,6 +430,8 @@ class ConnectionManager extends EventEmitter {
     }
 
     setFocus(convId, isFocused) {
+        if (!this.client) return;
+
         var focusType = isFocused ? Client.FocusStatus.FOCUSED : Client.FocusStatus.UNFOCUSED;
         var timeout = 60; // we can be longer since we get explicit events on desktop
         this.client.setfocus(convId, focusType, timeout)

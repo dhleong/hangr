@@ -12,6 +12,7 @@
 
 (reg-sub :connecting? :connecting?)
 (reg-sub :focused? :focused?)
+(reg-sub :reconnecting? :reconnecting?)
 (reg-sub :latest-version :latest-version)
 (reg-sub :latest-version-notes :latest-version-notes)
 (reg-sub :self :self)

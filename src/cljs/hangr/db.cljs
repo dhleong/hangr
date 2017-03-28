@@ -9,6 +9,7 @@
    :self nil
    :convs nil
    :focused? false
+   :reconnecting? false
    :pending-image nil
 
    ; update checking:

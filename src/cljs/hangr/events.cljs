@@ -129,7 +129,9 @@
 (reg-event-db
   :connected
   (fn [db _]
-    (assoc db :connecting? false)))
+    (assoc db
+           :connecting? false
+           :reconnecting? false)))
 
 ;;
 ;; Receive scrollback for a conversation
@@ -207,6 +209,11 @@
         (when (and (= [:conv conv-id] page)
                    win-focused?)
           [:mark-read! conv-id])]})))
+
+(reg-event-db
+  :reconnecting
+  (fn [db _]
+    (assoc db :reconnecting? true)))
 
 ;;
 ;; When scrolling back to older events in a conv

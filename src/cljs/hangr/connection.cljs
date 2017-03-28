@@ -73,6 +73,10 @@
      (doseq [conv (map conv->clj convs)]
        (dispatch [:update-conv conv])))
 
+   :reconnecting
+   (fn []
+     (dispatch [:reconnecting]))
+
    :self-info
    (fn [info]
      (.log js/console "Got self info" info)

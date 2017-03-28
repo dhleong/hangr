@@ -67,6 +67,7 @@ body {
 @title-height: 20px;
 @title-padding-vert: 10px;
 @title-background-color: #f0f0f0;
+@title-background-disconnected: #e06060;
 @title-border-bottom: 1px;
 #title {
     .roboto-condensed();
@@ -75,6 +76,14 @@ body {
     .unfocused & {
         color: #999;
     }
+
+    .disconnected & {
+        background: @title-background-disconnected;
+    }
+    .unfocused.disconnected & {
+        background: lighten(@title-background-disconnected, 20%);
+    }
+
 
     @bg: @title-background-color;
 
@@ -90,6 +99,10 @@ body {
     left: 0;
     top: 0;
     right: 0;
+
+    .material-icons.disconnected {
+        margin-left: 8px;
+    }
 
     .badge {
         cursor: pointer; // NOTE: doesn't work on OSX here...

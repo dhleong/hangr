@@ -108,8 +108,8 @@
 (defn friends-header
   []
   (let [latest-version @(subscribe [:latest-version])]
-    [:div
-     [:span "Hangr"]
+    [:span
+     "Hangr"
      (when latest-version
        [:span#update-available.badge
         {:on-click (click-dispatch [:show-about!])}

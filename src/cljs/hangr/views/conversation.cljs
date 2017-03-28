@@ -435,7 +435,7 @@
 (defn conversation-header
   [id]
   (let [conv @(subscribe [:conv id])]
-    [:div
+    [:span
      [conversation-title id]
      (when (not (sms? conv))
        [:span#video-call.badge
