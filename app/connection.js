@@ -232,7 +232,7 @@ class ConnectionManager extends EventEmitter {
                 return;
             }
 
-            this.log("conn: failed; reconnecting after", this._backoff);
+            this.log(`conn: failed (${reason}) reconnecting after`, this._backoff);
             setTimeout(this._reconnect.bind(this), this._backoff);
             this.emit('reconnecting', this._backoff);
             this._backoff *= 2;
@@ -566,7 +566,7 @@ class ConnectionManager extends EventEmitter {
 
     _enableMonitoring() {
         const powerMonitor = this._getPowerMonitor();
-        
+
         var self = this;
         var onReceiveWhileSuspended = function onReceiveWhileSuspended() {
             self._suspendedAt = this.now();
@@ -601,6 +601,8 @@ class ConnectionManager extends EventEmitter {
     }
 
     _setActive(isActive) {
+        if (!this.client) return false;
+
         this.client.setactiveclient(isActive, isActive ? 5 * 60 : 10)
         .done(resp => {
             if (resp.response_header.status !== 'OK') {
