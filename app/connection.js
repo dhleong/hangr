@@ -100,6 +100,12 @@ class ConnectionManager extends EventEmitter {
     }
 
     close() {
+        var reconnectTimer = this._reconnectTimer;
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            this._reconnectTimer = null;
+        }
+
         this.log("conn: close()");
         this.client.disconnect();
         this.client = null;
@@ -233,7 +239,7 @@ class ConnectionManager extends EventEmitter {
             }
 
             this.log(`conn: failed (${reason}) reconnecting after`, this._backoff);
-            setTimeout(this._reconnect.bind(this), this._backoff);
+            this._reconnectTimer = setTimeout(this._reconnect.bind(this), this._backoff);
             this.emit('reconnecting', this._backoff);
             this._backoff *= 2;
             if (this._backoff > MAX_BACKOFF) {
