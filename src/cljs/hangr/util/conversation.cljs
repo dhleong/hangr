@@ -51,6 +51,19 @@
           ; fall back to 0 if it was just nil
           0))))
 
+(defn conv-merge
+  "Merge an updated version of a conv into the old one."
+  [old-conv new-conv]
+  ; NOTE: Right now we just take the new-conv's state as gospel,
+  ;  and simply copy over any pending messages from old-conv
+  (update new-conv
+          :events
+          (fn [old-events]
+            (apply conj old-events
+                   (filter
+                     :client-generated-id
+                     (:events old-conv))))))
+
 (defn fill-members
   "Given a conv and a map of id -> person `people`,
   fill out the :members array to include as much

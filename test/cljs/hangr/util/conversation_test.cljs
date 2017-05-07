@@ -1,12 +1,23 @@
 (ns hangr.util.conversation-test
   (:require [cljs.test :refer-macros [deftest testing is run-tests]]
-            [cljs.nodejs :as node]
-            [hangr.util.conversation :refer [conv-event-incoming? event-incoming? 
+            [hangr.util.conversation :refer [conv-event-incoming?
+                                             conv-merge
+                                             event-incoming?
                                              fill-members
                                              unread?
                                              conv-latest-read
                                              insert-hangr-events
                                              plus-photo-data]]))
+
+(deftest conv-merge-test
+  (testing "Persist pending messages"
+    (is (= {:events [:1 :2 {:client-generated-id :pending}]
+            :conversation {:state :new}}
+           (conv-merge
+             {:events [:1 :2 {:client-generated-id :pending}]
+              :conversation {:state :old}}
+             {:events [:1 :2]
+              :conversation {:state :new}})))))
 
 (deftest incoming?-test
   (testing "Event incoming"

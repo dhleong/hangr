@@ -76,6 +76,13 @@
            ;; fill out the members
            (map (partial fill-members people))))))
 
+; get the raw conversation object; useful for testing
+(reg-sub
+  ::conv
+  :<- [::convs]
+  (fn [convs [_ id]]
+    (get convs id)))
+
 (reg-sub
   :conv
   :<- [:self]
@@ -89,7 +96,7 @@
           (update-in
             [:events]
             (partial
-              map 
+              map
               #(assoc %
                       :incoming?
                       (event-incoming? (:id self) %))))

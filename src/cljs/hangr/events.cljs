@@ -10,7 +10,7 @@
     [cljs.spec :as s]
     [hangr.db :refer [default-value]]
     [hangr.util :refer [key->id id->key]]
-    [hangr.util.conversation :refer [fill-members unread?]]
+    [hangr.util.conversation :refer [conv-merge fill-members unread?]]
     [hangr.util.msg :refer [html->msg msg->event]]
     [hangr.util.updates :refer [latest-version-download-url]]))
 
@@ -239,8 +239,9 @@
   [(inject-db :page) conv?-scroll trim-v]
   (fn [{:keys [db page]} [conv]]
     (let [updated-db
-          (assoc-in db
+          (update-in db
                     [:convs (:id conv)]
+                    conv-merge
                     conv)]
       {:db updated-db
        :get-entities (let [known-ids (-> db :people keys set)
@@ -293,6 +294,9 @@
   [conv?-scroll (conv-path :events) trim-v]
   (fn [events [conv-id sent-msg-event]]
     (let [target-cgid (-> sent-msg-event :self_event_state :client_generated_id)]
+      ; TODO: it would be way more efficient to use assoc-by-index
+      ;       instead of map-vec, since there's only one thing to
+      ;       replace, and we also know it should be near the end.
       (->> events
            (map 
              (fn [event]
