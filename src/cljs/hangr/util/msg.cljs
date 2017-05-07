@@ -1,7 +1,8 @@
 (ns ^{:author "Daniel Leong"
       :doc "Utilities for creating messages"}
   hangr.util.msg
-  (:require [clojure.string :as string :refer [split]]))
+  (:require [clojure.string :as string :refer [split]]
+            [hangr.util :refer [safe-require]]))
 
 ; url-regex is, by default, a global regex, which, 
 ;  unlike on jvm, has state. that doesn't play well
@@ -9,7 +10,14 @@
 ;  so we create a new RegExp instance based on the 
 ;  original, stripping the global flag (but keeping
 ;  the case insensitivity)
-(def url-regex (js/RegExp. (.-source ((js/require "url-regex"))) "i"))
+(def url-regex (let [regex-base
+                     (safe-require
+                       "url-regex"
+
+                       ; only for phantomjs tests; we use node tests
+                       ; to actually test the msg utils:
+                       (constantly #"\b(www\..*\.com)\b"))]
+                 (js/RegExp. (.-source (regex-base)) "i")))
 
 (defn- split-links
   [text]

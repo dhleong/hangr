@@ -2,12 +2,12 @@
       :doc "updates"}
   hangr.util.updates
   (:require [re-frame.core :refer [dispatch]]
-            [hangr.util :refer [js->real-clj]]))
+            [hangr.util :refer [js->real-clj safe-require read-package-json]]))
 
-(defonce request (js/require "request"))
-(defonce semver (js/require "semver"))
+(defonce request (safe-require "request"))
+(defonce semver (safe-require "semver"))
 
-(defonce package-json (js/require (str js/__dirname "/package.json")))
+(defonce package-json (read-package-json))
 (defonce current-version (.-version package-json))
 
 (def latest-version-download-url "https://github.com/dhleong/hangr/releases/latest")

@@ -3,11 +3,12 @@
   hangr.connection
   (:require [re-frame.core :refer [dispatch]]
             [clojure.string :as string]
-            [hangr.util :refer [js->real-clj id->key]]
+            [hangr.util :refer [js->real-clj id->key safe-require]]
             [hangr.util.parse :refer [entity->clj event->clj conv->clj self->clj
                                       watermark->clj]]))
 
-(defonce electron (js/require "electron"))
+; nil in phantomjs tests
+(defonce electron (safe-require "electron"))
 (defonce ipc (.-ipcRenderer electron))
 
 (def ipc-listeners

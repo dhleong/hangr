@@ -1,6 +1,5 @@
 (ns hangr.util-test
   (:require [cljs.test :refer-macros [deftest testing is run-tests]]
-            [cljs.nodejs :as node]
             [hangr.util :refer [js->real-clj join-sorted-by]]))
 
 (deftest js->real-clj-test

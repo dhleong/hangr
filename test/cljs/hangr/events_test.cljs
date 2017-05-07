@@ -1,9 +1,12 @@
 (ns hangr.events-test
   (:require [cljs.test :refer-macros [deftest testing is run-tests]]
             [re-frame.registrar :refer [get-handler]]
-            [hangr.events]
             [re-frame.core :refer [dispatch subscribe reg-fx]]
-            [day8.re-frame.test :as rf-test]))
+            [day8.re-frame.test :as rf-test]
+            ; events, subs, etc.
+            [hangr.events]
+            [hangr.fx]
+            [hangr.subs]))
 
 (deftest send-message-test
   (testing "Verifying the :send-html flow"

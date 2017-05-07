@@ -1,10 +1,11 @@
 (ns ^{:author "Daniel Leong"
       :doc "Notification"}
   hangr.util.notification
-  (:require [hangr.util :refer [js->real-clj id->key]]))
+  (:require [hangr.util :refer [js->real-clj id->key safe-require
+                                read-package-json]]))
 
-(defonce notifier (js/require "node-notifier"))
-(defonce package-json (js/require (str js/__dirname "/package.json")))
+(defonce notifier (safe-require "node-notifier"))
+(defonce package-json (read-package-json))
 (defonce bundle-id (.-bundleId package-json))
 
 (defn notify!

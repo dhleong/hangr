@@ -29,7 +29,10 @@
                                         :cache-analysis true}}}
 
               :test-commands
-              {"frontend" ["lein" "doo" "node" "once"]}}
+              {"frontend" ["lein" "do"
+                           "doo" "node" "node-test" "once"
+                           ","
+                           "doo" "phantom" "phantom-test" "once"]}}
 
   :clean-targets ^{:protect false} [:target-path "out" "app/js/p"]
 
@@ -47,6 +50,12 @@
                                                          :main       "hangr.dev"
                                                          :verbose true}
                                               :figwheel {:on-jsload "hangr.core/mount-root"}}
+                                        :phantom-test {:source-paths ["env/dev/cljs" "src" "test"]
+                                                       :compiler {:main "hangr.runner"
+                                                                  :output-to "app/js/p/testable.js"
+                                                                  :output-dir "app/js/p/out"
+                                                                  :closure-defines {"require" nil}
+                                                                  :optimizations :none}}
                                         :node-test {:source-paths ["env/dev/cljs" "src" "test"]
                                                     :compiler {:main "hangr.node-runner"
                                                                :output-to "app/js/p/testable.js"
@@ -60,7 +69,8 @@
                                   [re-frisk "0.3.2"]
                                   [figwheel-sidecar "0.5.8"]
                                   [com.cemerick/piggieback "0.2.1"]
-                                  [doo "0.1.7"]]
+                                  [doo "0.1.7"]
+                                  [day8.re-frame/test "0.1.3"]]
 
                    :plugins [[lein-ancient "0.6.10"]
                              [lein-kibit "0.1.3"]

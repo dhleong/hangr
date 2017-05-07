@@ -1,6 +1,5 @@
 (ns hangr.util.ui.markdown-test
   (:require [cljs.test :refer-macros [deftest testing is run-tests]]
-            [cljs.nodejs :as node]
             [hangr.util.ui.markdown :refer [markdown->hiccup]]))
 
 (deftest basic-markdown->hiccup-test

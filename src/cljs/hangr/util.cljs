@@ -32,3 +32,20 @@
   [sort-key coll1 coll2 & colls]
   (->> (apply concat coll1 coll2 colls)
        (sort-by sort-key)))
+
+(defn read-package-json
+  []
+  (if (exists? js/require)
+    (js/require (str js/__dirname "/package.json"))
+    #js {}))
+
+(defn safe-require
+  "Attempt to require something from node, optionally returning
+   a default value when not running in node (for example, phantomjs
+   cli tests)"
+  ([module]
+   (safe-require module #js {}))
+  ([module default-val]
+   (if (exists? js/require)
+     (js/require module)
+     default-val)))

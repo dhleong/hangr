@@ -4,12 +4,13 @@
   (:require [re-frame.core :refer [reg-fx dispatch]]
             [goog.dom :refer [getElement]]
             [goog.fx.dom :refer [Scroll]]
-            [hangr.util :refer [key->id]]
+            [hangr.util :refer [key->id safe-require]]
             [hangr.util.conversation :refer [unread?]]
             [hangr.util.notification :refer [notify! conv-msg->title msg->notif]]
             [hangr.util.updates :refer [check-update!]]))
 
-(defonce electron (js/require "electron"))
+; nil in phantom tests
+(defonce electron (safe-require "electron"))
 (defonce ipc-renderer (.-ipcRenderer electron))
 (defonce shell (.-shell electron))
 
