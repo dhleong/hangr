@@ -53,7 +53,6 @@
                                         :phantom-test {:source-paths ["env/dev/cljs" "src" "test"]
                                                        :compiler {:main "hangr.runner"
                                                                   :output-to "app/js/p/testable.js"
-                                                                  :output-dir "app/js/p/out"
                                                                   :closure-defines {"require" nil}
                                                                   :optimizations :none}}
                                         :node-test {:source-paths ["env/dev/cljs" "src" "test"]
