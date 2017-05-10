@@ -420,8 +420,9 @@
          (or
            ; prefer the chosen name, if there is one
            (:name conv)
-           ; otherwise, join all the other members
-           (clojure.string/join 
+           (-> conv :conversation :name)
+           ; otherwise, join all the other members' names
+           (clojure.string/join
              ", "
              (->> conv 
                   :members

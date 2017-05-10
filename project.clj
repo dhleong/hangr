@@ -1,4 +1,4 @@
-(defproject hangr "0.6.1-alpha"
+(defproject hangr "0.6.3-alpha"
   :description "Hangouts, the way it was meant to be"
   :url "http://github.com/dhleong/hangr"
   :license {:name "Eclipse Public License"
@@ -53,7 +53,6 @@
                                         :phantom-test {:source-paths ["env/dev/cljs" "src" "test"]
                                                        :compiler {:main "hangr.runner"
                                                                   :output-to "app/js/p/testable.js"
-                                                                  :output-dir "app/js/p/out"
                                                                   :closure-defines {"require" nil}
                                                                   :optimizations :none}}
                                         :node-test {:source-paths ["env/dev/cljs" "src" "test"]
