@@ -191,7 +191,7 @@ class DockedWindow {
 
             fullscreenable: false,
             alwaysOnTop: true,
-            skipTaskBar: false,
+            skipTaskBar: true,
         });
         win.__docked = this;
 
