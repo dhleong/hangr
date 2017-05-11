@@ -12,11 +12,11 @@ from zipfile import ZipFile
 try:
     from hostage import *
 except ImportError:
-    print("!! Release library unavailable.")
-    print("!! Use `pip install hostage` to fix.")
-    print( "!! You will also need an API token in .github.token,")
-    print("!!  a .hubrrc config, or `brew install hub` configured.")
-    print( "!! A $GITHUB_TOKEN env variable will also work.")
+    print "!! Release library unavailable."
+    print "!! Use `pip install hostage` to fix."
+    print "!! You will also need an API token in .github.token,"
+    print "!!  a .hubrrc config, or `brew install hub` configured."
+    print "!! A $GITHUB_TOKEN env variable will also work."
     exit(1)
 
 #
@@ -139,13 +139,13 @@ winFolder = File("builds/%s/hangr-win32-x64" % (buildName))
 verify(winFolder).exists()
 
 # github doesn't allow .dmg directly
-print("Compressing mac build...")
+print "Compressing mac build..."
 macZipPath = 'builds/hangr-macOS-%s.zip' % version
 macZipFile = buildZipFile(macZipPath, macFile.path)
 verify(macZipFile).exists()
 
 # release-win outputs a folder
-print("Compressing windows build...")
+print "Compressing windows build..."
 winZipPath = 'builds/hangr-win-x64-%s.zip' % version
 winZipFile = buildZipFile(winZipPath, winFolder.path)
 verify(winZipFile).exists()
@@ -154,7 +154,7 @@ verify(winZipFile).exists()
 # Upload to github
 #
 
-print("Uploading to Github...")
+print "Uploading to Github..."
 
 verify(versionTag).create()
 verify(versionTag).push("origin")
@@ -162,11 +162,11 @@ verify(versionTag).push("origin")
 gitRelease = github.Release(version)
 verify(gitRelease).create(body=releaseNotes)
 
-print("Uploading", macZipFile.path)
+print "Uploading", macZipFile.path
 verify(gitRelease).uploadFile(
         macZipFile.path, 'application/zip')
 
-print("Uploading", winZipFile.path)
+print "Uploading", winZipFile.path
 verify(gitRelease).uploadFile(
         winZipFile.path, 'application/zip')
 
