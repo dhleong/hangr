@@ -1,5 +1,7 @@
 'use strict';
 
+var os = require('os');
+
 const electron = require('electron'),
       fs = require('fs-extra'),
       path = require('path'),
@@ -275,5 +277,8 @@ app.on('ready', () => {
     });
 
     // hide the dock icon; we have a tray icon!
-    app.dock.hide();
+	if (os.platform() !== 'win32') {
+		app.dock.hide();
+	}
+    
 });
