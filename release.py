@@ -54,6 +54,11 @@ def buildDefaultNotes(_):
     contents = ''
 
     lastReleaseDate = latestTag.get_created_date()
+    if lastReleaseDate.tzinfo:
+        # pygithub doesn't respect tzinfo, so we have to do it ourselves
+        lastReleaseDate -= lastReleaseDate.tzinfo.utcoffset(lastReleaseDate)
+        lastReleaseDate.replace(tzinfo=None)
+
     closedIssues = github.find_issues(state='closed', since=lastReleaseDate)
 
     labeled = buildLabeled([
