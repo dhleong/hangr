@@ -1,5 +1,7 @@
 'use strict';
 
+var os = require('os');
+
 var electron;
 try {
     electron = require('electron');
@@ -101,6 +103,10 @@ class DockManager {
         var x = this._anchor.position(window._index);
         var y = screenHeight - window.height;
 
+        if (os.platform() === 'win32') {
+            y -= 40;
+        }
+
         // special case: when animating in, we like a nice slide
         if (animate === 'in') {
             window.setPosition(x, screenHeight, false);
@@ -172,7 +178,8 @@ class DockedWindow {
         // Create the browser window.
         var win = this.win = new BrowserWindow({
             titleBarStyle: 'hidden-inset',
-
+            frame: false,
+			
             width: WindowDimens.w,
             height: WindowDimens.h,
             maxWidth: WindowDimens.w,
