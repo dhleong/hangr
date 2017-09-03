@@ -215,6 +215,9 @@ ipcHandler.attach(ipcMain);
 app.on('before-quit', preQuit);
 
 app.on('ready', () => {
+    systemTray = new Tray(trayIcons.light);
+    dockManager.setTrayBounds(systemTray.getBounds());
+
     // show the main window
     showMainWindow();
 
@@ -254,7 +257,6 @@ app.on('ready', () => {
     // though, we want to be able to just click the system
     // menu icon to open the friends list
     const trayMenu = Menu.buildFromTemplate(trayContextMenu);
-    systemTray = new Tray(trayIcons.light);
     systemTray.on('click', (e) => {
         if (e.altKey) {
             systemTray.popUpContextMenu(trayMenu);
