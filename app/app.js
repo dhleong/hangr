@@ -1,21 +1,20 @@
 'use strict';
 
 const electron = require('electron'),
-      fs = require('fs-extra'),
-      path = require('path'),
-      {app, BrowserWindow, ipcMain, Menu, Tray} = electron,
-      // packageJson = require(__dirname + '/package.json'),
+    fs = require('fs-extra'),
+    path = require('path'),
+    {app, BrowserWindow, ipcMain, Menu, Tray} = electron,
+    // packageJson = require(__dirname + '/package.json'),
 
-      {urlForConvId} = require('./util'),
-      {IpcHandler} = require('./ipc'),
-      {dockManager, DockedWindow} = require('./docked-window'),
-      isDemo = process.argv.length &&
-        process.argv[process.argv.length - 1] === 'demo',
-      ConnectionManager = isDemo
+    {urlForConvId} = require('./util'),
+    {IpcHandler} = require('./ipc'),
+    {dockManager, DockedWindow} = require('./docked-window'),
+    isDemo = process.argv.length && process.argv[process.argv.length - 1] === 'demo',
+    ConnectionManager = isDemo
         ? require('./demo/connection')
         : require('./connection'),
 
-      connMan = new ConnectionManager();
+    connMan = new ConnectionManager();
 
 const devConfigFile = __dirname + '/config.json';
 var devConfig = {};
@@ -274,6 +273,8 @@ app.on('ready', () => {
         systemTray.popUpContextMenu(trayMenu);
     });
 
-    // hide the dock icon; we have a tray icon!
-    app.dock.hide();
+    if (app.dock) {
+        // hide the dock icon; we have a tray icon!
+        app.dock.hide();
+    }
 });
