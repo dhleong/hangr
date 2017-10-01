@@ -374,12 +374,13 @@
          (.preventDefault e)
          (let [el (.-target e)
                raw-message (.-innerHTML el)]
-           ; clear the input box
-           (set! (.-innerHTML el) "")
-           ; eagerly trigger typing stopped event
-           (dispatch [:typing! id :stop!])
-           ; dispatch the event
-           (dispatch [:send-html id raw-message]))))
+           (when-not (empty? raw-message)
+             ; clear the input box
+             (set! (.-innerHTML el) "")
+             ; eagerly trigger typing stopped event
+             (dispatch [:typing! id :stop!])
+             ; dispatch the event
+             (dispatch [:send-html id raw-message])))))
      :on-key-up
      (fn [e]
        (when-not (submit-event? e)
