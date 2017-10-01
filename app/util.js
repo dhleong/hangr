@@ -1,4 +1,6 @@
 
+module.exports.isWindows = require('os').platform() === 'win32';
+
 module.exports.urlForConvId = function urlForConvId(convId) {
     return `/c/${convId}`;
 };

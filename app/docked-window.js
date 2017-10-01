@@ -1,7 +1,5 @@
 'use strict';
 
-const isWindows = require('os').platform() === 'win32';
-
 var electron;
 try {
     electron = require('electron');
@@ -10,6 +8,8 @@ try {
     electron = {};
 }
 const { BrowserWindow } = electron;
+
+const { isWindows } = require('./util');
 
 const WindowDimens = {
     w: 240,

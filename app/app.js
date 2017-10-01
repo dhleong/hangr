@@ -3,12 +3,12 @@
 const electron = require('electron'),
     fs = require('fs-extra'),
     path = require('path'),
-    {app, BrowserWindow, ipcMain, Menu, Tray} = electron,
+    { app, BrowserWindow, ipcMain, Menu, Tray } = electron,
     // packageJson = require(__dirname + '/package.json'),
 
-    {urlForConvId} = require('./util'),
-    {IpcHandler} = require('./ipc'),
-    {dockManager, DockedWindow} = require('./docked-window'),
+    { isWindows, urlForConvId } = require('./util'),
+    { IpcHandler } = require('./ipc'),
+    { dockManager , DockedWindow} = require('./docked-window'),
     isDemo = process.argv.length && process.argv[process.argv.length - 1] === 'demo',
     ConnectionManager = isDemo
         ? require('./demo/connection')
@@ -221,8 +221,10 @@ app.on('ready', () => {
     // show the main window
     showMainWindow();
 
-    Menu.setApplicationMenu(
-        Menu.buildFromTemplate(menuTemplate));
+    if (!isWindows) {
+        Menu.setApplicationMenu(
+            Menu.buildFromTemplate(menuTemplate));
+    }
 
     if (devConfig['dev-tools'] === true) {
         mainWindow.openDevTools();
