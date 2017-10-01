@@ -99,9 +99,10 @@
       (let [convs @convs]
         (if (seq convs)
           ;; we have conversations
-          [:ul#conversations
-           (for [c convs] 
-             ^{:key (:id c)} [friends-list-item c])]
+          [:div.scroll-host
+           [:ul#conversations
+            (for [c convs]
+              ^{:key (:id c)} [friends-list-item c])]]
           ;; nothing :(
           [:div "No conversations"])))))
 

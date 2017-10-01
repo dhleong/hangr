@@ -1,4 +1,6 @@
 
+module.exports.isWindows = require('os').platform() === 'win32';
+
 module.exports.urlForConvId = function urlForConvId(convId) {
     return `/c/${convId}`;
 };
@@ -25,7 +27,7 @@ module.exports.throttle = function throttle(fn, periodMs) {
 
     function throttled(...args) {
         if (state.token) clearTimeout(state.token);
-        
+
         var now = Date.now();
         var leftInPeriod = periodMs - (now - state.periodStart);
         if (leftInPeriod <= 0) {

@@ -7,7 +7,9 @@ try {
     // unit test mode
     electron = {};
 }
-const {BrowserWindow} = electron;
+const { BrowserWindow } = electron;
+
+const { isWindows } = require('./util');
 
 const WindowDimens = {
     w: 240,
@@ -41,6 +43,10 @@ class DockManager {
     constructor() {
         this._anchor = Anchor.End;
         this._windows = [];
+        this._trayOffset = {
+            x: 0,
+            y: 0,
+        };
     }
 
     adopt(window) {
@@ -99,7 +105,7 @@ class DockManager {
     position(window, animate) {
         var screenHeight = screenSize().height;
         var x = this._anchor.position(window._index);
-        var y = screenHeight - window.height;
+        var y = screenHeight - window.height + this._trayOffset.y;
 
         // special case: when animating in, we like a nice slide
         if (animate === 'in') {
@@ -111,6 +117,20 @@ class DockManager {
         }
 
         window.setPosition(x, y, !!animate);
+    }
+
+    setTrayBounds(bounds) {
+        if (!isWindows) {
+            // NOTE: we currently only care about these on Windows
+            return;
+        }
+
+        const { height } = screenSize();
+        if (bounds.y === height - bounds.height) {
+            // system tray is on the bottom; move our
+            // windows up above it
+            this._trayOffset.y = -bounds.height;
+        }
     }
 
     /**
@@ -188,6 +208,12 @@ class DockedWindow {
             skipTaskBar: true,
         });
         win.__docked = this;
+
+        if (isWindows) {
+            // NOTE: hiding the menu on windows to reduce visual clutter
+            // is this the right way to approach this?
+            win.setMenu(null);
+        }
 
         // and load the index.html of the app.
         win.loadURL('file://' + __dirname + '/index.html#' + url);

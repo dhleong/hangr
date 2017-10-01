@@ -1,21 +1,20 @@
 'use strict';
 
 const electron = require('electron'),
-      fs = require('fs-extra'),
-      path = require('path'),
-      {app, BrowserWindow, ipcMain, Menu, Tray} = electron,
-      // packageJson = require(__dirname + '/package.json'),
+    fs = require('fs-extra'),
+    path = require('path'),
+    { app, BrowserWindow, ipcMain, Menu, Tray } = electron,
+    // packageJson = require(__dirname + '/package.json'),
 
-      {urlForConvId} = require('./util'),
-      {IpcHandler} = require('./ipc'),
-      {dockManager, DockedWindow} = require('./docked-window'),
-      isDemo = process.argv.length &&
-        process.argv[process.argv.length - 1] === 'demo',
-      ConnectionManager = isDemo
+    { isWindows, urlForConvId } = require('./util'),
+    { IpcHandler } = require('./ipc'),
+    { dockManager , DockedWindow} = require('./docked-window'),
+    isDemo = process.argv.length && process.argv[process.argv.length - 1] === 'demo',
+    ConnectionManager = isDemo
         ? require('./demo/connection')
         : require('./connection'),
 
-      connMan = new ConnectionManager();
+    connMan = new ConnectionManager();
 
 const devConfigFile = __dirname + '/config.json';
 var devConfig = {};
@@ -216,11 +215,16 @@ ipcHandler.attach(ipcMain);
 app.on('before-quit', preQuit);
 
 app.on('ready', () => {
+    systemTray = new Tray(trayIcons.light);
+    dockManager.setTrayBounds(systemTray.getBounds());
+
     // show the main window
     showMainWindow();
 
-    Menu.setApplicationMenu(
-        Menu.buildFromTemplate(menuTemplate));
+    if (!isWindows) {
+        Menu.setApplicationMenu(
+            Menu.buildFromTemplate(menuTemplate));
+    }
 
     if (devConfig['dev-tools'] === true) {
         mainWindow.openDevTools();
@@ -255,7 +259,6 @@ app.on('ready', () => {
     // though, we want to be able to just click the system
     // menu icon to open the friends list
     const trayMenu = Menu.buildFromTemplate(trayContextMenu);
-    systemTray = new Tray(trayIcons.light);
     systemTray.on('click', (e) => {
         if (e.altKey) {
             systemTray.popUpContextMenu(trayMenu);
@@ -274,6 +277,8 @@ app.on('ready', () => {
         systemTray.popUpContextMenu(trayMenu);
     });
 
-    // hide the dock icon; we have a tray icon!
-    app.dock.hide();
+    if (app.dock) {
+        // hide the dock icon; we have a tray icon!
+        app.dock.hide();
+    }
 });

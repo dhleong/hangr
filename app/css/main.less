@@ -1,6 +1,7 @@
 // theming
 
 @message-bg-incoming: #f0f0f0;
+
 @read-indicator-avatar-size: 20px;
 @video-call-accent: #1D9C0D;
 
@@ -125,9 +126,17 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    overflow-y: scroll;
 
     padding-top: 8px;
+
+    .scroll-host {
+        overflow-y: scroll;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
 }
 
 #loading {
