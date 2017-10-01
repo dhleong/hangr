@@ -120,7 +120,7 @@ class DockManager {
     }
 
     setTrayBounds(bounds) {
-        if (isWindows) {
+        if (!isWindows) {
             // NOTE: we currently only care about these on Windows
             return;
         }
