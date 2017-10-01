@@ -7,13 +7,13 @@
   :source-paths ["src/cljs"]
 
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.293"]
-                 [reagent "0.6.0"]
-                 [re-frame "0.9.1"]
+                 [org.clojure/clojurescript "1.9.908"]
+                 [reagent "0.7.0"]
+                 [re-frame "0.10.1"]
                  [secretary "1.2.3"]
-                 [com.andrewmcveigh/cljs-time "0.5.0-alpha2"]]
+                 [com.andrewmcveigh/cljs-time "0.5.1"]]
 
-  :plugins [[lein-cljsbuild "1.1.5"]
+  :plugins [[lein-cljsbuild "1.1.7"]
             [lein-less "1.7.5"]]
 
   :hooks [leiningen.cljsbuild]
@@ -54,7 +54,11 @@
                                                        :compiler {:main "hangr.runner"
                                                                   :output-to "app/js/p/testable.js"
                                                                   :closure-defines {"require" nil}
-                                                                  :optimizations :none}}
+                                                                  :optimizations :none
+                                                                  ;;
+                                                                  ;; the following line is a workaround until doo 0.1.8 is released
+                                                                  ;; See: https://github.com/bensu/doo/pull/141
+                                                                  :process-shim false}}
                                         :node-test {:source-paths ["env/dev/cljs" "src" "test"]
                                                     :compiler {:main "hangr.node-runner"
                                                                :output-to "app/js/p/testable.js"
@@ -64,17 +68,17 @@
 
                    :doo {:build "node-test"}
 
-                   :dependencies [[binaryage/devtools "0.8.3"]
-                                  [re-frisk "0.3.2"]
-                                  [figwheel-sidecar "0.5.8"]
-                                  [com.cemerick/piggieback "0.2.1"]
+                   :dependencies [[binaryage/devtools "0.9.4"]
+                                  [re-frisk "0.5.0"]
+                                  [figwheel-sidecar "0.5.13"]
+                                  [com.cemerick/piggieback "0.2.2"]
                                   [doo "0.1.7"]
-                                  [day8.re-frame/test "0.1.3"]]
+                                  [day8.re-frame/test "0.1.5"]]
 
-                   :plugins [[lein-ancient "0.6.10"]
-                             [lein-kibit "0.1.3"]
-                             [lein-cljfmt "0.5.6"]
-                             [lein-figwheel "0.5.8"]
+                   :plugins [[lein-ancient "0.6.12"]
+                             [lein-kibit "0.1.5"]
+                             [lein-cljfmt "0.5.7"]
+                             [lein-figwheel "0.5.13"]
                              [lein-doo "0.1.7"]]}
 
              :production {:cljsbuild {:builds {:app {:compiler {:optimizations :advanced

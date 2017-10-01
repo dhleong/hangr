@@ -7,7 +7,6 @@
                            ->interceptor get-coeffect get-effect 
                            assoc-coeffect assoc-effect
                            dispatch]]
-    [cljs.spec :as s]
     [hangr.db :refer [default-value]]
     [hangr.util :refer [key->id id->key]]
     [hangr.util.conversation :refer [conv-merge fill-members unread?]]
