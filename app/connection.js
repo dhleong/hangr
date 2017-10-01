@@ -6,15 +6,15 @@
  */
 'use strict';
 
-const EventEmitter = require('events'),
-      Client = require('hangupsjs'),
-      Promise = require('promise'),
-      {parsePresencePacket, throttle} = require('./util'),
+const EventEmitter = require('events');
+const Client = require('hangupsjs');
+const Promise = require('promise');
+const { parsePresencePacket, throttle } = require('./util');
 
-      INITIAL_BACKOFF = 1000,
-      MAX_BACKOFF = 16000,
+const INITIAL_BACKOFF = 1000;
+const MAX_BACKOFF = 16000;
 
-      ERROR_NOT_LOGGEDIN = "No oauth token";
+const ERROR_NOT_LOGGEDIN = "No oauth token";
 
 var electron, BrowserWindow;
 try {
@@ -187,6 +187,18 @@ class ConnectionManager extends EventEmitter {
     }
 
     getEventsSince(timestampSince) {
+        // NOTE: since this doesn't return anything and just handles
+        // its results internally, we can just handle the not connected
+        // state ourselves:
+        if (!this.client) {
+            // not currently connected. In this case, we should reconnect
+            // and sync everything soon, so we can just ignore this call.
+            // We'll go ahead and log a note, though, in case that isn't
+            // working correctly....
+            this.log("getEventsSince: IGNORED (not connected)");
+            return;
+        }
+
         this.client.syncallnewevents(timestampSince)
         .done(result => {
             this.log(`gotEventsSince: ${JSON.stringify(result, null, ' ')}`);
