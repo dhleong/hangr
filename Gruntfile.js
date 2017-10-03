@@ -204,13 +204,13 @@ function getBasicReleaseInfo(build, paths) {
   var opts = {
     "dir": paths.releaseApp,
     "name": packageJson.name,
-    "version": electron_version,
+    "electronVersion": electron_version,
     "asar": false,
     "out": paths.release,
     "overwrite": true,
-    "app-bundle-id": packageJson.bundleId,
-    "app-version": build.version,
-    "version-string": {
+    "appBundleId": packageJson.bundleId,
+    "appVersion": build.version,
+    "win32metadata": {
       "ProductVersion": build.version,
       "ProductName": packageJson.name,
     }
