@@ -1,4 +1,4 @@
-(defproject hangr "0.6.3-alpha"
+(defproject hangr "0.7.0-beta"
   :description "Hangouts, the way it was meant to be"
   :url "http://github.com/dhleong/hangr"
   :license {:name "Eclipse Public License"
