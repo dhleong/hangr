@@ -120,10 +120,30 @@
 
 (defn segment-text
   [segment]
-  ;; TODO formatting
-  (when-let [formatting (:formatting segment)]
-    (println "TODO: format:" formatting))
-  [:span.segment.text (:text segment)])
+  (let [{:keys [text formatting]} segment
+
+        ; apply formatting by gradually wrapping
+        ; in the appropriate elements
+        text (reduce-kv
+               (fn [text fmt-kind use-format?]
+                 (if (or (true? use-format?)
+                         (= 1 use-format?))
+                   (case fmt-kind
+                     :bold [:b text]
+                     :italic [:i text]   ; sometimes it's :italic 1 ...
+                     :italics [:i text]  ; ... and sometimes it's :italics true ...
+                     :underline [:u text]
+                     :strikethrough [:s text]
+
+                     ; unknown? just use the text
+                     text)
+                   text))
+
+               text ; start with the plain text
+               formatting)]
+
+    ; finally, wrap the text in a :span
+    [:span.segment.text text]))
 
 ;; -- Hangout Events ----------------------------------------------------------
 
@@ -373,6 +393,9 @@
          ; don't create a newline, please:
          (.preventDefault e)
          (let [el (.-target e)
+               ; NOTE: we could pass .-innerText and have a much
+               ;  easier time parsing the content, but we'd lose
+               ;  the potential to format text with <b> or </i>
                raw-message (.-innerHTML el)]
            (when-not (empty? raw-message)
              ; clear the input box

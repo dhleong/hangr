@@ -1,4 +1,4 @@
-(defproject hangr "0.7.0-beta"
+(defproject hangr "0.8.0-beta"
   :description "Hangouts, the way it was meant to be"
   :url "http://github.com/dhleong/hangr"
   :license {:name "Eclipse Public License"
@@ -10,6 +10,7 @@
                  [org.clojure/clojurescript "1.9.908"]
                  [reagent "0.7.0"]
                  [re-frame "0.10.1"]
+                 [hickory "0.7.1"]
                  [secretary "1.2.3"]
                  [com.andrewmcveigh/cljs-time "0.5.1"]]
 

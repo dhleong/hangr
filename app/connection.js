@@ -422,6 +422,7 @@ class ConnectionManager extends EventEmitter {
             var type = part[0];
             var val = part[1];
             switch (type) {
+            case "newline":
             case "linebreak":
                 builder.linebreak();
                 break;
@@ -429,7 +430,18 @@ class ConnectionManager extends EventEmitter {
                 builder.link(part[2] || val, val);
                 break;
             case "text":
-                builder.text(val);
+                var format = part[2];
+                if (format) {
+                    builder.text(
+                        val,
+                        format.bold,
+                        format.italic,
+                        format.strikethrough,
+                        format.underline,
+                    );
+                } else {
+                    builder.text(val);
+                }
                 break;
             }
         });

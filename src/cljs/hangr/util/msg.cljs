@@ -2,6 +2,7 @@
       :doc "Utilities for creating messages"}
   hangr.util.msg
   (:require [clojure.string :as string :refer [split]]
+            [hickory.core :as hickory]
             [hangr.util :refer [safe-require]]))
 
 ; url-regex is, by default, a global regex, which, 
@@ -53,24 +54,80 @@
             (* (.random js/Math)
                (.pow js/Math 2, 32)))))
 
+(def html-entities
+  {"amp" "&"
+   "apos" "'"
+   "lt" "<"
+   "gt" ">"
+   "quot" "\""})
+
+(def html-entities-regex
+  (re-pattern (str "&("
+                   (string/join "|" (keys html-entities))
+                   ");")))
+
+(defn parse-string-part
+  [part]
+  (-> part
+      ; TODO &#000; entities?
+      (string/replace html-entities-regex (fn [[_ k]]
+                                            (get html-entities k)))
+      (split-links)))
+
+(defn parse-formatted-part
+  [part flags]
+  (if (string? part)
+    [[:text part flags]]
+
+    (case (first part)
+      :b (parse-formatted-part (last part) (assoc flags :bold 1))
+      :i (parse-formatted-part (last part) (assoc flags :italic 1))
+      :u (parse-formatted-part (last part) (assoc flags :underline 1))
+
+      ;; unexpected?
+      (do
+        (js/console.warn "UNEXPECTED: " part)
+        part))))
+
+(defn parse-html-part
+  [part]
+  (if (string? part)
+    (parse-string-part part)
+
+    (case (first part)
+      :br [[:newline]]
+
+      ; TODO: this isn't quite right, but it works okay...
+      :div (cons [:newline] (parse-html-part (last part)))
+
+      :b (parse-formatted-part part {})
+      :i (parse-formatted-part part {})
+      :u (parse-formatted-part part {})
+
+      ; default:
+      (cons :text (drop 2 part)))))
+
 (defn html->msg
   [html]
-  (let [lines (-> html
-                  ; TODO any other entities?
-                  (string/replace "&nbsp;" " ")
-                  (split #"(?:\<br[ /]*>)+"))]
-    ;; TODO formatting? <a>-style links?
-    ;; TODO images?
-    ;; TODO message type? (eg /me)
-    (->> lines
-         (mapcat
-           (fn [line]
-             (concat
-               (split-links line)
-               [[:newline]])))
-         drop-last
-         ;; insert a client-generated-id as the first thing
-         (cons (client-generated-id)))))
+  (->> html
+       (hickory/parse-fragment)
+       (map hickory/as-hiccup)
+       (map parse-html-part)
+
+       ;; clean up excessive newlines (?)
+       (reduce
+         (fn [result part]
+           ; multiple newlines in a row:
+           (if (and (= 1 (count part))
+                    (= (last result) (first part) [:newline]))
+             result
+             (concat result part))))
+
+       ; drop any [:newline] at the beginning
+       (drop-while #(= :newline (first %)))
+
+       ;; insert a client-generated-id as the first thing
+       (cons (client-generated-id))))
 
 (defn msg->event
   ([msg]
@@ -88,17 +145,21 @@
             :thumbnail
             {:url image-path
              :image_url image-path}}}}])
+
       :segment
       (map
         (fn [[type & args]]
           (case (keyword type)
             :text {:type "TEXT"
-                   :text (first args)}
+                   :text (first args)
+                   :formatting (when (= 2 (count args))
+                                 (second args))}
             :link {:type "LINK"
                    :text (or (second args)
                              (first args))
                    :link_data
                    {:link_target (first args)}}
-            :newline {:type "NEWLINE"}))
+            :newline {:type "LINE_BREAK"}))
         (rest msg))}}
+
     :timestamp (* (.now js/Date) 1000)}))
