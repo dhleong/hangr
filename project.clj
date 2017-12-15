@@ -35,7 +35,7 @@
               {"frontend" ["lein" "do"
                            "doo" "node" "node-test" "once"
                            ","
-                           "doo" "phantom" "phantom-test" "once"]}}
+                           "doo" "chrome" "chrome-test" "once"]}}
 
   :clean-targets ^{:protect false} [:target-path "out" "app/js/p"]
 
