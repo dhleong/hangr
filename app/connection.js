@@ -437,8 +437,7 @@ class ConnectionManager extends EventEmitter {
                         format.bold,
                         format.italic,
                         format.strikethrough,
-                        format.underline,
-                    );
+                        format.underline);
                 } else {
                     builder.text(val);
                 }
