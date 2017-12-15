@@ -3,7 +3,8 @@
   hangr.util.msg
   (:require [clojure.string :as string :refer [split]]
             [hickory.core :as hickory]
-            [hangr.util :refer [safe-require]]))
+            [url-regex :as original-url-regex]
+            #_[hangr.util :refer [safe-require]]))
 
 ; url-regex is, by default, a global regex, which, 
 ;  unlike on jvm, has state. that doesn't play well
@@ -12,7 +13,8 @@
 ;  original, stripping the global flag (but keeping
 ;  the case insensitivity)
 (def url-regex (let [regex-base
-                     (safe-require
+                     original-url-regex
+                     #_(safe-require
                        "url-regex"
 
                        ; only for phantomjs tests; we use node tests

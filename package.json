@@ -16,11 +16,15 @@
     "url-regex": "^4.1.1"
   },
   "devDependencies": {
+    "@cljs-oss/module-deps": "^1.1.1",
     "chai": "^4.1.2",
     "electron-packager": "9.1.0",
     "grunt": "1.0.1",
     "grunt-contrib-less": "^1.4.1",
     "grunt-download-electron": "2.1.4",
+    "karma": "^1.7.1",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-cljs-test": "^0.1.0",
     "mocha": "^3.5.3",
     "moment": "2.18.1",
     "shelljs": "0.7.8",

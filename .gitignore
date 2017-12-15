@@ -27,3 +27,4 @@ figwheel_server.log
 .cljs_rhino_repl/
 *.css
 *.swp
+doo-index.html

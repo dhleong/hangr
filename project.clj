@@ -14,6 +14,8 @@
                  [secretary "1.2.3"]
                  [com.andrewmcveigh/cljs-time "0.5.1"]]
 
+  :npm-deps {"url-regex" "4.1.1"}
+
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-less "1.7.5"]]
 
@@ -51,15 +53,15 @@
                                                          :main       "hangr.dev"
                                                          :verbose true}
                                               :figwheel {:on-jsload "hangr.core/mount-root"}}
+                                        :chrome-test {:source-paths ["env/dev/cljs" "src" "test"]
+                                                       :compiler {:main "hangr.chrome-runner"
+                                                                  :output-to "app/js/p/testable.js"
+                                                                  :optimizations :none}}
                                         :phantom-test {:source-paths ["env/dev/cljs" "src" "test"]
                                                        :compiler {:main "hangr.runner"
                                                                   :output-to "app/js/p/testable.js"
                                                                   :closure-defines {"require" nil}
-                                                                  :optimizations :none
-                                                                  ;;
-                                                                  ;; the following line is a workaround until doo 0.1.8 is released
-                                                                  ;; See: https://github.com/bensu/doo/pull/141
-                                                                  :process-shim false}}
+                                                                  :optimizations :none}}
                                         :node-test {:source-paths ["env/dev/cljs" "src" "test"]
                                                     :compiler {:main "hangr.node-runner"
                                                                :output-to "app/js/p/testable.js"
@@ -67,13 +69,14 @@
                                                                :target :nodejs}}}}
                    :source-paths ["env/dev/cljs"]
 
-                   :doo {:build "node-test"}
+                   :doo {:build "node-test"
+                         :paths {:karma "./node_modules/karma/bin/karma"}}
 
                    :dependencies [[binaryage/devtools "0.9.4"]
                                   [re-frisk "0.5.0"]
                                   [figwheel-sidecar "0.5.13"]
                                   [com.cemerick/piggieback "0.2.2"]
-                                  [doo "0.1.7"]
+                                  [doo "0.1.8"]
                                   [day8.re-frame/test "0.1.5"]]
 
                    :plugins [[lein-ancient "0.6.12"]
