@@ -71,9 +71,16 @@
 (defn parse-string-part
   [part]
   (-> part
-      ; TODO &#000; entities?
+      ; named entities
       (string/replace html-entities-regex (fn [[_ k]]
                                             (get html-entities k)))
+
+      ; &#000; entities
+      (string/replace #"&#([0-9]+);"
+                      (fn [[_ n]]
+                        (js/String.fromCharCode n)))
+
+      ; finally, split links
       (split-links)))
 
 (defn parse-formatted-part

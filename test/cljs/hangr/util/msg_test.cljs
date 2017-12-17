@@ -44,6 +44,9 @@
             [:link "www.alliance.com"]
             [:text " guys"]]
            (html->parts "post www.serenity.net on www.alliance.com guys"))))
+  (testing "Symbols"
+    (is (= [[:text "Let's do this"]]
+           (html->parts "Let's do this"))))
   (testing "Entities"
     ;; NOTE: this is not <32> here: it's the actual nbsp character!
     ;;  you can use ga in vim to check!
