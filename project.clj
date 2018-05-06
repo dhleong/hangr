@@ -91,7 +91,6 @@
                                                                 :cache-analysis false
                                                                 :closure-defines {"goog.DEBUG" false}
                                                                 :externs ["externs/misc.js"
-                                                                          "externs/node-notifier.js"
                                                                           "externs/package.js"
                                                                           "externs/request.js"
                                                                           "externs/semver.js"]
