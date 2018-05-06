@@ -4,6 +4,7 @@
   (:require [re-frame.core :refer [dispatch]]
             [clojure.string :as string]
             [hangr.util :refer [js->real-clj id->key safe-require]]
+            [hangr.util.notification :refer [dispatch-action]]
             [hangr.util.parse :refer [entity->clj event->clj conv->clj self->clj
                                       watermark->clj]]))
 
@@ -61,6 +62,10 @@
      [conv-id timestamp]
      (js/console.log "Got mark-read!" conv-id timestamp)
      (dispatch [:mark-read! conv-id timestamp]))
+
+   :notification-action
+   (fn [action]
+     (dispatch-action (js->real-clj action)))
 
    :received
    (fn [received-msg-event]
@@ -135,10 +140,10 @@
   []
   (.send ipc "request-status")
   (doseq [[event-id handler] ipc-listeners]
-    (let [event-id (name event-id)] 
+    (let [event-id (name event-id)]
       (.removeAllListeners ipc event-id)
-      (.on ipc 
-           event-id 
+      (.on ipc
+           event-id
            (fn event-handler-wrapper
              [e & args]
              (apply handler args))))))

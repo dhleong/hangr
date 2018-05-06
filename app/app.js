@@ -3,7 +3,7 @@
 const electron = require('electron'),
     fs = require('fs-extra'),
     path = require('path'),
-    { app, BrowserWindow, ipcMain, Menu, Tray } = electron,
+    { app, BrowserWindow, ipcMain, Menu, Notification, Tray } = electron,
     // packageJson = require(__dirname + '/package.json'),
 
     { isWindows, urlForConvId } = require('./util'),
@@ -98,6 +98,15 @@ function showAbout() {
     win.once('closed', () => {
         aboutWindow = null;
     });
+}
+
+function createNotification(options) {
+    if (!Notification.isSupported()) {
+        console.warn("Notifications not supported");
+        return;
+    }
+
+    return new Notification(options);
 }
 
 const fileMenu = {
@@ -202,7 +211,7 @@ function showMainWindow() {
 //------------------------------------------------------------------------------
 
 const ipcHandler = new IpcHandler(trayIcons, dockManager, connMan,
-    showAbout,
+    showAbout, createNotification,
     () => systemTray,
     () => mainWindow);
 ipcHandler.attach(ipcMain);

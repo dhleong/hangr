@@ -4,15 +4,16 @@
   (:require [hangr.util :refer [js->real-clj id->key safe-require
                                 read-package-json]]))
 
-(defonce notifier (safe-require "node-notifier"))
-(defonce package-json (read-package-json))
-(defonce bundle-id (.-bundleId package-json))
+(defonce electron (safe-require "electron"))
+(defonce ipc-renderer (.-ipcRenderer electron))
+
+(defonce ^:private notification-handlers (atom {}))
 
 (defn notify!
   "Raise a native notification. Takes an options map
   and, optionally, a callback that's called when the
   user provides a text reply to the notification (macOS only)."
-  [& {:keys [title message icon reply? timeout wait?
+  [& {:keys [title message icon reply?
              close-label actions
              on-reply on-click]
       :or {timeout 20}}] ;; so terminal-notifier doesn't linger if ignored
@@ -20,36 +21,42 @@
          (string? message)]}
   (let [params
         (->> {:title title
-              :message message 
+              :body message
               :icon icon
-              :reply reply?
-              :wait wait?
-              :timeout timeout
-              :closeLabel close-label
-              :actions actions
-              :sender bundle-id}
+              :id (str (random-uuid) (.getTime (js/Date.)))
+              :hasReply (when reply?
+                          true)
+              :replyPlaceholder (when reply?
+                                  reply?)
+              :closeButtonLabel close-label
+              :actions actions}
              (filter second)
-             (into {})
-             clj->js)]
+             (into {}))]
+    ;; FIXME there's a lot of unnecessary indirection going on here
+    ;;  since we weren't previously using IPC for notifications....
     (js/console.log "NOTIFY!" params)
-    (js/console.log "bundle-id:" bundle-id, "notifier:" notifier)
-    (-> notifier
-        (.notify 
-          params
-          (fn [e resp & [reply]]
-            (js/console.log "notify:" resp)
-            (let [reply (js->real-clj reply)]
-              (cond
-                ;; did they reply inline?
-                (and on-reply (:activationValue reply)) 
-                (on-reply (:activationValue reply))
-                ;; nope; did they tap to open the notif?
-                (and (= "activate" resp)
-                     on-click)
-                (on-click)
-                ;; else, ignored...
-                :else 
-                nil))))))) 
+    (when (or on-reply on-click)
+      (swap! notification-handlers
+             assoc
+             (:id params)
+             {:on-click on-click
+              :on-reply on-reply}))
+    (.send ipc-renderer "notify!" (clj->js params))))
+
+(defn dispatch-action
+  "Dispatch a response action to a notification"
+  [action]
+  (println "Dispatch " action "...")
+  (when-let [handlers (get @notification-handlers (:id action))]
+    (swap! notification-handlers dissoc (:id action))
+    (let [[handler arg] (case (:type action)
+                          "reply" [(:on-reply handlers) (:reply action)]
+                          "click" [(:on-click handlers)]
+                          "action" [(:on-click handlers)]
+                          :else nil)] ;; eg: "close"
+      (when handler
+        (println "Dispatch for" (:id action) handler arg)
+        (handler arg)))))
 
 (defn conv-msg->title
   "Pick a 'Title' for the `msg` received in the
