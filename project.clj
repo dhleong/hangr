@@ -6,13 +6,13 @@
 
   :source-paths ["src/cljs"]
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.908"]
+  :dependencies [[org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojurescript "1.10.238"]
                  [reagent "0.7.0"]
-                 [re-frame "0.10.1"]
+                 [re-frame "0.10.5"]
                  [hickory "0.7.1"]
                  [secretary "1.2.3"]
-                 [com.andrewmcveigh/cljs-time "0.5.1"]]
+                 [com.andrewmcveigh/cljs-time "0.5.2"]]
 
   :npm-deps {"url-regex" "4.1.1"}
 
@@ -72,18 +72,18 @@
                    :doo {:build "node-test"
                          :paths {:karma "./node_modules/karma/bin/karma"}}
 
-                   :dependencies [[binaryage/devtools "0.9.4"]
-                                  [re-frisk "0.5.0"]
-                                  [figwheel-sidecar "0.5.13"]
+                   :dependencies [[binaryage/devtools "0.9.10"]
+                                  [re-frisk "0.5.4"]
+                                  [figwheel-sidecar "0.5.15"]
                                   [com.cemerick/piggieback "0.2.2"]
-                                  [doo "0.1.8"]
+                                  [doo "0.1.10"]
                                   [day8.re-frame/test "0.1.5"]]
 
-                   :plugins [[lein-ancient "0.6.12"]
-                             [lein-kibit "0.1.5"]
+                   :plugins [[lein-ancient "0.6.15"]
+                             [lein-kibit "0.1.6"]
                              [lein-cljfmt "0.5.7"]
-                             [lein-figwheel "0.5.13"]
-                             [lein-doo "0.1.7"]]}
+                             [lein-figwheel "0.5.15"]
+                             [lein-doo "0.1.10"]]}
 
              :production {:cljsbuild {:builds {:app {:compiler {:optimizations :advanced
                                                                 :main          "hangr.prod"

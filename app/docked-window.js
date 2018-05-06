@@ -191,7 +191,7 @@ class DockedWindow {
 
         // Create the browser window.
         var win = this.win = new BrowserWindow({
-            titleBarStyle: 'hidden-inset',
+            titleBarStyle: 'hiddenInset',
 
             width: WindowDimens.w,
             height: WindowDimens.h,
