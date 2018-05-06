@@ -1,8 +1,13 @@
 language: clojure
+dist: trusty
+sudo: required
 before_install:
     - nvm install 6
     - npm install
     - export CHROME_BIN=chromium-browser
     - export DISPLAY=:99.0
     - sh -e /etc/init.d/xvfb start
++before_script:
+    - sudo chown root /opt/google/chrome/chrome-sandbox
+    - sudo chmod 4755 /opt/google/chrome/chrome-sandbox
 script: scripts/test.sh
