@@ -1,8 +1,9 @@
 
 const chai = require('chai');
-const {IpcHandler, handlerFnToName} = require('../../app/ipc');
+const { EventEmitter } = require('events');
+const { IpcHandler, handlerFnToName } = require('../../app/ipc');
 
-// var expect = chai.expect;
+var expect = chai.expect;
 chai.should();
 
 describe("handlerFnToName", () => {
@@ -16,6 +17,10 @@ describe("handlerFnToName", () => {
     });
 });
 
+class TestNotification extends EventEmitter {
+    show() {}
+}
+
 describe("IpcHandler", () => {
 
     const trayIcons = {light: 'light', dark: 'dark'};
@@ -25,12 +30,22 @@ describe("IpcHandler", () => {
     var systemTray;
     var mainWindow;
 
+    var lastNotification;
+
     beforeEach(() => {
         dockManager = {};
         connMan = {};
         systemTray = {};
         mainWindow = {};
-        ipcHandler = new IpcHandler(trayIcons, dockManager, connMan, 
+        ipcHandler = new IpcHandler(trayIcons, dockManager, connMan,
+            () => { /* show about */ },
+
+            (opts) => {
+                const n = new TestNotification(opts);
+                lastNotification = n;
+                return n;
+            },
+
             () => systemTray,
             () => mainWindow);
     });
@@ -133,6 +148,27 @@ describe("IpcHandler", () => {
                 sent[1].should.deep.equal([
                     'recent-conversations',
                     [myConv]
+                ]);
+            });
+        });
+
+        describe("notify!", () => {
+            it("Forwards `reply`", () => {
+                ipcHandler.notify$(e, {
+                    id: 'with-reply',
+                    hasReply: true,
+                });
+
+                expect(lastNotification).to.not.be.null;
+                lastNotification.emit('reply', null, 'TestReply')
+
+                sent.should.have.length(1);
+                sent[0].should.deep.equal([
+                    'notification-action', {
+                        id: 'with-reply',
+                        reply: 'TestReply',
+                        type: 'reply',
+                    },
                 ]);
             });
         });

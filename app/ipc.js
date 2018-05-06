@@ -9,12 +9,13 @@ function handlerFnToName(fnName) {
 
 class IpcHandler {
     constructor(trayIcons, dockManager, connMan,
-            showAbout,
+            showAbout, createNotification,
             systemTrayFetcher, mainWindowFetcher) {
         this.trayIcons = trayIcons;
         this.dockManager = dockManager;
         this.connMan = connMan;
         this.showAbout = showAbout;
+        this.createNotification = createNotification;
         this.getSystemTray = systemTrayFetcher;
         this.getMainWindow = mainWindowFetcher;
     }
@@ -60,6 +61,48 @@ class IpcHandler {
 
         // forward to the main window
         this._sendToMainWindow('mark-read!', convId, timestamp);
+    }
+
+    notify$(e, args) {
+        const notif = this.createNotification(args);
+        if (!notif) return;  // not supported on this OS
+
+        notif.on('click', () => {
+            e.sender.send('notification-action', {
+                id: args.id,
+                type: 'click',
+            });
+        });
+
+        notif.on('close', () => {
+            console.log("Close");
+            e.sender.send('notification-action', {
+                id: args.id,
+                type: 'close',
+            });
+        });
+
+        if (args.hasReply) {
+            notif.on('reply', (_, reply) => {
+                console.log("Reply!", reply);
+                e.sender.send('notification-action', {
+                    id: args.id,
+                    type: 'reply',
+                    reply: reply,
+                });
+            });
+        }
+
+        notif.on('action', (_, index) => {
+            console.log("Action!", index);
+            e.sender.send('notification-action', {
+                id: args.id,
+                type: 'action',
+                action: index,
+            });
+        });
+
+        notif.show();
     }
 
     request_status(e) {
