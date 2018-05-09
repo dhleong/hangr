@@ -64,7 +64,9 @@ class IpcHandler {
     }
 
     notify$(e, args) {
-        const notif = this.createNotification(args);
+        const notif = this.createNotification(Object.assign({
+            silent: true,
+        }, args));
         if (!notif) return;  // not supported on this OS
 
         notif.on('click', () => {

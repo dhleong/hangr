@@ -15,8 +15,7 @@
   user provides a text reply to the notification (macOS only)."
   [& {:keys [title message icon reply?
              close-label actions
-             on-reply on-click]
-      :or {timeout 20}}] ;; so terminal-notifier doesn't linger if ignored
+             on-reply on-click]}]
   {:pre [(string? title)
          (string? message)]}
   (let [params
