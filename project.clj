@@ -1,3 +1,5 @@
+(def npm-deps {:url-regex "4.1.1"})
+
 (defproject hangr "0.9.0-beta"
   :description "Hangouts, the way it was meant to be"
   :url "http://github.com/dhleong/hangr"
@@ -6,15 +8,13 @@
 
   :source-paths ["src/cljs"]
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.908"]
-                 [reagent "0.7.0"]
-                 [re-frame "0.10.5"]
+  :dependencies [[org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojurescript "1.10.439"]
+                 [reagent "0.8.1"]
+                 [re-frame "0.10.6"]
                  [hickory "0.7.1"]
-                 [secretary "1.2.3"]
+                 [clj-commons/secretary "1.2.4"]
                  [com.andrewmcveigh/cljs-time "0.5.2"]]
-
-  :npm-deps {"url-regex" "4.1.1"}
 
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-less "1.7.5"]]
@@ -29,7 +29,14 @@
                                         :asset-path    "js/p/out"
                                         :optimizations :none
                                         :pretty-print  true
-                                        :cache-analysis true}}}
+                                        :cache-analysis true
+                                        :preloads      [devtools.preload]
+
+                                        :npm-deps      ~npm-deps
+                                        :install-deps  true
+
+                                        :external-config {:devtools/config {:features-to-install :all}}
+                                        }}}
 
               :test-commands
               {"frontend" ["lein" "do"
@@ -39,7 +46,13 @@
 
   :clean-targets ^{:protect false} [:target-path "out" "app/js/p"]
 
-  :figwheel {:css-dirs ["app/css"]}
+  :figwheel {:css-dirs ["resources/public/css"]
+             :builds-to-start ["app"]
+             :nrepl-port 7002
+             :server-ip "0.0.0.0"
+             :server-port 3451
+             :nrepl-middleware
+             [cemerick.piggieback/wrap-cljs-repl cider.nrepl/cider-middleware]}
 
   :test-paths ["test/cljs"]
 
@@ -50,43 +63,47 @@
 
   :profiles {:dev {:cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
                                               :compiler {:source-map true
-                                                         :main       "hangr.dev"
+                                                         :main       hangr.core
                                                          :verbose true}
                                               :figwheel {:on-jsload "hangr.core/mount-root"}}
                                         :chrome-test {:source-paths ["env/dev/cljs" "src" "test"]
-                                                       :compiler {:main "hangr.chrome-runner"
-                                                                  :output-to "app/js/p/testable.js"
-                                                                  :optimizations :none}}
+                                                      :compiler {:main "hangr.chrome-runner"
+                                                                 :output-dir "app/js/p/out-chrome"
+                                                                 :output-to "app/js/p/testable-chrome.js"
+                                                                 :npm-deps ~npm-deps
+                                                                 :optimizations :none}}
                                         :phantom-test {:source-paths ["env/dev/cljs" "src" "test"]
                                                        :compiler {:main "hangr.runner"
-                                                                  :output-to "app/js/p/testable.js"
-                                                                  :closure-defines {"require" nil}
+                                                                  :output-dir "app/js/p/out-phantom"
+                                                                  :output-to "app/js/p/testable-phantom.js"
+                                                                  :npm-deps ~npm-deps
                                                                   :optimizations :none}}
                                         :node-test {:source-paths ["env/dev/cljs" "src" "test"]
                                                     :compiler {:main "hangr.node-runner"
-                                                               :output-to "app/js/p/testable.js"
+                                                               :output-dir "app/js/p/out-node"
+                                                               :output-to "app/js/p/testable-node.js"
                                                                :optimizations :none
+                                                               :npm-deps ~npm-deps
                                                                :target :nodejs}}}}
-                   :source-paths ["env/dev/cljs"]
 
                    :doo {:build "node-test"
                          :paths {:karma "./node_modules/karma/bin/karma"}}
 
                    :dependencies [[binaryage/devtools "0.9.10"]
                                   [re-frisk "0.5.4"]
-                                  [figwheel-sidecar "0.5.13"]
+                                  [figwheel-sidecar "0.5.17"]
                                   [com.cemerick/piggieback "0.2.2"]
                                   [doo "0.1.10"]
                                   [day8.re-frame/test "0.1.5"]]
 
                    :plugins [[lein-ancient "0.6.15"]
                              [lein-kibit "0.1.6"]
-                             [lein-cljfmt "0.5.7"]
-                             [lein-figwheel "0.5.13"]
+                             [lein-cljfmt "0.6.1"]
+                             [lein-figwheel "0.5.17"]
                              [lein-doo "0.1.10"]]}
 
              :production {:cljsbuild {:builds {:app {:compiler {:optimizations :advanced
-                                                                :main          "hangr.prod"
+                                                                :main          "hangr.core"
                                                                 :parallel-build true
                                                                 :cache-analysis false
                                                                 :closure-defines {"goog.DEBUG" false}

@@ -7,7 +7,7 @@
   "private": true,
   "bundleId": "com.github.hangr",
   "dependencies": {
-    "fs-extra": "^6.0.0",
+    "fs-extra": "^7.0.1",
     "hangupsjs": "1.3.8",
     "promise": "^8.0.1",
     "request": "^2.85.0",

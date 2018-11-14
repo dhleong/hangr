@@ -1,7 +1,7 @@
 (ns ^{:author "Daniel Leong"
       :doc "Subscriptions"}
   hangr.subs
-  (:require [re-frame.core :refer [reg-sub trim-v subscribe]]
+  (:require [re-frame.core :refer [reg-sub subscribe]]
             [hangr.util.conversation :refer [event-incoming? fill-members insert-hangr-events]]))
 
 ;; -- Helpers -----------------------------------------------------------------

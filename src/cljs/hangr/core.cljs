@@ -21,18 +21,22 @@
 
 ;; -- Routes and History ------------------------------------------------------
 
-(defroute "/" [] (dispatch [:navigate :friends]))
-(defroute "/about" {latest :query-params}
-  (when latest
-    (dispatch [:set-new-version! latest nil]))
-  (dispatch [:navigate :about]))
-(defroute "/c/:conv-id" [conv-id] (dispatch [:navigate :conv conv-id]))
+(defn app-routes []
+  (defroute "/" [] (dispatch [:navigate :friends]))
 
-(def history
+  (defroute "/about" {latest :query-params}
+    (when latest
+      (dispatch [:set-new-version! latest nil]))
+    (dispatch [:navigate :about]))
+
+  (defroute "/c/:conv-id" [conv-id] (dispatch [:navigate :conv conv-id]))
+
+  ; init navigation
   (doto (History.)
     (events/listen EventType.NAVIGATE
                    (fn [event] (secretary/dispatch! (.-token event))))
     (.setEnabled true)))
+
 
 ;; -- Online/Offline tracking -------------------------------------------------
 
@@ -55,8 +59,7 @@
   ; start rendering
   (reagent/render [hangr.views/main] (.getElementById js/document "app")))
 
-(defn init!
-  []
+(defn ^:export init []
   ; track window focused-ness
   (set! (.-onfocus js/window)
         #(dispatch [:set-focused true]))
@@ -64,6 +67,8 @@
         #(dispatch [:set-focused false]))
   (js/window.addEventListener "online" update-online-status)
   (js/window.addEventListener "offline" update-online-status)
+
+  (app-routes)
   ; init db state + start rendering
   (mount-root)
   ; initialize focused state

@@ -28,3 +28,4 @@ figwheel_server.log
 *.css
 *.swp
 doo-index.html
+.rebel_readline_history
