@@ -3,7 +3,6 @@
 var electron = {};
 electron.dialog = function() {};
 electron.app = function() {};
-electron.ipcRenderer = function() {};
 electron.on = function() {};
 electron.send = function() {};
 electron.remote = function() {};
@@ -21,6 +20,14 @@ electron.showSaveDialog = function() {};
 electron.showOpenDialog = function() {};
 
 electron.shell.openExternal = function() {};
+
+/** @return {electron.IpcRenderer} */
+electron.ipcRenderer = function() {};
+
+electron.IpcRenderer = function() {};
+electron.IpcRenderer.prototype.on = function() {};
+electron.IpcRenderer.prototype.send = function() {};
+electron.IpcRenderer.prototype.removeAllListeners = function() {};
 
 var process = {};
 process.platform = {};
