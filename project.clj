@@ -1,6 +1,6 @@
 (def npm-deps {:url-regex "4.1.1"})
 
-(defproject hangr "0.9.0-beta"
+(defproject hangr "0.10.0-beta"
   :description "Hangouts, the way it was meant to be"
   :url "http://github.com/dhleong/hangr"
   :license {:name "Eclipse Public License"
