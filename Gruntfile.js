@@ -166,7 +166,9 @@ function setReleaseConfig(build, paths) {
 
 function getBuildMeta() {
   grunt.log.writeln("Getting project metadata...");
-  var tokens = cat("project.clj").split(" ");
+  var projectClj = cat("project.clj");
+  var start = projectClj.indexOf("(defproject");
+  var tokens = projectClj.substring(start).split(" ");
   var build = {
     name:    tokens[1],
     version: tokens[2].replace(/"/g, "").trim(),

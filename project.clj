@@ -30,10 +30,11 @@
                                         :optimizations :none
                                         :pretty-print  true
                                         :cache-analysis true
-                                        :preloads      [devtools.preload]
 
                                         :npm-deps      ~npm-deps
                                         :install-deps  true
+                                        :language-in   :es6
+                                        :language-out  :es6
 
                                         :external-config {:devtools/config {:features-to-install :all}}
                                         }}}
@@ -64,6 +65,7 @@
   :profiles {:dev {:cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
                                               :compiler {:source-map true
                                                          :main       hangr.core
+                                                         :preloads   [devtools.preload]
                                                          :verbose true}
                                               :figwheel {:on-jsload "hangr.core/mount-root"}}
                                         :chrome-test {:source-paths ["env/dev/cljs" "src" "test"]
