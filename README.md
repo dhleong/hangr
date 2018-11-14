@@ -51,7 +51,7 @@ This will install the node dependencies for the project, along with grunt and bo
 Start the figwheel server and repl:
 
 ```
-scripts/repl
+lein figwheel
 ```
 
 In another terminal window, launch the electron app:
